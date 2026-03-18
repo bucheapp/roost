@@ -1,7 +1,11 @@
 package io.github.bucheapp.roost.controllers;
 
+import java.time.Duration;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,8 +23,16 @@ public class UserController {
 	private UserService userService;
 	
 	@PostMapping("/signup")
-	public Mono<ResponseEntity<SignupResponse>> signup(@RequestBody SignupRequest req) {
+	public Mono<ResponseEntity<SignupResponse>> signup(@RequestBody SignupRequest req,ServerHttpResponse response) {
 		return userService.register(req)
-			.map(ResponseEntity::ok);
+				.map(res -> {
+					ResponseCookie cookie = ResponseCookie.from("refreshToken", res.getRefreshToken())
+							.httpOnly(true)
+							.path("/")
+							.maxAge(Duration.ofDays(7))
+							.build();
+					response.addCookie(cookie);
+					return ResponseEntity.ok(new SignupResponse(res.getAccessToken(), null));
+					});
 	}
 }

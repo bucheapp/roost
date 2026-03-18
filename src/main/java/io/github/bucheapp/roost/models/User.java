@@ -23,6 +23,12 @@ public class User {
 	
 	@Column
 	private String password;
+	
+	public User(String name,String mail,String password) {
+		this.name = name;
+		this.mail = mail;
+		this.password = password;
+	}
 
 	public long getId() {
 		return id;
