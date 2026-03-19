@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,5 +51,10 @@ public class UserController {
 					response.addCookie(cookie);
 					return ResponseEntity.ok(new LoginResponse(res.getAccessToken(), null));
 					});
+	}
+	
+	@PostMapping("/logout")
+	public Mono<Void> logout(@CookieValue String refreshToken) {
+		return userService.logout(refreshToken);
 	}
 }

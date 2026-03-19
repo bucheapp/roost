@@ -56,6 +56,7 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	@Override
+	@Transactional
 	public Mono<LoginResponse> login(LoginRequest req) {
 		String name = req.name;
 		String rawPassword = req.password;
@@ -77,5 +78,11 @@ public class UserServiceImpl implements UserService {
 					
 					return Mono.just(new LoginResponse(accessTokenText, refreshTokenText));
 				});
+	}
+	
+	@Override
+	@Transactional
+	public Mono<Void> logout(String refreshToken) {
+		return refreshTokenRepository.deleteByToken(refreshToken);
 	}
 }
