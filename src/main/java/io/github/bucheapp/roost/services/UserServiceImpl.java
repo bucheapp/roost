@@ -82,7 +82,17 @@ public class UserServiceImpl implements UserService {
 	
 	@Override
 	@Transactional
-	public Mono<Void> logout(String refreshToken) {
-		return refreshTokenRepository.deleteByToken(refreshToken);
+	public Mono<Void> logout(String refreshTokenText) {
+		return refreshTokenRepository.deleteByToken(refreshTokenText);
+	}
+	
+	@Override
+	public Mono<String> refresh(String refreshTokenText) {
+		return refreshTokenRepository.findByToken(refreshTokenText)
+		.switchIfEmpty(Mono.error(new RuntimeException("トークンが存在しない")))
+		.flatMap(refreshToken -> {
+			User user =  refreshToken.getUser();
+			return Mono.just(jwtService.generateAccessToken(user));
+		});
 	}
 }

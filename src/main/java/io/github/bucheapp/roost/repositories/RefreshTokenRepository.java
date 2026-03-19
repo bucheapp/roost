@@ -7,4 +7,5 @@ import reactor.core.publisher.Mono;
 
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken,Long> {
 	Mono<Void> deleteByToken(String token);
+	Mono<RefreshToken> findByToken(String token);
 }

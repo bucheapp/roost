@@ -57,4 +57,9 @@ public class UserController {
 	public Mono<Void> logout(@CookieValue String refreshToken) {
 		return userService.logout(refreshToken);
 	}
+	
+	@PostMapping
+	public Mono<String> refresh(@CookieValue String refreshToken) {
+		return userService.refresh(refreshToken);
+	}
 }
