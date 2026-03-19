@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.github.bucheapp.roost.dto.LoginRequest;
 import io.github.bucheapp.roost.dto.SignupRequest;
 import io.github.bucheapp.roost.dto.SignupResponse;
 import io.github.bucheapp.roost.services.UserService;
@@ -34,5 +35,10 @@ public class UserController {
 					response.addCookie(cookie);
 					return ResponseEntity.ok(new SignupResponse(res.getAccessToken(), null));
 					});
+	}
+	
+	@PostMapping("/login")
+	public void login(@RequestBody LoginRequest req) {
+		
 	}
 }
