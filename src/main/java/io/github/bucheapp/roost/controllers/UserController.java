@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.github.bucheapp.roost.dto.LoginRequest;
+import io.github.bucheapp.roost.dto.LoginResponse;
 import io.github.bucheapp.roost.dto.SignupRequest;
 import io.github.bucheapp.roost.dto.SignupResponse;
 import io.github.bucheapp.roost.services.UserService;
@@ -38,7 +39,16 @@ public class UserController {
 	}
 	
 	@PostMapping("/login")
-	public void login(@RequestBody LoginRequest req) {
-		
+	public Mono<ResponseEntity<LoginResponse>> login(@RequestBody LoginRequest req,ServerHttpResponse response) {
+		return userService.login(req)
+				.map(res -> {
+					ResponseCookie cookie = ResponseCookie.from("refreshToken", res.getRefreshToken())
+							.httpOnly(true)
+							.path("/")
+							.maxAge(Duration.ofDays(7))
+							.build();
+					response.addCookie(cookie);
+					return ResponseEntity.ok(new LoginResponse(res.getAccessToken(), null));
+					});
 	}
 }
