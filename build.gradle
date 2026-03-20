@@ -48,6 +48,10 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+bootJar {
+	archiveFileName = 'roost-0.0.1-SNAPSHOT.jar'
+}
+
 tasks.named('test') {
 	useJUnitPlatform()
 }
