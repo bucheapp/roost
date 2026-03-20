@@ -5,6 +5,6 @@ import io.github.bucheapp.roost.models.Profile;
 import reactor.core.publisher.Mono;
 
 public interface ProfileService {
-	Mono<Profile> getProfile(long id);
-	Mono<Void> updateProfile(String accessToken,ProfileUpdateRequest updateRequest);
+	Mono<Profile> getProfileById(long id);
+	Mono<Void> updateProfileById(long id,ProfileUpdateRequest updateRequest);
 }

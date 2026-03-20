@@ -19,14 +19,14 @@ public class User {
 	private String name;
 	
 	@Column
-	private String mail;
+	private String email;
 	
 	@Column
 	private String password;
 	
-	public User(String name,String mail,String password) {
+	public User(String name,String email,String password) {
 		this.name = name;
-		this.mail = mail;
+		this.email = email;
 		this.password = password;
 	}
 
@@ -46,12 +46,12 @@ public class User {
 		this.name = name;
 	}
 
-	public String getMail() {
-		return mail;
+	public String getEmail() {
+		return email;
 	}
 
-	public void setMail(String mail) {
-		this.mail = mail;
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 	public String getPassword() {

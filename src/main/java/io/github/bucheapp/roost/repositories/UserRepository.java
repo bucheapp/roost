@@ -7,5 +7,5 @@ import io.github.bucheapp.roost.models.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User,Long> {
-	boolean existsByMail(String mail);
+	boolean existsByEmail(String mail);
 }

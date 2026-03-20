@@ -7,7 +7,8 @@ import reactor.core.publisher.Mono;
 
 public interface UserService {
 	Mono<SignupResponse> register(SignupRequest req);
-	Mono<User> getUser(String accessToken);
-	Mono<Void> updateUser(String accessToken);
-	Mono<Void> deleteUser(String accessToken);
+	Mono<User> getUserById(long id);
+	Mono<Void> updateEmailById(long id,String email);
+	Mono<Void> updatePasswordById(long id,String email);
+	Mono<Void> deleteUserById(long id);
 }
