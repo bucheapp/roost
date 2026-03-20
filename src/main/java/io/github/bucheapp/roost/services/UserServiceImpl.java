@@ -29,7 +29,7 @@ public class UserServiceImpl implements UserService {
 	@Transactional
 	public Mono<SignupResponse> register(SignupRequest req) {
 		String name = req.name;
-		String mail = req.mail;
+		String email = req.email;
 		String rawPassword = req.password;
 
 		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
@@ -50,14 +50,53 @@ public class UserServiceImpl implements UserService {
 		String refreshTokenText = jwtService.generateRefreshToken(saved);
 		
 		RefreshToken refreshToken = new RefreshToken(refreshTokenText,saved,JwtServiceImpl.REFRESHTOKEN_VALIDITY);
-		refreshTokenRepository.saveAndFlush(refreshToken);
+		refreshTokenRepository.save(refreshToken);
 
 		return Mono.just(new SignupResponse(accessTokenText, refreshTokenText));
 	}
 	
 	@Override
+	public Mono<User> getUserById(long id) {
+		return Mono.justOrEmpty(userRepository.findById(id))
+				.switchIfEmpty(Mono.error(new RuntimeException("ユーザが見つかりません")));
+	}
+	
+	@Override
 	@Transactional
-	public Mono<LoginResponse> login(LoginRequest req) {
+  
+	public Mono<Void> updateEmailById(long id,String newEmail) {
+		return Mono.fromRunnable(() -> {
+			User user = userRepository.findById(id)
+					.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+			user.setEmail(newEmail);
+			userRepository.save(user);
+		});
+  }
+	
+	@Override
+	@Transactional
+	public Mono<Void> updatePasswordById(long id,String newPassword) {
+		return Mono.fromRunnable(() -> {
+			User user = userRepository.findById(id)
+					.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+			BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+			String hashedPassword = encoder.encode(newPassword);
+			user.setPassword(hashedPassword);
+			userRepository.save(user);
+		});
+	}
+  
+  @Override
+	@Transactional
+	public Mono<Void> deleteUserById(long id) {
+		return Mono.fromRunnable(() -> {
+			User user = userRepository.findById(id)
+					.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+			userRepository.delete(user);
+  		});
+  }
+  
+  public Mono<LoginResponse> login(LoginRequest req) {
 		String name = req.name;
 		String rawPassword = req.password;
 		
@@ -79,9 +118,7 @@ public class UserServiceImpl implements UserService {
 					return Mono.just(new LoginResponse(accessTokenText, refreshTokenText));
 				});
 	}
-	
-	@Override
-	@Transactional
+  
 	public Mono<Void> logout(String refreshTokenText) {
 		return refreshTokenRepository.deleteByToken(refreshTokenText);
 	}
@@ -93,6 +130,6 @@ public class UserServiceImpl implements UserService {
 		.flatMap(refreshToken -> {
 			User user =  refreshToken.getUser();
 			return Mono.just(jwtService.generateAccessToken(user));
-		});
+    });
 	}
 }

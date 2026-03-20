@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 
 @Repository
 public interface UserRepository extends JpaRepository<User,Long> {
-	boolean existsByMail(String mail);
+	boolean existsByEmail(String mail);
 	boolean existsByName(String name);
 	Mono<User> findByName(String name);
 }
