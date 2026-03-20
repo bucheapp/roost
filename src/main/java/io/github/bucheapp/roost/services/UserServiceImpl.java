@@ -66,7 +66,7 @@ public class UserServiceImpl implements UserService {
 					.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
 			BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 			String hashedPassword = encoder.encode(newPassword);
-			user.setEmail(hashedPassword);
+			user.setPassword(hashedPassword);
 			userRepository.save(user);
 		});
 	}
