@@ -17,14 +17,13 @@ public class JwtServiceImpl implements JwtService {
 	@Autowired
 	SecretKeyService secretKeyService;
 	
-	private final long accessTokenValidity = 60 * 60 * 1000;
-	
-	private final long refreshTokenValidity = 7 * 24 * 60 * 60 * 1000;
+	public final static long ACCESSTOKEN_VALIDITY = 60 * 60 * 1000;
+	public final static long REFRESHTOKEN_VALIDITY = 7 * 24 * 60 * 60 * 1000;
 	
 	@Override
 	public String generateAccessToken(User user) {
 		Date now = new Date();
-		Date expiryDate = new Date(now.getTime() + accessTokenValidity);
+		Date expiryDate = new Date(now.getTime() + ACCESSTOKEN_VALIDITY);
 		
 		SecretKey secretKey = Keys.hmacShaKeyFor(secretKeyService.getAndCreateSecretKey().getBytes(StandardCharsets.UTF_8));
 		
@@ -39,7 +38,7 @@ public class JwtServiceImpl implements JwtService {
 	@Override
 	public String generateRefreshToken(User user) {
 		Date now = new Date();
-		Date expiryDate = new Date(now.getTime() + refreshTokenValidity);
+		Date expiryDate = new Date(now.getTime() + REFRESHTOKEN_VALIDITY);
 		
 		SecretKey secretKey = Keys.hmacShaKeyFor(secretKeyService.getAndCreateSecretKey().getBytes(StandardCharsets.UTF_8));
 		
@@ -68,14 +67,16 @@ public class JwtServiceImpl implements JwtService {
 	}
 
 	@Override
-	public String extractUserId(String token) {
+	public long extractUserId(String token) {
 		SecretKey secretKey = Keys.hmacShaKeyFor(secretKeyService.getAndCreateSecretKey().getBytes(StandardCharsets.UTF_8));
-		return Jwts.parserBuilder()
+		String subject = Jwts.parserBuilder()
 				.setSigningKey(secretKey)
 				.build()
 				.parseClaimsJws(token)
 				.getBody()
 				.getSubject();
+		
+		return Long.parseLong(subject);
 	}
 	
 }
