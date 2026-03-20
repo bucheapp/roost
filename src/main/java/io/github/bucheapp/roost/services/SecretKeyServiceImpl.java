@@ -33,17 +33,17 @@ public class SecretKeyServiceImpl implements SecretKeyService {
 			secretKeyFile = resource.getFile();
 			if(!secretKeyFile.exists()) {
 				secretKey = generateSecretKey(32);
-	            Map<String, String> jsonMap = new HashMap<>();
-	            jsonMap.put("secretKey", secretKey);
-	            mapper.writeValue(secretKeyFile, jsonMap);
-	        } else {
-	            Map<?, ?> jsonMap = mapper.readValue(secretKeyFile, Map.class);
-	            secretKey = (String) jsonMap.get("secretKey");
-	        }
+				Map<String, String> jsonMap = new HashMap<>();
+				jsonMap.put("secretKey", secretKey);
+				mapper.writeValue(secretKeyFile, jsonMap);
+			} else {
+				Map<?, ?> jsonMap = mapper.readValue(secretKeyFile, Map.class);
+				secretKey = (String) jsonMap.get("secretKey");
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
-        return secretKey;
+		return secretKey;
 	}
 }
