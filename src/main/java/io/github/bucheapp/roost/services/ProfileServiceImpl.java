@@ -20,6 +20,12 @@ public class ProfileServiceImpl implements ProfileService {
 		return Mono.fromCallable(() -> profileRepository.findByUserId(id)
 				.orElseThrow(() -> new RuntimeException("プロフィールが存在しません")));
 	}
+	
+	@Override
+	public Mono<Profile> getProfileByPublicId(long id) {
+		return Mono.fromCallable(() -> profileRepository.findByUserId(id)
+				.orElseThrow(() -> new RuntimeException("プロフィールが存在しません")));
+	}
 
 	@Override
 	@Transactional

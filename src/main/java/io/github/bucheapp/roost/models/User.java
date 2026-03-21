@@ -18,6 +18,9 @@ public class User {
 	@Column
 	private String name;
 	
+	@Column(unique = true)
+	private Long publicId;
+	
 	@Column
 	private String email;
 	
@@ -36,6 +39,14 @@ public class User {
 
 	public void setId(long id) {
 		this.id = id;
+	}
+
+	public Long getPublicId() {
+		return publicId;
+	}
+
+	public void setPublicId(Long publicId) {
+		this.publicId = publicId;
 	}
 
 	public String getName() {

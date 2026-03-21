@@ -17,7 +17,7 @@ import jakarta.persistence.Table;
 import org.hibernate.validator.constraints.URL;
 
 @Entity
-@Table(name = "user_profiles")
+@Table(name = "profiles")
 public class Profile {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
