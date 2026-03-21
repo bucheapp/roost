@@ -8,20 +8,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.github.bucheapp.roost.dto.ProfileUpdateRequest;
 import io.github.bucheapp.roost.dto.LoginRequest;
 import io.github.bucheapp.roost.dto.LoginResponse;
+import io.github.bucheapp.roost.dto.ProfileUpdateRequest;
 import io.github.bucheapp.roost.dto.SignupRequest;
 import io.github.bucheapp.roost.dto.SignupResponse;
 import io.github.bucheapp.roost.models.Profile;
@@ -102,13 +102,15 @@ public class UserController {
 				.thenReturn(ResponseEntity.ok().<Void>build());
 	}
 	
-	//UserProfile
+	//Profile
 	
-	@GetMapping("/{id}/profile")
+	@GetMapping("/{publicId}/profile")
 	public Mono<ResponseEntity<Profile>> getProfile(
-			@PathVariable long id,
+			@PathVariable long publicId,
 			@RequestHeader("Authorization") String authHeader) {
-		return profileService.getProfileById(id)
+		
+		
+		return profileService.getProfileByPublicId(publicId)
 				.map(ResponseEntity::ok)
 				.defaultIfEmpty(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
 	}

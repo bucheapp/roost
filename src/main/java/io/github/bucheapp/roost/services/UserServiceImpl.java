@@ -14,6 +14,7 @@ import io.github.bucheapp.roost.models.RefreshToken;
 import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.repositories.RefreshTokenRepository;
 import io.github.bucheapp.roost.repositories.UserRepository;
+import io.github.bucheapp.roost.util.Snowflake;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -26,6 +27,9 @@ public class UserServiceImpl implements UserService {
 	
 	@Autowired
 	private JwtService jwtService;
+	
+	@Autowired
+	private WorkerIdProvider workerIdProvider;
 	
 	@Override
 	@Transactional
@@ -47,6 +51,11 @@ public class UserServiceImpl implements UserService {
 
 			String hashedPassword = encoder.encode(rawPassword);
 			User user = new User(name, email, hashedPassword);
+			
+			long datacenterId = Long.parseLong(System.getenv("DATACENTER_ID"));
+			Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(),datacenterId);
+			user.setPublicId(snowflake.nextId());
+			
 			User saved = userRepository.saveAndFlush(user);
 
 			String accessTokenText = jwtService.generateAccessToken(saved);

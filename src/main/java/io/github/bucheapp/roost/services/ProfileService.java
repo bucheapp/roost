@@ -6,5 +6,6 @@ import reactor.core.publisher.Mono;
 
 public interface ProfileService {
 	Mono<Profile> getProfileById(long id);
+	Mono<Profile> getProfileByPublicId(long publicId);
 	Mono<Profile> updateProfileById(long id,ProfileUpdateRequest updateRequest);
 }
