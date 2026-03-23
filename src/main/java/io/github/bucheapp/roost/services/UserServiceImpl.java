@@ -6,10 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import io.github.bucheapp.roost.dto.LoginRequest;
-import io.github.bucheapp.roost.dto.LoginResponse;
-import io.github.bucheapp.roost.dto.SignupRequest;
-import io.github.bucheapp.roost.dto.SignupResponse;
+import io.github.bucheapp.roost.dto.request.LoginRequest;
+import io.github.bucheapp.roost.dto.request.SignupRequest;
+import io.github.bucheapp.roost.dto.response.LoginResponse;
+import io.github.bucheapp.roost.dto.response.SignupResponse;
 import io.github.bucheapp.roost.models.RefreshToken;
 import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.repositories.RefreshTokenRepository;
@@ -73,19 +73,24 @@ public class UserServiceImpl implements UserService {
 				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
 	}
 	
-	@Override
-	@Transactional
-	public void updateEmailById(long id, String newEmail) {
-		User user = userRepository.findById(id)
+	public User getUserByPublicId(long publicId) {
+		return userRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
-
-		user.setEmail(newEmail);
-		userRepository.save(user);
 	}
 	
 	@Override
 	@Transactional
-	public void updatePasswordById(long id, String newPassword) {
+	public User updateEmailById(long id, String newEmail) {
+		User user = userRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+
+		user.setEmail(newEmail);
+		return userRepository.save(user);
+	}
+	
+	@Override
+	@Transactional
+	public User updatePasswordById(long id, String newPassword) {
 		User user = userRepository.findById(id)
 				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
 
@@ -93,7 +98,7 @@ public class UserServiceImpl implements UserService {
 		String hashedPassword = encoder.encode(newPassword);
 
 		user.setPassword(hashedPassword);
-		userRepository.save(user);
+		return userRepository.save(user);
 	}
 	
 	@Override
@@ -103,6 +108,17 @@ public class UserServiceImpl implements UserService {
 				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
 
 		userRepository.delete(user);
+	}
+	
+	@Override
+	@Transactional
+	public void setFrozen(long publicId,boolean frozen) {
+		User user = userRepository.findByPublicId(publicId)
+				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+		
+		user.setFrozen(frozen);
+
+		userRepository.save(user);
 	}
   
 	@Override

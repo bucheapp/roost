@@ -5,7 +5,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import io.github.bucheapp.roost.dto.ProfileUpdateRequest;
+import io.github.bucheapp.roost.dto.request.ProfileUpdateRequest;
 import io.github.bucheapp.roost.models.Profile;
 import io.github.bucheapp.roost.repositories.ProfileRepository;
 

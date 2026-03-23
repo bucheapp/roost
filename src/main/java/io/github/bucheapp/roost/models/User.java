@@ -19,13 +19,16 @@ public class User {
 	private String name;
 	
 	@Column(unique = true)
-	private Long publicId;
+	private long publicId;
 	
 	@Column
 	private String email;
 	
 	@Column
 	private String password;
+	
+	@Column
+	private boolean frozen;
 	
 	public User(String name,String email,String password) {
 		this.name = name;
@@ -41,11 +44,11 @@ public class User {
 		this.id = id;
 	}
 
-	public Long getPublicId() {
+	public long getPublicId() {
 		return publicId;
 	}
 
-	public void setPublicId(Long publicId) {
+	public void setPublicId(long publicId) {
 		this.publicId = publicId;
 	}
 
@@ -71,5 +74,13 @@ public class User {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public boolean isFrozen() {
+		return frozen;
+	}
+
+	public void setFrozen(boolean frozen) {
+		this.frozen = frozen;
 	}
 }

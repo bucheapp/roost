@@ -1,4 +1,4 @@
-package io.github.bucheapp.roost.dto;
+package io.github.bucheapp.roost.dto.request;
 
 public class LoginRequest {
 	public String name;
