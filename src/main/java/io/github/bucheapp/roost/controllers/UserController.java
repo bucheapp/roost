@@ -3,7 +3,6 @@ package io.github.bucheapp.roost.controllers;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.services.JwtService;
 import io.github.bucheapp.roost.services.UserService;
-import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("api/users")
@@ -28,47 +26,54 @@ public class UserController {
 	private JwtService jwtService;
 	
 	@GetMapping("/me")
-	public Mono<ResponseEntity<User>> getUser(
+	public ResponseEntity<User> getUser(
 			@RequestHeader("Authorization") String authHeader) {
+
 		String token = authHeader.substring(7);
 		long id = jwtService.extractUserId(token);
-		
-		return userService.getUserById(id)
-				.map(ResponseEntity::ok)
-				.defaultIfEmpty(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+
+		User user = userService.getUserById(id);
+
+		return ResponseEntity.ok(user);
 	}
 	
 	@PatchMapping("/me/email")
-	public Mono<ResponseEntity<Void>> updateEmail(
+	public ResponseEntity<Void> updateEmail(
 			@RequestHeader("Authorization") String authHeader,
 			@RequestBody Map<String, String> body) {
+
 		String token = authHeader.substring(7);
 		long id = jwtService.extractUserId(token);
 		String newEmail = body.get("email");
-		
-		return userService.updateEmailById(id,newEmail)
-				.thenReturn(ResponseEntity.ok().<Void>build());
+
+		userService.updateEmailById(id, newEmail);
+
+		return ResponseEntity.ok().build();
 	}
 	
 	@PatchMapping("/me/password")
-	public Mono<ResponseEntity<Void>> updatePassword(
+	public ResponseEntity<Void> updatePassword(
 			@RequestHeader("Authorization") String authHeader,
 			@RequestBody Map<String, String> body) {
+
 		String token = authHeader.substring(7);
 		long id = jwtService.extractUserId(token);
 		String newPassword = body.get("password");
-		
-		return userService.updateEmailById(id,newPassword)
-				.thenReturn(ResponseEntity.ok().<Void>build());
+
+		userService.updatePasswordById(id, newPassword);
+
+		return ResponseEntity.ok().build();
 	}
 	
 	@DeleteMapping("/me")
-	public Mono<ResponseEntity<Void>> deleteUser(
+	public ResponseEntity<Void> deleteUser(
 			@RequestHeader("Authorization") String authHeader) {
+
 		String token = authHeader.substring(7);
 		long id = jwtService.extractUserId(token);
-		
-		return userService.deleteUserById(id)
-				.thenReturn(ResponseEntity.ok().<Void>build());
+
+		userService.deleteUserById(id);
+
+		return ResponseEntity.ok().build();
 	}
 }

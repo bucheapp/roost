@@ -1,11 +1,10 @@
 package io.github.bucheapp.roost.controllers;
 
-import java.time.Duration;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,7 +16,6 @@ import io.github.bucheapp.roost.dto.LoginResponse;
 import io.github.bucheapp.roost.dto.SignupRequest;
 import io.github.bucheapp.roost.dto.SignupResponse;
 import io.github.bucheapp.roost.services.UserService;
-import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("api/auth")
@@ -26,40 +24,50 @@ public class AuthController {
 	private UserService userService;
 	
 	@PostMapping("/signup")
-	public Mono<ResponseEntity<SignupResponse>> signup(@RequestBody SignupRequest req,ServerHttpResponse response) {
-		return userService.register(req)
-				.map(res -> {
-					ResponseCookie cookie = ResponseCookie.from("refreshToken", res.getRefreshToken())
-							.httpOnly(true)
-							.path("/")
-							.maxAge(Duration.ofDays(7))
-							.build();
-					response.addCookie(cookie);
-					return ResponseEntity.ok(new SignupResponse(res.getAccessToken(), null));
-					});
+	public ResponseEntity<SignupResponse> signup(
+			@RequestBody SignupRequest req,
+			HttpServletResponse response) {
+
+		SignupResponse res = userService.register(req);
+
+		Cookie cookie = new Cookie("refreshToken", res.getRefreshToken());
+		cookie.setHttpOnly(true);
+		cookie.setPath("/");
+		cookie.setMaxAge(60 * 60 * 24 * 7);
+
+		response.addCookie(cookie);
+
+		return ResponseEntity.ok(new SignupResponse(res.getAccessToken(), null));
 	}
 	
 	@PostMapping("/login")
-	public Mono<ResponseEntity<LoginResponse>> login(@RequestBody LoginRequest req,ServerHttpResponse response) {
-		return userService.login(req)
-				.map(res -> {
-					ResponseCookie cookie = ResponseCookie.from("refreshToken", res.getRefreshToken())
-							.httpOnly(true)
-							.path("/")
-							.maxAge(Duration.ofDays(7))
-							.build();
-					response.addCookie(cookie);
-					return ResponseEntity.ok(new LoginResponse(res.getAccessToken(), null));
-					});
+	public ResponseEntity<LoginResponse> login(
+			@RequestBody LoginRequest req,
+			HttpServletResponse response) {
+
+		LoginResponse res = userService.login(req);
+
+		Cookie cookie = new Cookie("refreshToken", res.getRefreshToken());
+		cookie.setHttpOnly(true);
+		cookie.setPath("/");
+		cookie.setMaxAge(60 * 60 * 24 * 7);
+
+		response.addCookie(cookie);
+
+		return ResponseEntity.ok(new LoginResponse(res.getAccessToken(), null));
 	}
 	
 	@PostMapping("/logout")
-	public Mono<Void> logout(@CookieValue String refreshToken) {
-		return userService.logout(refreshToken);
+	public ResponseEntity<Void> logout(@CookieValue String refreshToken) {
+		userService.logout(refreshToken);
+
+		return ResponseEntity.ok().build();
 	}
 	
-	@PostMapping
-	public Mono<String> refresh(@CookieValue String refreshToken) {
-		return userService.refresh(refreshToken);
+	@PostMapping("/refresh")
+	public ResponseEntity<String> refresh(@CookieValue String refreshToken) {
+		String accessToken = userService.refresh(refreshToken);
+
+		return ResponseEntity.ok(accessToken);
 	}
 }
