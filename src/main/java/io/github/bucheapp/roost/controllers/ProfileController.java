@@ -1,7 +1,6 @@
 package io.github.bucheapp.roost.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -15,37 +14,37 @@ import io.github.bucheapp.roost.dto.ProfileUpdateRequest;
 import io.github.bucheapp.roost.models.Profile;
 import io.github.bucheapp.roost.services.JwtService;
 import io.github.bucheapp.roost.services.ProfileService;
-import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("api/profiles")
 public class ProfileController {
+
 	@Autowired
 	private ProfileService profileService;
-	
+
 	@Autowired
 	private JwtService jwtService;
-	
+
 	@GetMapping("/{publicId}/profile")
-	public Mono<ResponseEntity<Profile>> getProfile(
+	public ResponseEntity<Profile> getProfile(
 			@PathVariable long publicId,
 			@RequestHeader("Authorization") String authHeader) {
-		
-		
-		return profileService.getProfileByPublicId(publicId)
-				.map(ResponseEntity::ok)
-				.defaultIfEmpty(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+
+		Profile profile = profileService.getProfileByPublicId(publicId);
+
+		return ResponseEntity.ok(profile);
 	}
 	
 	@PatchMapping("/me/profile")
-	public Mono<ResponseEntity<Void>> updateProfile(
+	public ResponseEntity<Void> updateProfile(
 			@RequestHeader("Authorization") String authHeader,
 			@RequestBody ProfileUpdateRequest body) {
-		
+
 		String token = authHeader.substring(7);
 		long id = jwtService.extractUserId(token);
-		
-		return profileService.updateProfileById(id,body)
-				.thenReturn(ResponseEntity.ok().<Void>build());
+
+		profileService.updateProfileById(id, body);
+
+		return ResponseEntity.ok().build();
 	}
 }
