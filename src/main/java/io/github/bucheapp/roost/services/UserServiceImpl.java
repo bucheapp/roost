@@ -1,5 +1,8 @@
 package io.github.bucheapp.roost.services;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,11 +13,14 @@ import org.springframework.stereotype.Service;
 import io.github.bucheapp.roost.dto.request.CreateAdminUserRequest;
 import io.github.bucheapp.roost.dto.request.CreateUserRequest;
 import io.github.bucheapp.roost.dto.request.LoginRequest;
+import io.github.bucheapp.roost.dto.request.PermissionRequest;
 import io.github.bucheapp.roost.dto.request.SignupRequest;
 import io.github.bucheapp.roost.dto.response.LoginResponse;
 import io.github.bucheapp.roost.dto.response.SignupResponse;
+import io.github.bucheapp.roost.models.Permission;
 import io.github.bucheapp.roost.models.RefreshToken;
 import io.github.bucheapp.roost.models.User;
+import io.github.bucheapp.roost.repositories.PermissionRepository;
 import io.github.bucheapp.roost.repositories.RefreshTokenRepository;
 import io.github.bucheapp.roost.repositories.RoleRepository;
 import io.github.bucheapp.roost.repositories.UserRepository;
@@ -30,6 +36,9 @@ public class UserServiceImpl implements UserService {
 	
 	@Autowired
 	private RefreshTokenRepository refreshTokenRepository;
+	
+	@Autowired
+	private PermissionRepository permissionRepository;
 	
 	@Autowired
 	private JwtService jwtService;
@@ -170,13 +179,139 @@ public class UserServiceImpl implements UserService {
 	
 	@Override
 	@Transactional
-	public void createUser(CreateUserRequest req) {
+	public void createUser(long id,CreateUserRequest req) {
+		String name = req.getName();
+		String email = req.getEmail();
+		String rawPassword = req.getPassword();
+		Set<String> requestedPermissions = req.getPermissions();
 		
+		if (userRepository.existsByEmail(email)) {
+			throw new RuntimeException("既に登録されています");
+		}
+
+		if (userRepository.existsByName(name)) {
+			throw new RuntimeException("既にその名前は存在します");
+		}
+		
+		User currentUser = userRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("ユーザが存在しません"));
+		
+		Set<String> creatorPermissions = currentUser.getPermissions()
+				.stream()
+				.map(Permission::getName)
+				.collect(Collectors.toSet());
+		
+		if (!creatorPermissions.containsAll(requestedPermissions)) {
+			throw new RuntimeException("権限を付与できません");
+		}
+
+		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+		String hashedPassword = encoder.encode(rawPassword);
+
+		User user = new User(name, email, hashedPassword);
+		
+		Set<Permission> permissions = requestedPermissions.stream()
+				.map(permissionName -> permissionRepository.findByName(permissionName)
+				.orElseThrow(() -> new RuntimeException("権限がありません: " + permissionName)))
+				.collect(Collectors.toSet());
+		
+		user.setPermissions(permissions);
+		userRepository.save(user);
 	}
 	
 	@Override
 	@Transactional
 	public void createAdminUser(CreateAdminUserRequest req) {
+		String name = req.getName();
+		String email = req.getEmail();
+		String rawPassword = req.getPassword();
 		
+		if (userRepository.existsByEmail(email)) {
+			throw new RuntimeException("既に登録されています");
+		}
+
+		if (userRepository.existsByName(name)) {
+			throw new RuntimeException("既にその名前は存在します");
+		}
+		
+		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+		String hashedPassword = encoder.encode(rawPassword);
+
+		User user = new User(name, email, hashedPassword);
+		user.setRole(roleRepository.findByName("ADMIN")
+				.orElseThrow(() -> new RuntimeException("ロールが存在しません")));
+		userRepository.save(user);
+	}
+	
+	@Override
+	public Set<Permission> getPermissions(long publicId) {
+		User user = userRepository.findByPublicId(publicId)
+				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+		return user.getPermissions();
+	}
+	
+	@Override
+	@Transactional
+	public void grantPermissions(long id,long publicId,PermissionRequest req) {
+		User currentUser = userRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+		
+		User user = userRepository.findByPublicId(publicId)
+				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+		
+		Set<String> requestedPermissions = req.getPermissions();
+		
+		Set<String> currentUserPermissions = currentUser.getPermissions()
+				.stream()
+				.map(Permission::getName)
+				.collect(Collectors.toSet());
+		
+		if (!currentUserPermissions.containsAll(requestedPermissions)) {
+			throw new RuntimeException("権限を付与できません");
+		}
+		
+		if(currentUser.getId() == user.getId()) {
+			throw new RuntimeException("自分には権限を付与できません");
+		}
+		
+		Set<Permission> permissions = requestedPermissions.stream()
+				.map(permissionName -> permissionRepository.findByName(permissionName)
+				.orElseThrow(() -> new RuntimeException("Permission not found: " + permissionName)))
+				.collect(Collectors.toSet());
+		
+		user.getPermissions().addAll(permissions);
+		
+		userRepository.save(user);
+	}
+	
+	@Override
+	@Transactional
+	public void revokePermissions(long id,long publicId,PermissionRequest req) {
+		User currentUser = userRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+		
+		User user = userRepository.findByPublicId(publicId)
+				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+		
+		Set<String> requestedPermissions = req.getPermissions();
+		
+		Set<String> currentUserPermissions = currentUser.getPermissions()
+				.stream()
+				.map(Permission::getName)
+				.collect(Collectors.toSet());
+		
+		if (!currentUserPermissions.containsAll(requestedPermissions)) {
+			throw new RuntimeException("権限を剥奪できません");
+		}
+		
+		if (currentUser.getId() == user.getId()) {
+			throw new RuntimeException("自分の権限は変更できません");
+		}
+		
+		user.getPermissions().removeIf(p ->
+			requestedPermissions.contains(p.getName())
+		);
+
+		userRepository.save(user);
 	}
 }

@@ -36,6 +36,9 @@ public class DataInitializer implements CommandLineRunner {
 	public void run(String... args) throws Exception {
 		Permission freezeUser = getOrCreatePermission("FREEZE_USER");
 		Permission createUser = getOrCreatePermission("CREATE_USER");
+		Permission getPermission = getOrCreatePermission("GET_PERMISSION");
+		Permission grantPermission = getOrCreatePermission("GRANT_PERMISSION");
+		Permission revokePermission = getOrCreatePermission("REVOKE_PERMISSION");
 		getOrCreatePermission("CREATE_ADMINUSER");
 		
 		Role superAdmin = getOrCreateRole("SUPER_ADMIN");
@@ -43,7 +46,7 @@ public class DataInitializer implements CommandLineRunner {
 		roleRepository.save(superAdmin);
 		
 		Role admin = getOrCreateRole("ADMIN");
-		admin.setPermissions(Set.of(freezeUser,createUser));
+		admin.setPermissions(Set.of(freezeUser,createUser,getPermission,grantPermission,revokePermission));
 		roleRepository.save(admin);
 		
 		Role user = getOrCreateRole("USER");

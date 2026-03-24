@@ -1,11 +1,15 @@
 package io.github.bucheapp.roost.services;
 
+import java.util.Set;
+
 import io.github.bucheapp.roost.dto.request.CreateAdminUserRequest;
 import io.github.bucheapp.roost.dto.request.CreateUserRequest;
 import io.github.bucheapp.roost.dto.request.LoginRequest;
+import io.github.bucheapp.roost.dto.request.PermissionRequest;
 import io.github.bucheapp.roost.dto.request.SignupRequest;
 import io.github.bucheapp.roost.dto.response.LoginResponse;
 import io.github.bucheapp.roost.dto.response.SignupResponse;
+import io.github.bucheapp.roost.models.Permission;
 import io.github.bucheapp.roost.models.User;
 
 public interface UserService {
@@ -19,6 +23,9 @@ public interface UserService {
 	void logout(String refreshTokenText);
 	String refresh(String refreshTokenText);
 	void setFrozen(long publicId,boolean frozen);
-	void createUser(CreateUserRequest req);
+	void createUser(long id,CreateUserRequest req);
 	void createAdminUser(CreateAdminUserRequest req);
+	Set<Permission> getPermissions(long publicId);
+	void grantPermissions(long publicId,long id,PermissionRequest req);
+	void revokePermissions(long publicId,long id,PermissionRequest req);
 }
