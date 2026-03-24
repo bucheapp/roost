@@ -2,16 +2,20 @@ package io.github.bucheapp.roost.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.github.bucheapp.roost.dto.request.CreateAdminUserRequest;
+import io.github.bucheapp.roost.dto.request.CreateUserRequest;
 import io.github.bucheapp.roost.dto.request.UpdateEmailRequest;
 import io.github.bucheapp.roost.dto.request.UpdatePasswordRequest;
 import io.github.bucheapp.roost.dto.response.UserPrivateResponse;
@@ -98,6 +102,21 @@ public class UserController {
 		return ResponseEntity.ok().build();
 	}
 	
+	@PreAuthorize("hasAuthority('CREATE_USER')")
+	@PostMapping
+	public ResponseEntity<Void> createUser(@RequestBody CreateUserRequest req) {
+		userService.createUser(req);
+		return ResponseEntity.ok().build();
+	}
+	
+	@PreAuthorize("hasAuthority('CREATE_ADMINUSER')")
+	@PostMapping("/admin")
+	public ResponseEntity<Void> createAdminUser(@RequestBody CreateAdminUserRequest req) {
+		userService.createAdminUser(req);
+		return ResponseEntity.ok().build();
+	}
+	
+	@PreAuthorize("hasAuthority('FREEZE_USER')")
 	@PatchMapping("/{publicId}/freeze")
 	public ResponseEntity<Void> freezeUser(
 			@PathVariable long publicId
@@ -105,7 +124,8 @@ public class UserController {
 		userService.setFrozen(publicId, true);
 		return ResponseEntity.noContent().build();
 	}
-
+	
+	@PreAuthorize("hasAuthority('FREEZE_USER')")
 	@PatchMapping("/{publicId}/unfreeze")
 	public ResponseEntity<Void> unfreezeUser(
 			@PathVariable long publicId

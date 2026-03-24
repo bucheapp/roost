@@ -1,5 +1,7 @@
 package io.github.bucheapp.roost.services;
 
+import io.github.bucheapp.roost.dto.request.CreateAdminUserRequest;
+import io.github.bucheapp.roost.dto.request.CreateUserRequest;
 import io.github.bucheapp.roost.dto.request.LoginRequest;
 import io.github.bucheapp.roost.dto.request.SignupRequest;
 import io.github.bucheapp.roost.dto.response.LoginResponse;
@@ -17,4 +19,6 @@ public interface UserService {
 	void logout(String refreshTokenText);
 	String refresh(String refreshTokenText);
 	void setFrozen(long publicId,boolean frozen);
+	void createUser(CreateUserRequest req);
+	void createAdminUser(CreateAdminUserRequest req);
 }

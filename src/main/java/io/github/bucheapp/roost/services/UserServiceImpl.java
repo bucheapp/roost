@@ -3,9 +3,12 @@ package io.github.bucheapp.roost.services;
 import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import io.github.bucheapp.roost.dto.request.CreateAdminUserRequest;
+import io.github.bucheapp.roost.dto.request.CreateUserRequest;
 import io.github.bucheapp.roost.dto.request.LoginRequest;
 import io.github.bucheapp.roost.dto.request.SignupRequest;
 import io.github.bucheapp.roost.dto.response.LoginResponse;
@@ -13,6 +16,7 @@ import io.github.bucheapp.roost.dto.response.SignupResponse;
 import io.github.bucheapp.roost.models.RefreshToken;
 import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.repositories.RefreshTokenRepository;
+import io.github.bucheapp.roost.repositories.RoleRepository;
 import io.github.bucheapp.roost.repositories.UserRepository;
 import io.github.bucheapp.roost.util.Snowflake;
 
@@ -22,6 +26,9 @@ public class UserServiceImpl implements UserService {
 	private UserRepository userRepository;
 	
 	@Autowired
+	private RoleRepository roleRepository;
+	
+	@Autowired
 	private RefreshTokenRepository refreshTokenRepository;
 	
 	@Autowired
@@ -29,6 +36,9 @@ public class UserServiceImpl implements UserService {
 	
 	@Autowired
 	private WorkerIdProvider workerIdProvider;
+	
+	@Value("${DATACENTER_ID}")
+	private String datacenterId;
 	
 	@Override
 	@Transactional
@@ -51,9 +61,11 @@ public class UserServiceImpl implements UserService {
 
 		User user = new User(name, email, hashedPassword);
 
-		long datacenterId = Long.parseLong(System.getenv("DATACENTER_ID"));
-		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
+		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), Long.parseLong(datacenterId));
+		
 		user.setPublicId(snowflake.nextId());
+		user.setRole(roleRepository.findByName("USER")
+				.orElseThrow(() -> new RuntimeException("ロールが存在しません")));
 
 		User saved = userRepository.saveAndFlush(user);
 
@@ -154,5 +166,17 @@ public class UserServiceImpl implements UserService {
 				.orElseThrow(() -> new RuntimeException("トークンが存在しない"));
 
 		return jwtService.generateAccessToken(refreshToken.getUser());
+	}
+	
+	@Override
+	@Transactional
+	public void createUser(CreateUserRequest req) {
+		
+	}
+	
+	@Override
+	@Transactional
+	public void createAdminUser(CreateAdminUserRequest req) {
+		
 	}
 }
