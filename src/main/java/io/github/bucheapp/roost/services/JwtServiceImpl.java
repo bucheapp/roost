@@ -6,6 +6,7 @@ import java.util.Date;
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import io.github.bucheapp.roost.models.User;
@@ -64,6 +65,11 @@ public class JwtServiceImpl implements JwtService {
 		} catch (Exception e) {
 			return false;
 		}
+	}
+	
+	@Override
+	public boolean isTokenValid(String token, UserDetails userDetails) {
+	    return validateToken(token) && extractUserId(token) == Long.parseLong(userDetails.getUsername());
 	}
 
 	@Override

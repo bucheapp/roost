@@ -7,29 +7,37 @@ import org.springframework.stereotype.Service;
 
 import io.github.bucheapp.roost.dto.request.ProfileUpdateRequest;
 import io.github.bucheapp.roost.models.Profile;
+import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.repositories.ProfileRepository;
+import io.github.bucheapp.roost.repositories.UserRepository;
 
 @Service
 public class ProfileServiceImpl implements ProfileService {
 	@Autowired
 	ProfileRepository profileRepository;
+	
+	@Autowired
+	UserRepository userRepository;
 
 	@Override
-	public Profile getProfileById(long id) {
-		return profileRepository.findByUserId(id)
+	public Profile getProfileByUserId(long userId) {
+		return profileRepository.findByUserId(userId)
 				.orElseThrow(() -> new RuntimeException("プロフィールが存在しません"));
 	}
 
 	@Override
-	public Profile getProfileByPublicId(long id) {
-		return profileRepository.findByUserId(id)
+	public Profile getProfileByUserPublicId(long publicId) {
+		User user = userRepository.findByPublicId(publicId)
+				.orElseThrow(() -> new RuntimeException("ユーザが存在しません"));
+
+		return profileRepository.findByUser(user)
 				.orElseThrow(() -> new RuntimeException("プロフィールが存在しません"));
 	}
 
 	@Override
 	@Transactional
-	public Profile updateProfileById(long id, ProfileUpdateRequest updateRequest) {
-		Profile profile = profileRepository.findByUserId(id)
+	public Profile updateProfileByUserId(long userId, ProfileUpdateRequest updateRequest) {
+		Profile profile = profileRepository.findByUserId(userId)
 				.orElseThrow(() -> new RuntimeException("プロフィールが存在しません"));
 
 		if (updateRequest.getBio() != null) profile.setBio(updateRequest.getBio());

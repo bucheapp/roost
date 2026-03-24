@@ -17,7 +17,7 @@ import io.github.bucheapp.roost.services.JwtService;
 import io.github.bucheapp.roost.services.ProfileService;
 
 @RestController
-@RequestMapping("api/profiles")
+@RequestMapping("api/users")
 public class ProfileController {
 
 	@Autowired
@@ -26,23 +26,23 @@ public class ProfileController {
 	@Autowired
 	private JwtService jwtService;
 
-	@GetMapping("/{publicId}")
+	@GetMapping("/{publicId}/profile")
 	public ResponseEntity<ProfileResponse> getProfile(
 			@PathVariable long publicId) {
 
-		Profile profile = profileService.getProfileByPublicId(publicId);
+		Profile profile = profileService.getProfileByUserPublicId(publicId);
 		ProfileResponse profileResponse = new ProfileResponse(profile);
 
 		return ResponseEntity.ok(profileResponse);
 	}
 	
-	@GetMapping("/me")
+	@GetMapping("/me/profile")
 	public ResponseEntity<ProfileResponse> getProfile(
 			@RequestHeader("Authorization") String authHeader) {
 		String token = authHeader.substring(7);
 		long id = jwtService.extractUserId(token);
 		
-		Profile profile = profileService.getProfileByPublicId(id);
+		Profile profile = profileService.getProfileByUserPublicId(id);
 		ProfileResponse profileResponse = new ProfileResponse(profile);
 		
 		return ResponseEntity.ok(profileResponse);
@@ -56,7 +56,7 @@ public class ProfileController {
 		String token = authHeader.substring(7);
 		long id = jwtService.extractUserId(token);
 
-		profileService.updateProfileById(id, body);
+		profileService.updateProfileByUserId(id, body);
 
 		return ResponseEntity.ok().build();
 	}
