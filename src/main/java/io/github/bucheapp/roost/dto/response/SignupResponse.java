@@ -1,4 +1,4 @@
-package io.github.bucheapp.roost.dto;
+package io.github.bucheapp.roost.dto.response;
 
 public class SignupResponse {
 	public String accessToken;

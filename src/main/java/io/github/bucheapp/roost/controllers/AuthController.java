@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.github.bucheapp.roost.dto.LoginRequest;
-import io.github.bucheapp.roost.dto.LoginResponse;
-import io.github.bucheapp.roost.dto.SignupRequest;
-import io.github.bucheapp.roost.dto.SignupResponse;
+import io.github.bucheapp.roost.dto.request.LoginRequest;
+import io.github.bucheapp.roost.dto.request.SignupRequest;
+import io.github.bucheapp.roost.dto.response.LoginResponse;
+import io.github.bucheapp.roost.dto.response.SignupResponse;
 import io.github.bucheapp.roost.services.UserService;
 
 @RestController

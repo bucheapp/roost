@@ -10,13 +10,14 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.github.bucheapp.roost.dto.ProfileUpdateRequest;
+import io.github.bucheapp.roost.dto.request.ProfileUpdateRequest;
+import io.github.bucheapp.roost.dto.response.ProfileResponse;
 import io.github.bucheapp.roost.models.Profile;
 import io.github.bucheapp.roost.services.JwtService;
 import io.github.bucheapp.roost.services.ProfileService;
 
 @RestController
-@RequestMapping("api/profiles")
+@RequestMapping("api/users")
 public class ProfileController {
 
 	@Autowired
@@ -26,13 +27,25 @@ public class ProfileController {
 	private JwtService jwtService;
 
 	@GetMapping("/{publicId}/profile")
-	public ResponseEntity<Profile> getProfile(
-			@PathVariable long publicId,
+	public ResponseEntity<ProfileResponse> getProfile(
+			@PathVariable long publicId) {
+
+		Profile profile = profileService.getProfileByUserPublicId(publicId);
+		ProfileResponse profileResponse = new ProfileResponse(profile);
+
+		return ResponseEntity.ok(profileResponse);
+	}
+	
+	@GetMapping("/me/profile")
+	public ResponseEntity<ProfileResponse> getProfile(
 			@RequestHeader("Authorization") String authHeader) {
-
-		Profile profile = profileService.getProfileByPublicId(publicId);
-
-		return ResponseEntity.ok(profile);
+		String token = authHeader.substring(7);
+		long id = jwtService.extractUserId(token);
+		
+		Profile profile = profileService.getProfileByUserPublicId(id);
+		ProfileResponse profileResponse = new ProfileResponse(profile);
+		
+		return ResponseEntity.ok(profileResponse);
 	}
 	
 	@PatchMapping("/me/profile")
@@ -43,7 +56,7 @@ public class ProfileController {
 		String token = authHeader.substring(7);
 		long id = jwtService.extractUserId(token);
 
-		profileService.updateProfileById(id, body);
+		profileService.updateProfileByUserId(id, body);
 
 		return ResponseEntity.ok().build();
 	}

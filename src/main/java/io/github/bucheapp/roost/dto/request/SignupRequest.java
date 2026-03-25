@@ -1,8 +1,8 @@
-package io.github.bucheapp.roost.dto;
+package io.github.bucheapp.roost.dto.request;
 
-public class LoginRequest {
+public class SignupRequest {
 	public String name;
-	public String mail;
+	public String email;
 	public String password;
 	
 	public String getName() {
@@ -11,11 +11,11 @@ public class LoginRequest {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public String getMail() {
-		return mail;
+	public String getEmail() {
+		return email;
 	}
-	public void setMail(String mail) {
-		this.mail = mail;
+	public void setEmail(String email) {
+		this.email = email;
 	}
 	public String getPassword() {
 		return password;

@@ -1,4 +1,4 @@
-package io.github.bucheapp.roost.dto;
+package io.github.bucheapp.roost.dto.request;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

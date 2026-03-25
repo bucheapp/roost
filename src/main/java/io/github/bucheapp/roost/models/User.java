@@ -1,10 +1,18 @@
 package io.github.bucheapp.roost.models;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -19,13 +27,28 @@ public class User {
 	private String name;
 	
 	@Column(unique = true)
-	private Long publicId;
+	private long publicId;
 	
 	@Column
 	private String email;
 	
 	@Column
 	private String password;
+	
+	@Column
+	private boolean frozen;
+	
+	@ManyToOne
+	@JoinColumn(name = "role_id")
+	private Role role;
+
+	@ManyToMany(fetch = FetchType.EAGER)
+	@JoinTable(
+		name = "user_permissions",
+		joinColumns = @JoinColumn(name = "user_id"),
+		inverseJoinColumns = @JoinColumn(name = "permission_id")
+	)
+	private Set<Permission> permissions = new HashSet<>();
 	
 	public User(String name,String email,String password) {
 		this.name = name;
@@ -41,11 +64,11 @@ public class User {
 		this.id = id;
 	}
 
-	public Long getPublicId() {
+	public long getPublicId() {
 		return publicId;
 	}
 
-	public void setPublicId(Long publicId) {
+	public void setPublicId(long publicId) {
 		this.publicId = publicId;
 	}
 
@@ -71,5 +94,29 @@ public class User {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public boolean isFrozen() {
+		return frozen;
+	}
+
+	public void setFrozen(boolean frozen) {
+		this.frozen = frozen;
+	}
+
+	public Role getRole() {
+		return role;
+	}
+
+	public void setRole(Role role) {
+		this.role = role;
+	}
+
+	public Set<Permission> getPermissions() {
+		return permissions;
+	}
+
+	public void setPermissions(Set<Permission> permissions) {
+		this.permissions = permissions;
 	}
 }
