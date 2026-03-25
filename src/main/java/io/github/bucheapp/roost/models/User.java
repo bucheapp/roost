@@ -50,6 +50,8 @@ public class User {
 	)
 	private Set<Permission> permissions = new HashSet<>();
 	
+	public User() {}
+	
 	public User(String name,String email,String password) {
 		this.name = name;
 		this.email = email;

@@ -14,10 +14,10 @@ import io.github.bucheapp.roost.repositories.UserRepository;
 @Service
 public class ProfileServiceImpl implements ProfileService {
 	@Autowired
-	ProfileRepository profileRepository;
+	private ProfileRepository profileRepository;
 	
 	@Autowired
-	UserRepository userRepository;
+	private UserRepository userRepository;
 
 	@Override
 	public Profile getProfileByUserId(long userId) {

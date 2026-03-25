@@ -20,10 +20,10 @@ import io.jsonwebtoken.security.Keys;
 @Service
 public class JwtServiceImpl implements JwtService {
 	@Autowired
-	SecretKeyService secretKeyService;
+	private SecretKeyService secretKeyService;
 	
 	@Autowired
-	UserRepository userRepository;
+	private UserRepository userRepository;
 	
 	public final static long ACCESSTOKEN_VALIDITY = 60 * 60 * 1000;
 	public final static long REFRESHTOKEN_VALIDITY = 7 * 24 * 60 * 60 * 1000;

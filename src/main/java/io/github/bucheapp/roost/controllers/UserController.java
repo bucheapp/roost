@@ -106,9 +106,9 @@ public class UserController {
 	
 	@PreAuthorize("hasAuthority('CREATE_USER')")
 	@PostMapping
-	public ResponseEntity<Void> createUser(@RequestBody
-			Authentication authentication,
-			CreateUserRequest req) {
+	public ResponseEntity<Void> createUser(
+			@RequestBody CreateUserRequest req,
+			Authentication authentication) {
 		
 		CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 		long id = userDetails.getId();

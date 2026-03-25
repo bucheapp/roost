@@ -18,13 +18,13 @@ import io.github.bucheapp.roost.repositories.UserRepository;
 @Component
 public class DataInitializer implements CommandLineRunner {
 	@Autowired
-	RoleRepository roleRepository;
+	private RoleRepository roleRepository;
 	
 	@Autowired
-	PermissionRepository permissionRepository;
+	private PermissionRepository permissionRepository;
 	
 	@Autowired
-	UserRepository userRepository;
+	private UserRepository userRepository;
 	
 	@Value("${ADMIN_USERNAME}")
 	private String adminUsername;
@@ -58,6 +58,8 @@ public class DataInitializer implements CommandLineRunner {
 			
 			User adminUser = new User(adminUsername,"admin@example.com",encoder.encode(adminPassword));
 			adminUser.setRole(superAdmin);
+			
+			userRepository.save(adminUser);
 		}
 	}
 	
