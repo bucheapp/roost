@@ -71,7 +71,7 @@ public class DataInitializer implements CommandLineRunner {
 		roleRepository.save(admin);
 		
 		Role user = getOrCreateRole("USER");
-		user.setPermissions(Set.of(createCommunity));
+		user.setPermissions(Set.of(createCommunity,createChat));
 		roleRepository.save(user);
 		
 		if (userRepository.findByName(adminUsername).isEmpty()) {

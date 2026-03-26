@@ -66,6 +66,7 @@ public class CommunityServiceImpl implements CommunityService {
 		Community newCommunity = new Community();
 		newCommunity.setName(name);
 		newCommunity.setType(type);
+		newCommunity.setState(CommunityState.ACTIVE);
 		newCommunity.setPublicId(snowflake.nextId());
 		newCommunity.setCreatedAt(now);
 		newCommunity.setCreator(user);

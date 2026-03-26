@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.github.bucheapp.roost.dto.request.RoomRequest;
@@ -21,12 +20,11 @@ import io.github.bucheapp.roost.security.CustomUserDetails;
 import io.github.bucheapp.roost.services.RoomService;
 
 @RestController
-@RequestMapping("api/communities/{publicId}/rooms")
 public class RoomController {
 	@Autowired
 	private RoomService roomService;
 	
-	@GetMapping
+	@GetMapping("api/rooms/{publicId}")
 	public ResponseEntity<RoomResponse> getRoom(
 			@PathVariable long publicId
 			) {
@@ -38,7 +36,7 @@ public class RoomController {
 	}
 	
 	@PreAuthorize("hasAuthority('CREATE_ROOM')")
-	@PostMapping
+	@PostMapping("api/communities/{publicId}/rooms")
 	public ResponseEntity<RoomResponse> createRoom(
 			@PathVariable long publicId,
 			@RequestBody RoomRequest req,
@@ -55,7 +53,7 @@ public class RoomController {
 	}
 	
 	@PreAuthorize("hasAuthority('UPDATE_ROOM')")
-	@PatchMapping
+	@PatchMapping("api/rooms/{publicId}")
 	public ResponseEntity<RoomResponse> updateRoom(
 			@PathVariable long publicId,
 			@RequestBody RoomUpdateRequest req
@@ -68,7 +66,7 @@ public class RoomController {
 	}
 	
 	@PreAuthorize("hasAuthority('DELETE_ROOM')")
-	@DeleteMapping
+	@DeleteMapping("api/rooms/{publicId}")
 	public ResponseEntity<Void> deleteRoom(
 			@PathVariable long publicId
 			) {

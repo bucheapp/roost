@@ -12,15 +12,19 @@ public class CommunityResponse {
 	private CommunityType type;
 	private CommunityState state;
 	private Set<CommunityProperty> properties;
+	private long publicId;
 	private LocalDateTime createdAt;
 	private LocalDateTime archivedAt;
+	private String name;
 	
 	public CommunityResponse(Community community) {
 		this.type = community.getType();
 		this.state = community.getState();
 		this.properties = community.getProperties();
+		this.publicId = community.getPublicId();
 		this.createdAt = community.getCreatedAt();
 		this.archivedAt = community.getArchivedAt();
+		this.name = community.getName();
 	}
 
 	public CommunityType getType() {
@@ -47,6 +51,14 @@ public class CommunityResponse {
 		this.properties = properties;
 	}
 
+	public long getPublicId() {
+		return publicId;
+	}
+
+	public void setPublicId(long publicId) {
+		this.publicId = publicId;
+	}
+
 	public LocalDateTime getCreatedAt() {
 		return createdAt;
 	}
@@ -61,5 +73,13 @@ public class CommunityResponse {
 
 	public void setArchivedAt(LocalDateTime archivedAt) {
 		this.archivedAt = archivedAt;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 }

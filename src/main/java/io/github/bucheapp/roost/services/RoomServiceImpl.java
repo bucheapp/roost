@@ -10,8 +10,10 @@ import org.springframework.stereotype.Service;
 
 import io.github.bucheapp.roost.dto.request.RoomRequest;
 import io.github.bucheapp.roost.dto.request.RoomUpdateRequest;
+import io.github.bucheapp.roost.models.Community;
 import io.github.bucheapp.roost.models.Room;
 import io.github.bucheapp.roost.models.User;
+import io.github.bucheapp.roost.repositories.CommunityRepository;
 import io.github.bucheapp.roost.repositories.RoomRepository;
 import io.github.bucheapp.roost.repositories.UserRepository;
 import io.github.bucheapp.roost.util.Snowflake;
@@ -23,6 +25,9 @@ public class RoomServiceImpl implements RoomService {
 	
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private CommunityRepository communityRepository;
 	
 	@Autowired
 	private WorkerIdProvider workerIdProvider;
@@ -41,8 +46,11 @@ public class RoomServiceImpl implements RoomService {
 	public Room createRoom(long id,long publicId, RoomRequest req) {
 		String name = req.getName();
 		
-		User user = userRepository.findByPublicId(publicId)
+		User user = userRepository.findById(id)
 				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+		
+		Community community = communityRepository.findByPublicId(publicId)
+				.orElseThrow(() -> new RuntimeException("コミュニティが見つかりません"));
 		
 		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
 		LocalDateTime now = LocalDateTime.now();
@@ -52,6 +60,7 @@ public class RoomServiceImpl implements RoomService {
 		room.setCreatedAt(now);
 		room.setPublicId(snowflake.nextId());
 		room.setCreator(user);
+		room.setCommunity(community);
 		
 		return roomRepository.save(room);
 	}

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.github.bucheapp.roost.dto.request.LoginRequest;
 import io.github.bucheapp.roost.dto.request.SignupRequest;
 import io.github.bucheapp.roost.dto.response.LoginResponse;
+import io.github.bucheapp.roost.dto.response.RefreshResponse;
 import io.github.bucheapp.roost.dto.response.SignupResponse;
 import io.github.bucheapp.roost.services.UserService;
 
@@ -77,9 +78,11 @@ public class AuthController {
 	}
 	
 	@GetMapping("/refresh")
-	public ResponseEntity<String> refresh(@CookieValue String refreshToken) {
+	public ResponseEntity<RefreshResponse> refresh(@CookieValue String refreshToken) {
 		String accessToken = userService.refresh(refreshToken);
+		
+		RefreshResponse refreshResponse = new RefreshResponse(accessToken);
 
-		return ResponseEntity.ok(accessToken);
+		return ResponseEntity.ok(refreshResponse);
 	}
 }
