@@ -4,8 +4,11 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.github.bucheapp.roost.dto.request.LoginRequest;
 import io.github.bucheapp.roost.dto.request.SignupRequest;
 import io.github.bucheapp.roost.dto.response.LoginResponse;
+import io.github.bucheapp.roost.dto.response.RefreshResponse;
 import io.github.bucheapp.roost.dto.response.SignupResponse;
 import io.github.bucheapp.roost.services.UserService;
 
@@ -60,14 +64,25 @@ public class AuthController {
 	@PostMapping("/logout")
 	public ResponseEntity<Void> logout(@CookieValue String refreshToken) {
 		userService.logout(refreshToken);
+		
+		ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
+				.httpOnly(true)
+				.secure(true)
+				.path("/")
+				.maxAge(0)
+				.build();
 
-		return ResponseEntity.ok().build();
+		return ResponseEntity.ok()
+				.header(HttpHeaders.SET_COOKIE, cookie.toString())
+				.build();
 	}
 	
-	@PostMapping("/refresh")
-	public ResponseEntity<String> refresh(@CookieValue String refreshToken) {
+	@GetMapping("/refresh")
+	public ResponseEntity<RefreshResponse> refresh(@CookieValue String refreshToken) {
 		String accessToken = userService.refresh(refreshToken);
+		
+		RefreshResponse refreshResponse = new RefreshResponse(accessToken);
 
-		return ResponseEntity.ok(accessToken);
+		return ResponseEntity.ok(refreshResponse);
 	}
 }

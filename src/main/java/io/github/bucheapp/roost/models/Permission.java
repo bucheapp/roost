@@ -6,7 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
-@Entity
+@Entity(name = "permissions")
 public class Permission {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)

@@ -3,7 +3,7 @@ package io.github.bucheapp.roost.dto.response;
 import java.util.Set;
 
 public class PermissionResponse {
-	Set<String> permissions;
+	private Set<String> permissions;
 	
 	public PermissionResponse(Set<String> permissions) {
 		this.permissions = permissions;

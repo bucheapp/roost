@@ -30,6 +30,8 @@ public class RefreshToken {
 	@Column
 	private Instant expiryDate;
 	
+	public RefreshToken() {};
+	
 	public RefreshToken(String token,User user, long millis) {
 		this.token = token;
 		this.user = user;

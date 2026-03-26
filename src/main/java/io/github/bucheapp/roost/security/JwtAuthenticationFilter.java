@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import io.github.bucheapp.roost.services.CustomUserDetailsService;
 import io.github.bucheapp.roost.services.JwtService;
 
 @Component
@@ -38,9 +39,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter  {
 			long id = jwtService.extractUserId(token);
 			
 			if(SecurityContextHolder.getContext().getAuthentication() == null) {
-				UserDetails userDetails = userDetailsService.loadUserByUsername(
-						String.valueOf(id)
-				);
+				UserDetails userDetails = ((CustomUserDetailsService) userDetailsService).loadUserById(id);
 				
 				if (jwtService.validateToken(token)) {
 					UsernamePasswordAuthenticationToken authToken =
@@ -54,5 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter  {
 				}
 			}
 		}
+		
+		filterChain.doFilter(request, response);
 	}
 }

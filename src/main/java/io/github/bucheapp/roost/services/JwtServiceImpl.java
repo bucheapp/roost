@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import io.github.bucheapp.roost.models.User;
+import io.github.bucheapp.roost.models.UserState;
 import io.github.bucheapp.roost.repositories.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -20,10 +21,10 @@ import io.jsonwebtoken.security.Keys;
 @Service
 public class JwtServiceImpl implements JwtService {
 	@Autowired
-	SecretKeyService secretKeyService;
+	private SecretKeyService secretKeyService;
 	
 	@Autowired
-	UserRepository userRepository;
+	private UserRepository userRepository;
 	
 	public final static long ACCESSTOKEN_VALIDITY = 60 * 60 * 1000;
 	public final static long REFRESHTOKEN_VALIDITY = 7 * 24 * 60 * 60 * 1000;
@@ -73,7 +74,7 @@ public class JwtServiceImpl implements JwtService {
 			User user = userRepository.findById(userId)
 					.orElseThrow(() -> new UsernameNotFoundException("ユーザが存在しません"));
 			
-			if (user.isFrozen()) {
+			if (user.getState() == UserState.FROZEN) {
 				return false;
 			}
 			

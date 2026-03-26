@@ -7,25 +7,28 @@ import io.github.bucheapp.roost.dto.request.CreateUserRequest;
 import io.github.bucheapp.roost.dto.request.LoginRequest;
 import io.github.bucheapp.roost.dto.request.PermissionRequest;
 import io.github.bucheapp.roost.dto.request.SignupRequest;
+import io.github.bucheapp.roost.dto.request.UpdateUserRequest;
+import io.github.bucheapp.roost.dto.request.UpdateUserStateRequest;
 import io.github.bucheapp.roost.dto.response.LoginResponse;
 import io.github.bucheapp.roost.dto.response.SignupResponse;
 import io.github.bucheapp.roost.models.Permission;
 import io.github.bucheapp.roost.models.User;
 
 public interface UserService {
+	User getCurrentUser();
+	User updateCurrentUser(UpdateUserRequest req);
+	void deleteCurrentUser();
+	User getUser(long targetPublicId);
+	void createUser(CreateUserRequest req);
+	void createAdminUser(CreateAdminUserRequest req);
+	User updateUserState(long targetPublicId,UpdateUserStateRequest req);
+	
 	SignupResponse register(SignupRequest req);
-	User getUserById(long id);
-	User getUserByPublicId(long publicId);
-	User updateEmailById(long id,String email);
-	User updatePasswordById(long id,String email);
-	void deleteUserById(long id);
 	LoginResponse login(LoginRequest req);
 	void logout(String refreshTokenText);
 	String refresh(String refreshTokenText);
-	void setFrozen(long publicId,boolean frozen);
-	void createUser(long id,CreateUserRequest req);
-	void createAdminUser(CreateAdminUserRequest req);
-	Set<Permission> getPermissions(long publicId);
-	void grantPermissions(long publicId,long id,PermissionRequest req);
-	void revokePermissions(long publicId,long id,PermissionRequest req);
+	
+	Set<Permission> getPermissions(long targetPublicId);
+	void grantPermissions(long targetPublicId,PermissionRequest req);
+	void revokePermissions(long targetPublicId,PermissionRequest req);
 }

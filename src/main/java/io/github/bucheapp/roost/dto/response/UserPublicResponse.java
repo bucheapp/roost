@@ -1,14 +1,15 @@
 package io.github.bucheapp.roost.dto.response;
 
 import io.github.bucheapp.roost.models.User;
+import io.github.bucheapp.roost.models.UserState;
 
 public class UserPublicResponse implements UserResponse {
 	private String name;
-	boolean frozen;
+	private UserState state;
 	
 	public UserPublicResponse(User user) {
 		this.name = user.getName();
-		this.frozen = user.isFrozen();
+		this.state = user.getState();
 	}
 
 	public String getName() {
@@ -19,11 +20,11 @@ public class UserPublicResponse implements UserResponse {
 		this.name = name;
 	}
 
-	public boolean isFrozen() {
-		return frozen;
+	public UserState getState() {
+		return state;
 	}
 
-	public void setFrozen(boolean frozen) {
-		this.frozen = frozen;
+	public void setState(UserState state) {
+		this.state = state;
 	}
 }

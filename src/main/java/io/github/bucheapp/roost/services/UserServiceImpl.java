@@ -1,5 +1,7 @@
 package io.github.bucheapp.roost.services;
 
+import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -15,6 +17,8 @@ import io.github.bucheapp.roost.dto.request.CreateUserRequest;
 import io.github.bucheapp.roost.dto.request.LoginRequest;
 import io.github.bucheapp.roost.dto.request.PermissionRequest;
 import io.github.bucheapp.roost.dto.request.SignupRequest;
+import io.github.bucheapp.roost.dto.request.UpdateUserRequest;
+import io.github.bucheapp.roost.dto.request.UpdateUserStateRequest;
 import io.github.bucheapp.roost.dto.response.LoginResponse;
 import io.github.bucheapp.roost.dto.response.SignupResponse;
 import io.github.bucheapp.roost.models.Permission;
@@ -24,6 +28,7 @@ import io.github.bucheapp.roost.repositories.PermissionRepository;
 import io.github.bucheapp.roost.repositories.RefreshTokenRepository;
 import io.github.bucheapp.roost.repositories.RoleRepository;
 import io.github.bucheapp.roost.repositories.UserRepository;
+import io.github.bucheapp.roost.security.AuthContext;
 import io.github.bucheapp.roost.util.Snowflake;
 
 @Service
@@ -46,140 +51,62 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private WorkerIdProvider workerIdProvider;
 	
-	@Value("${DATACENTER_ID}")
-	private String datacenterId;
+	@Autowired
+	private AuthContext authContext;
+	
+	@Value("${app.snowflake.datacenter-id}")
+	private long datacenterId;
 	
 	@Override
-	@Transactional
-	public SignupResponse register(SignupRequest req) {
-
-		String name = req.name;
-		String email = req.email;
-		String rawPassword = req.password;
-
-		if (userRepository.existsByEmail(email)) {
-			throw new RuntimeException("既に登録されています");
-		}
-
-		if (userRepository.existsByName(name)) {
-			throw new RuntimeException("既にその名前は存在します");
-		}
-
-		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-		String hashedPassword = encoder.encode(rawPassword);
-
-		User user = new User(name, email, hashedPassword);
-
-		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), Long.parseLong(datacenterId));
+	public User getCurrentUser() {
+		long userId = authContext.getCurrentUserId();
 		
-		user.setPublicId(snowflake.nextId());
-		user.setRole(roleRepository.findByName("USER")
-				.orElseThrow(() -> new RuntimeException("ロールが存在しません")));
-
-		User saved = userRepository.saveAndFlush(user);
-
-		String accessTokenText = jwtService.generateAccessToken(saved);
-		String refreshTokenText = jwtService.generateRefreshToken(saved);
-
-		RefreshToken refreshToken =
-				new RefreshToken(refreshTokenText, saved, JwtServiceImpl.REFRESHTOKEN_VALIDITY);
-
-		refreshTokenRepository.save(refreshToken);
-
-		return new SignupResponse(accessTokenText, refreshTokenText);
-	}
-	
-	public User getUserById(long id) {
-		return userRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
-	}
-	
-	public User getUserByPublicId(long publicId) {
-		return userRepository.findByPublicId(publicId)
+		return userRepository.findById(userId)
 				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
 	}
 	
 	@Override
 	@Transactional
-	public User updateEmailById(long id, String newEmail) {
-		User user = userRepository.findById(id)
+	public User updateCurrentUser(UpdateUserRequest req) {
+		long userId = authContext.getCurrentUserId();
+		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
-
-		user.setEmail(newEmail);
+		
+		if(req.getEmail() != null) {
+			user.setEmail(req.getEmail());
+		}
+		
+		if(req.getPassword() != null) {
+			BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+			String hashedPassword = encoder.encode(req.getPassword());
+			user.setPassword(hashedPassword);
+		}
+		
 		return userRepository.save(user);
 	}
 	
 	@Override
 	@Transactional
-	public User updatePasswordById(long id, String newPassword) {
-		User user = userRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
-
-		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-		String hashedPassword = encoder.encode(newPassword);
-
-		user.setPassword(hashedPassword);
-		return userRepository.save(user);
-	}
-	
-	@Override
-	@Transactional
-	public void deleteUserById(long id) {
-		User user = userRepository.findById(id)
+	public void deleteCurrentUser() {
+		long userId = authContext.getCurrentUserId();
+		
+		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
 
 		userRepository.delete(user);
 	}
 	
 	@Override
-	@Transactional
-	public void setFrozen(long publicId,boolean frozen) {
-		User user = userRepository.findByPublicId(publicId)
+	public User getUser(long publicId) {
+		return userRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
-		
-		user.setFrozen(frozen);
-
-		userRepository.save(user);
-	}
-  
-	@Override
-	public LoginResponse login(LoginRequest req) {
-		User user = userRepository.findByName(req.name)
-				.orElseThrow(() -> new RuntimeException("ユーザが存在しません"));
-
-		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-
-		if (!encoder.matches(req.password, user.getPassword())) {
-			throw new RuntimeException("パスワードが違います");
-		}
-
-		String accessTokenText = jwtService.generateAccessToken(user);
-		String refreshTokenText = jwtService.generateRefreshToken(user);
-
-		RefreshToken refreshToken =
-				new RefreshToken(refreshTokenText, user, JwtServiceImpl.REFRESHTOKEN_VALIDITY);
-
-		refreshTokenRepository.save(refreshToken);
-
-		return new LoginResponse(accessTokenText, refreshTokenText);
-	}
-  
-	@Override
-	public void logout(String refreshTokenText) {
-		refreshTokenRepository.deleteByToken(refreshTokenText);
-	}
-	
-	@Override
-	public String refresh(String refreshTokenText) {
-		RefreshToken refreshToken = refreshTokenRepository.findByToken(refreshTokenText)
-				.orElseThrow(() -> new RuntimeException("トークンが存在しない"));
-
-		return jwtService.generateAccessToken(refreshToken.getUser());
 	}
 	
 	@Override
 	@Transactional
-	public void createUser(long id,CreateUserRequest req) {
+	public void createUser(CreateUserRequest req) {
+		long userId = authContext.getCurrentUserId();
+		
 		String name = req.getName();
 		String email = req.getEmail();
 		String rawPassword = req.getPassword();
@@ -193,7 +120,7 @@ public class UserServiceImpl implements UserService {
 			throw new RuntimeException("既にその名前は存在します");
 		}
 		
-		User currentUser = userRepository.findById(id)
+		User currentUser = userRepository.findById(userId)
 				.orElseThrow(() -> new RuntimeException("ユーザが存在しません"));
 		
 		Set<String> creatorPermissions = currentUser.getPermissions()
@@ -201,14 +128,26 @@ public class UserServiceImpl implements UserService {
 				.map(Permission::getName)
 				.collect(Collectors.toSet());
 		
+		creatorPermissions.addAll(
+				Optional.ofNullable(currentUser.getRole())
+					.map(role -> role.getPermissions())
+					.orElse(Collections.emptySet())
+					.stream()
+					.map(Permission::getName)
+					.toList()
+			);
+		
 		if (!creatorPermissions.containsAll(requestedPermissions)) {
 			throw new RuntimeException("権限を付与できません");
 		}
 
 		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 		String hashedPassword = encoder.encode(rawPassword);
+		
+		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
 
 		User user = new User(name, email, hashedPassword);
+		user.setPublicId(snowflake.nextId());
 		
 		Set<Permission> permissions = requestedPermissions.stream()
 				.map(permissionName -> permissionRepository.findByName(permissionName)
@@ -236,11 +175,100 @@ public class UserServiceImpl implements UserService {
 		
 		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 		String hashedPassword = encoder.encode(rawPassword);
+		
+		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
 
 		User user = new User(name, email, hashedPassword);
 		user.setRole(roleRepository.findByName("ADMIN")
 				.orElseThrow(() -> new RuntimeException("ロールが存在しません")));
+		user.setPublicId(snowflake.nextId());
 		userRepository.save(user);
+	}
+	
+	@Override
+	@Transactional
+	public User updateUserState(long publicId,UpdateUserStateRequest req) {
+		User user = userRepository.findByPublicId(publicId)
+				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+		
+		user.setState(req.getState());
+		
+		return userRepository.save(user);
+	}
+	
+	@Override
+	@Transactional
+	public SignupResponse register(SignupRequest req) {
+		String name = req.getName();
+		String email = req.getEmail();
+		String rawPassword = req.getPassword();
+
+		if (userRepository.existsByEmail(email)) {
+			throw new RuntimeException("既に登録されています");
+		}
+
+		if (userRepository.existsByName(name)) {
+			throw new RuntimeException("既にその名前は存在します");
+		}
+
+		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+		String hashedPassword = encoder.encode(rawPassword);
+
+		User user = new User(name, email, hashedPassword);
+
+		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
+		
+		user.setPublicId(snowflake.nextId());
+		user.setRole(roleRepository.findByName("USER")
+				.orElseThrow(() -> new RuntimeException("ロールが存在しません")));
+
+		User saved = userRepository.saveAndFlush(user);
+
+		String accessTokenText = jwtService.generateAccessToken(saved);
+		String refreshTokenText = jwtService.generateRefreshToken(saved);
+
+		RefreshToken refreshToken =
+				new RefreshToken(refreshTokenText, saved, JwtServiceImpl.REFRESHTOKEN_VALIDITY);
+
+		refreshTokenRepository.save(refreshToken);
+
+		return new SignupResponse(accessTokenText, refreshTokenText);
+	}
+  
+	@Override
+	public LoginResponse login(LoginRequest req) {
+		User user = userRepository.findByName(req.getName())
+				.orElseThrow(() -> new RuntimeException("ユーザが存在しません"));
+
+		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+		if (!encoder.matches(req.getPassword(), user.getPassword())) {
+			throw new RuntimeException("パスワードが違います");
+		}
+
+		String accessTokenText = jwtService.generateAccessToken(user);
+		String refreshTokenText = jwtService.generateRefreshToken(user);
+
+		RefreshToken refreshToken =
+				new RefreshToken(refreshTokenText, user, JwtServiceImpl.REFRESHTOKEN_VALIDITY);
+
+		refreshTokenRepository.save(refreshToken);
+
+		return new LoginResponse(accessTokenText, refreshTokenText);
+	}
+  
+	@Override
+	@Transactional
+	public void logout(String refreshTokenText) {
+		refreshTokenRepository.deleteByToken(refreshTokenText);
+	}
+	
+	@Override
+	public String refresh(String refreshTokenText) {
+		RefreshToken refreshToken = refreshTokenRepository.findByToken(refreshTokenText)
+				.orElseThrow(() -> new RuntimeException("トークンが存在しない"));
+
+		return jwtService.generateAccessToken(refreshToken.getUser());
 	}
 	
 	@Override
@@ -252,8 +280,10 @@ public class UserServiceImpl implements UserService {
 	
 	@Override
 	@Transactional
-	public void grantPermissions(long id,long publicId,PermissionRequest req) {
-		User currentUser = userRepository.findById(id)
+	public void grantPermissions(long publicId,PermissionRequest req) {
+		long userId = authContext.getCurrentUserId();
+		
+		User currentUser = userRepository.findById(userId)
 				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
 		
 		User user = userRepository.findByPublicId(publicId)
@@ -265,6 +295,15 @@ public class UserServiceImpl implements UserService {
 				.stream()
 				.map(Permission::getName)
 				.collect(Collectors.toSet());
+		
+		currentUserPermissions.addAll(
+				Optional.ofNullable(currentUser.getRole())
+					.map(role -> role.getPermissions())
+					.orElse(Collections.emptySet())
+					.stream()
+					.map(Permission::getName)
+					.toList()
+			);
 		
 		if (!currentUserPermissions.containsAll(requestedPermissions)) {
 			throw new RuntimeException("権限を付与できません");
@@ -286,8 +325,10 @@ public class UserServiceImpl implements UserService {
 	
 	@Override
 	@Transactional
-	public void revokePermissions(long id,long publicId,PermissionRequest req) {
-		User currentUser = userRepository.findById(id)
+	public void revokePermissions(long publicId,PermissionRequest req) {
+		long userId = authContext.getCurrentUserId();
+		
+		User currentUser = userRepository.findById(userId)
 				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
 		
 		User user = userRepository.findByPublicId(publicId)
@@ -299,6 +340,15 @@ public class UserServiceImpl implements UserService {
 				.stream()
 				.map(Permission::getName)
 				.collect(Collectors.toSet());
+		
+		currentUserPermissions.addAll(
+				Optional.ofNullable(currentUser.getRole())
+					.map(role -> role.getPermissions())
+					.orElse(Collections.emptySet())
+					.stream()
+					.map(Permission::getName)
+					.toList()
+			);
 		
 		if (!currentUserPermissions.containsAll(requestedPermissions)) {
 			throw new RuntimeException("権限を剥奪できません");

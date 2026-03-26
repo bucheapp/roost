@@ -36,7 +36,7 @@ public class User {
 	private String password;
 	
 	@Column
-	private boolean frozen;
+	UserState state;
 	
 	@ManyToOne
 	@JoinColumn(name = "role_id")
@@ -49,6 +49,8 @@ public class User {
 		inverseJoinColumns = @JoinColumn(name = "permission_id")
 	)
 	private Set<Permission> permissions = new HashSet<>();
+	
+	public User() {}
 	
 	public User(String name,String email,String password) {
 		this.name = name;
@@ -95,13 +97,13 @@ public class User {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-
-	public boolean isFrozen() {
-		return frozen;
+	
+	public UserState getState() {
+		return state;
 	}
 
-	public void setFrozen(boolean frozen) {
-		this.frozen = frozen;
+	public void setState(UserState state) {
+		this.state = state;
 	}
 
 	public Role getRole() {
