@@ -5,7 +5,7 @@ import java.util.Set;
 
 import io.github.bucheapp.roost.models.CommunityProperty;
 
-public class CommunityPropertyUpdateRequest {
+public class UpdateCommunityPropertyRequest {
 	private Set<CommunityProperty> properties = new HashSet<>();
 
 	public Set<CommunityProperty> getProperties() {

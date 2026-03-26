@@ -1,6 +1,6 @@
 package io.github.bucheapp.roost.dto.request;
 
-public class RoomUpdateRequest {
+public class UpdateRoomRequest {
 	String name;
 
 	public String getName() {

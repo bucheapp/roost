@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 import io.github.bucheapp.roost.models.Gender;
 
-public class ProfileUpdateRequest {
+public class UpdateProfileRequest {
 	private String bio;
 	private String iconUrl;
 	private Gender gender;

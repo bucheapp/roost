@@ -2,7 +2,7 @@ package io.github.bucheapp.roost.dto.request;
 
 import io.github.bucheapp.roost.models.ChatType;
 
-public class ChatUpdateRequest {
+public class UpdateChatRequest {
 	private String content;
 	private ChatType type;
 	public String getContent() {

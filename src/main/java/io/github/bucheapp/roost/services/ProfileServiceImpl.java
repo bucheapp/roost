@@ -5,11 +5,12 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import io.github.bucheapp.roost.dto.request.ProfileUpdateRequest;
+import io.github.bucheapp.roost.dto.request.UpdateProfileRequest;
 import io.github.bucheapp.roost.models.Profile;
 import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.repositories.ProfileRepository;
 import io.github.bucheapp.roost.repositories.UserRepository;
+import io.github.bucheapp.roost.security.AuthContext;
 
 @Service
 public class ProfileServiceImpl implements ProfileService {
@@ -18,15 +19,20 @@ public class ProfileServiceImpl implements ProfileService {
 	
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private AuthContext authContext;
 
 	@Override
-	public Profile getProfileByUserId(long userId) {
+	public Profile getCurrentUserProfile() {
+		long userId = authContext.getCurrentUserId();
+		
 		return profileRepository.findByUserId(userId)
 				.orElseThrow(() -> new RuntimeException("プロフィールが存在しません"));
 	}
 
 	@Override
-	public Profile getProfileByUserPublicId(long publicId) {
+	public Profile getProfile(long publicId) {
 		User user = userRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new RuntimeException("ユーザが存在しません"));
 
@@ -36,18 +42,20 @@ public class ProfileServiceImpl implements ProfileService {
 
 	@Override
 	@Transactional
-	public Profile updateProfileByUserId(long userId, ProfileUpdateRequest updateRequest) {
+	public Profile updateCurrentUserProfile(UpdateProfileRequest req) {
+		long userId = authContext.getCurrentUserId();
+		
 		Profile profile = profileRepository.findByUserId(userId)
 				.orElseThrow(() -> new RuntimeException("プロフィールが存在しません"));
 
-		if (updateRequest.getBio() != null) profile.setBio(updateRequest.getBio());
-		if (updateRequest.getIconUrl() != null) profile.setIconUrl(updateRequest.getIconUrl());
-		if (updateRequest.getGender() != null) profile.setGender(updateRequest.getGender());
-		if (updateRequest.getDateOfBirth() != null) profile.setDateOfBirth(updateRequest.getDateOfBirth());
-		if (updateRequest.getPhoneNumber() != null) profile.setPhoneNumber(updateRequest.getPhoneNumber());
-		if (updateRequest.getAddress() != null) profile.setAddress(updateRequest.getAddress());
-		if (updateRequest.getGithubUrl() != null) profile.setGithubUrl(updateRequest.getGithubUrl());
-		if (updateRequest.getCreatedAt() != null) profile.setCreatedAt(updateRequest.getCreatedAt());
+		if (req.getBio() != null) profile.setBio(req.getBio());
+		if (req.getIconUrl() != null) profile.setIconUrl(req.getIconUrl());
+		if (req.getGender() != null) profile.setGender(req.getGender());
+		if (req.getDateOfBirth() != null) profile.setDateOfBirth(req.getDateOfBirth());
+		if (req.getPhoneNumber() != null) profile.setPhoneNumber(req.getPhoneNumber());
+		if (req.getAddress() != null) profile.setAddress(req.getAddress());
+		if (req.getGithubUrl() != null) profile.setGithubUrl(req.getGithubUrl());
+		if (req.getCreatedAt() != null) profile.setCreatedAt(req.getCreatedAt());
 
 		return profileRepository.save(profile);
 	}

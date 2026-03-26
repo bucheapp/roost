@@ -9,13 +9,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import io.github.bucheapp.roost.dto.request.RoomRequest;
-import io.github.bucheapp.roost.dto.request.RoomUpdateRequest;
+import io.github.bucheapp.roost.dto.request.UpdateRoomRequest;
 import io.github.bucheapp.roost.models.Community;
 import io.github.bucheapp.roost.models.Room;
 import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.repositories.CommunityRepository;
 import io.github.bucheapp.roost.repositories.RoomRepository;
 import io.github.bucheapp.roost.repositories.UserRepository;
+import io.github.bucheapp.roost.security.AuthContext;
 import io.github.bucheapp.roost.util.Snowflake;
 
 @Service
@@ -32,21 +33,25 @@ public class RoomServiceImpl implements RoomService {
 	@Autowired
 	private WorkerIdProvider workerIdProvider;
 	
+	@Autowired
+	private AuthContext authContext;
+	
 	@Value("${app.snowflake.datacenter-id}")
 	private long datacenterId;
 	
 	@Override
-	public Room getRoomByPublicId(long publicId) {
+	public Room getRoom(long publicId) {
 		return roomRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new RuntimeException("ルームが見つかりません"));
 	}
 
 	@Override
 	@Transactional
-	public Room createRoom(long id,long publicId, RoomRequest req) {
+	public Room createRoom(long publicId, RoomRequest req) {
+		long userId = authContext.getCurrentUserId();
 		String name = req.getName();
 		
-		User user = userRepository.findById(id)
+		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
 		
 		Community community = communityRepository.findByPublicId(publicId)
@@ -67,7 +72,7 @@ public class RoomServiceImpl implements RoomService {
 
 	@Override
 	@Transactional
-	public Room updateRoomByPublicId(long publicId, RoomUpdateRequest req) {
+	public Room updateRoom(long publicId, UpdateRoomRequest req) {
 		String name = req.getName();
 		Room room = roomRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new RuntimeException("ルームが見つかりません"));
@@ -82,7 +87,7 @@ public class RoomServiceImpl implements RoomService {
 
 	@Override
 	@Transactional
-	public void deleteRoomByPublicId(long publicId) {
+	public void deleteRoom(long publicId) {
 		Room room = roomRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new RuntimeException("ルームが見つかりません"));
 		

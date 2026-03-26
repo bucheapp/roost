@@ -2,7 +2,7 @@ package io.github.bucheapp.roost.dto.request;
 
 import io.github.bucheapp.roost.models.CommunityState;
 
-public class CommunityStateUpdateRequest {
+public class UpdateCommunityStateRequest {
 	private CommunityState state;
 
 	public CommunityState getState() {

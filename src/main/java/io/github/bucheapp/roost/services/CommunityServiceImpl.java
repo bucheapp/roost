@@ -9,16 +9,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import io.github.bucheapp.roost.dto.request.CommunityPropertyUpdateRequest;
 import io.github.bucheapp.roost.dto.request.CommunityRequest;
-import io.github.bucheapp.roost.dto.request.CommunityStateUpdateRequest;
-import io.github.bucheapp.roost.dto.request.CommunityUpdateRequest;
+import io.github.bucheapp.roost.dto.request.UpdateCommunityPropertyRequest;
+import io.github.bucheapp.roost.dto.request.UpdateCommunityRequest;
+import io.github.bucheapp.roost.dto.request.UpdateCommunityStateRequest;
 import io.github.bucheapp.roost.models.Community;
 import io.github.bucheapp.roost.models.CommunityState;
 import io.github.bucheapp.roost.models.CommunityType;
 import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.repositories.CommunityRepository;
 import io.github.bucheapp.roost.repositories.UserRepository;
+import io.github.bucheapp.roost.security.AuthContext;
 import io.github.bucheapp.roost.util.Snowflake;
 
 @Service
@@ -32,18 +33,23 @@ public class CommunityServiceImpl implements CommunityService {
 	@Autowired
 	private WorkerIdProvider workerIdProvider;
 	
+	@Autowired
+	private AuthContext authContext;
+	
 	@Value("${app.snowflake.datacenter-id}")
 	private long datacenterId;
 	
 	@Override
-	public Community getCommunityByPublicId(long publicId) {
+	public Community getCommunity(long publicId) {
 		return communityRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new RuntimeException("コミュニティが見つかりません"));
 	}
 
 	@Override
 	@Transactional
-	public Community createCommunity(long id, CommunityRequest req) {
+	public Community createCommunity(CommunityRequest req) {
+		long userId = authContext.getCurrentUserId();
+		
 		String name = req.getName();
 		CommunityType type = req.getType();
 		
@@ -58,7 +64,7 @@ public class CommunityServiceImpl implements CommunityService {
 		
 		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
 		
-		User user = userRepository.findById(id)
+		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
 		
 		LocalDateTime now = LocalDateTime.now();
@@ -76,7 +82,7 @@ public class CommunityServiceImpl implements CommunityService {
 
 	@Override
 	@Transactional
-	public Community updateCommunityByPublicId(long publicId, CommunityUpdateRequest req) {
+	public Community updateCommunity(long publicId, UpdateCommunityRequest req) {
 		String name = req.getName();
 		CommunityType type = req.getType();
 		
@@ -94,7 +100,7 @@ public class CommunityServiceImpl implements CommunityService {
 
 	@Override
 	@Transactional
-	public Community updateCommunityStateByPublicId(long publicId, CommunityStateUpdateRequest req) {
+	public Community updateCommunityState(long publicId, UpdateCommunityStateRequest req) {
 		Community community = communityRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new RuntimeException("コミュニティが見つかりません"));
 		
@@ -107,7 +113,7 @@ public class CommunityServiceImpl implements CommunityService {
 
 	@Override
 	@Transactional
-	public Community updateCommunityPropertyByPublicId(long publicId, CommunityPropertyUpdateRequest req) {
+	public Community updateCommunityProperty(long publicId, UpdateCommunityPropertyRequest req) {
 		Community community = communityRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new RuntimeException("コミュニティが見つかりません"));
 		

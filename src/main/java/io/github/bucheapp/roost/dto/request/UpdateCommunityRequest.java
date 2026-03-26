@@ -2,7 +2,7 @@ package io.github.bucheapp.roost.dto.request;
 
 import io.github.bucheapp.roost.models.CommunityType;
 
-public class CommunityUpdateRequest {
+public class UpdateCommunityRequest {
 	private String name;
 	private CommunityType type;
 	

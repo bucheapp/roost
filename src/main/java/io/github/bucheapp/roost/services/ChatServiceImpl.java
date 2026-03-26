@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import io.github.bucheapp.roost.dto.request.ChatRequest;
-import io.github.bucheapp.roost.dto.request.ChatUpdateRequest;
+import io.github.bucheapp.roost.dto.request.UpdateChatRequest;
 import io.github.bucheapp.roost.models.Chat;
 import io.github.bucheapp.roost.models.ChatType;
 import io.github.bucheapp.roost.models.Room;
@@ -17,6 +17,7 @@ import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.repositories.ChatRepository;
 import io.github.bucheapp.roost.repositories.RoomRepository;
 import io.github.bucheapp.roost.repositories.UserRepository;
+import io.github.bucheapp.roost.security.AuthContext;
 import io.github.bucheapp.roost.util.Snowflake;
 
 @Service
@@ -31,24 +32,28 @@ public class ChatServiceImpl implements ChatService {
 	private RoomRepository roomRepository;
 	
 	@Autowired
+	private AuthContext authContext;
+	
+	@Autowired
 	private WorkerIdProvider workerIdProvider;
 	
 	@Value("${app.snowflake.datacenter-id}")
 	private long datacenterId;
 	
 	@Override
-	public Chat getChatByPublicId(long publicId) {
+	public Chat getChat(long publicId) {
 		return chatRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new RuntimeException("チャットが見つかりません"));
 	}
 
 	@Override
 	@Transactional
-	public Chat createChat(long id,long publicId, ChatRequest req) {
+	public Chat createChat(long publicId, ChatRequest req) {
+		long userId = authContext.getCurrentUserId();
 		String content = req.getContent();
 		ChatType type = req.getType();
 		
-		User user = userRepository.findById(id)
+		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
 		
 		Room room = roomRepository.findByPublicId(publicId)
@@ -70,7 +75,7 @@ public class ChatServiceImpl implements ChatService {
 
 	@Override
 	@Transactional
-	public Chat updateChatByPublicId(long publicId, ChatUpdateRequest req) {
+	public Chat updateChat(long publicId, UpdateChatRequest req) {
 		String content = req.getContent();
 		
 		LocalDateTime now = LocalDateTime.now();
@@ -86,7 +91,7 @@ public class ChatServiceImpl implements ChatService {
 
 	@Override
 	@Transactional
-	public void deleteChatByPublicId(long publicId) {
+	public void deleteChat(long publicId) {
 		Chat chat = chatRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new RuntimeException("チャットが見つかりません"));
 		

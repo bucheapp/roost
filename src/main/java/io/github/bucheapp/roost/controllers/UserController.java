@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -19,16 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
 import io.github.bucheapp.roost.dto.request.CreateAdminUserRequest;
 import io.github.bucheapp.roost.dto.request.CreateUserRequest;
 import io.github.bucheapp.roost.dto.request.PermissionRequest;
-import io.github.bucheapp.roost.dto.request.UpdateEmailRequest;
-import io.github.bucheapp.roost.dto.request.UpdatePasswordRequest;
-import io.github.bucheapp.roost.dto.request.UserStateUpdateRequest;
+import io.github.bucheapp.roost.dto.request.UpdateUserRequest;
+import io.github.bucheapp.roost.dto.request.UpdateUserStateRequest;
 import io.github.bucheapp.roost.dto.response.PermissionResponse;
 import io.github.bucheapp.roost.dto.response.UserPrivateResponse;
 import io.github.bucheapp.roost.dto.response.UserPublicResponse;
 import io.github.bucheapp.roost.dto.response.UserResponse;
 import io.github.bucheapp.roost.models.Permission;
 import io.github.bucheapp.roost.models.User;
-import io.github.bucheapp.roost.security.CustomUserDetails;
 import io.github.bucheapp.roost.services.UserService;
 
 @RestController
@@ -41,52 +38,24 @@ public class UserController {
 	public ResponseEntity<UserResponse> getUser(
 			@PathVariable long publicId
 			) {
-		User user = userService.getUserByPublicId(publicId);
+		User user = userService.getUser(publicId);
 		UserPublicResponse userResponse = new UserPublicResponse(user);
 		
 		return ResponseEntity.ok(userResponse);
 	}
 	
 	@GetMapping("/me")
-	public ResponseEntity<UserPrivateResponse> getMe(
-			Authentication authentication) {
-
-		CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-		long id = userDetails.getId();
-
-		User user = userService.getUserById(id);
+	public ResponseEntity<UserPrivateResponse> getMe() {
+		User user = userService.getCurrentUser();
 		UserPrivateResponse userResponse = new UserPrivateResponse(user);
 		
 		return ResponseEntity.ok(userResponse);
 	}
 	
-	@PatchMapping("/me/email")
-	public ResponseEntity<UserResponse> updateEmail(
-			Authentication authentication,
-			@RequestBody UpdateEmailRequest updateEmailRequest) {
-
-		CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-		long id = userDetails.getId();
-		
-		String newEmail = updateEmailRequest.getEmail();
-		User user = userService.updateEmailById(id, newEmail);
-		
-		UserPrivateResponse userResponse = new UserPrivateResponse(user);
-
-		return ResponseEntity.ok(userResponse);
-	}
-	
-	@PatchMapping("/me/password")
-	public ResponseEntity<UserResponse> updatePassword(
-			Authentication authentication,
-			@RequestBody UpdatePasswordRequest updatePasswordRequest) {
-
-		CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-		long id = userDetails.getId();
-		
-		String newPassword = updatePasswordRequest.getPassword();
-
-		User user = userService.updatePasswordById(id, newPassword);
+	@PatchMapping("/me")
+	public ResponseEntity<UserResponse> updateUser(
+			@RequestBody UpdateUserRequest req) {
+		User user = userService.updateCurrentUser(req);
 		
 		UserPrivateResponse userResponse = new UserPrivateResponse(user);
 
@@ -94,27 +63,16 @@ public class UserController {
 	}
 	
 	@DeleteMapping("/me")
-	public ResponseEntity<Void> deleteUser(
-			Authentication authentication) {
-
-		CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-		long id = userDetails.getId();
-
-		userService.deleteUserById(id);
-
+	public ResponseEntity<Void> deleteUser() {
+		userService.deleteCurrentUser();
 		return ResponseEntity.noContent().build();
 	}
 	
 	@PreAuthorize("hasAuthority('CREATE_USER')")
 	@PostMapping
 	public ResponseEntity<Void> createUser(
-			@RequestBody CreateUserRequest req,
-			Authentication authentication) {
-		
-		CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-		long id = userDetails.getId();
-		
-		userService.createUser(id,req);
+			@RequestBody CreateUserRequest req) {
+		userService.createUser(req);
 		return ResponseEntity.noContent().build();
 	}
 	
@@ -143,13 +101,9 @@ public class UserController {
 	@PostMapping("/{publicId}/permissions")
 	public ResponseEntity<Void> grantPermissions(
 		@PathVariable long publicId,
-		@RequestBody PermissionRequest req,
-		Authentication authentication) {
+		@RequestBody PermissionRequest req) {
 		
-		CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-		long id = userDetails.getId();
-		
-		userService.grantPermissions(id,publicId, req);
+		userService.grantPermissions(publicId, req);
 		return ResponseEntity.noContent().build();
 	}
 	
@@ -157,21 +111,16 @@ public class UserController {
 	@DeleteMapping("/{publicId}/permissions")
 	public ResponseEntity<Void> revokePermissions(
 		@PathVariable long publicId,
-		@RequestBody PermissionRequest req,
-		Authentication authentication) {
-		
-		CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-		long id = userDetails.getId();
-		
-		userService.revokePermissions(id,publicId, req);
+		@RequestBody PermissionRequest req) {
+		userService.revokePermissions(publicId, req);
 		return ResponseEntity.noContent().build();
 	}
 	
 	@PreAuthorize("hasAuthority('UPDATE_USERSTATE')")
 	@PatchMapping("/{publicId}/state")
-	public ResponseEntity<UserPublicResponse> freezeUser(
+	public ResponseEntity<UserPublicResponse> updateUserState(
 			@PathVariable long publicId,
-			@RequestBody UserStateUpdateRequest req
+			@RequestBody UpdateUserStateRequest req
 			) {
 		User user = userService.updateUserState(publicId, req);
 		
