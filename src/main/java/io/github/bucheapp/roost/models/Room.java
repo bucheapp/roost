@@ -11,6 +11,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "rooms")
@@ -20,7 +24,10 @@ public class Room {
 	@Column
 	private long id;
 	
-	@Column
+	@Column(length = 10)
+	@NotBlank
+	@Size(min = 3,max = 10)
+	@Pattern(regexp = "^[\\p{L}]+$")
 	private String name;
 	
 	@Column(unique = true)
@@ -28,9 +35,11 @@ public class Room {
 	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "community_id", nullable = false)
+	@NotNull
 	private Community community;
 
 	@Column(updatable = false)
+	@NotNull
 	private LocalDateTime createdAt;
 	
 	@Column
@@ -38,6 +47,7 @@ public class Room {
 	
 	@ManyToOne
 	@JoinColumn(name = "creator_id")
+	@NotNull
 	private User creator;
 
 	public long getId() {

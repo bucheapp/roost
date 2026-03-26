@@ -1,5 +1,6 @@
 package io.github.bucheapp.roost.services;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
@@ -22,6 +23,7 @@ import io.github.bucheapp.roost.dto.request.UpdateUserStateRequest;
 import io.github.bucheapp.roost.dto.response.LoginResponse;
 import io.github.bucheapp.roost.dto.response.SignupResponse;
 import io.github.bucheapp.roost.models.Permission;
+import io.github.bucheapp.roost.models.Profile;
 import io.github.bucheapp.roost.models.RefreshToken;
 import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.repositories.PermissionRepository;
@@ -147,6 +149,9 @@ public class UserServiceImpl implements UserService {
 		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
 
 		User user = new User(name, email, hashedPassword);
+		Profile profile = new Profile();
+		profile.setCreatedAt(LocalDateTime.now());
+		
 		user.setPublicId(snowflake.nextId());
 		
 		Set<Permission> permissions = requestedPermissions.stream()
@@ -181,6 +186,10 @@ public class UserServiceImpl implements UserService {
 		User user = new User(name, email, hashedPassword);
 		user.setRole(roleRepository.findByName("ADMIN")
 				.orElseThrow(() -> new RuntimeException("ロールが存在しません")));
+		
+		Profile profile = new Profile();
+		profile.setCreatedAt(LocalDateTime.now());
+		
 		user.setPublicId(snowflake.nextId());
 		userRepository.save(user);
 	}
@@ -215,6 +224,11 @@ public class UserServiceImpl implements UserService {
 		String hashedPassword = encoder.encode(rawPassword);
 
 		User user = new User(name, email, hashedPassword);
+		Profile profile = new Profile();
+		profile.setCreatedAt(LocalDateTime.now());
+		
+		profile.setUser(user);
+		user.setProfile(profile);
 
 		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
 		

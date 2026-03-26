@@ -13,7 +13,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.validator.constraints.URL;
 
 @Entity
@@ -24,10 +29,11 @@ public class Profile {
 	@Column
 	private long id;
 	
-	@Column
+	@Column(length = 300)
+	@Size(max = 300)
 	private String bio;
 	
-	@Column
+	@Column(length = 500)
 	private String iconUrl;
 	
 	@Column
@@ -37,20 +43,26 @@ public class Profile {
 	@Column
 	private LocalDate dateOfBirth;
 	
-	@Column
+	@Column(length = 30)
+	@Size(max = 30)
+	@Pattern(regexp = "^[0-9+\\-() ]+$")
 	private String phoneNumber;
 	
-	@Column
+	@Column(length = 255)
+	@Size(max = 255)
 	private String address;
 	
 	@URL(protocol = "https", host = "github.com")
 	private String githubUrl;
 	
 	@Column(updatable = false)
+	@NotNull
 	private LocalDateTime createdAt;
 	
 	@OneToOne
 	@JoinColumn(name = "user_id")
+	@NotNull
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	private User user;
 
 	public long getId() {
@@ -123,5 +135,13 @@ public class Profile {
 
 	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
+	}
+
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
 	}
 }

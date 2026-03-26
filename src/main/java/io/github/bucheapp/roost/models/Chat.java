@@ -13,6 +13,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "chats")
@@ -22,7 +25,9 @@ public class Chat {
 	@Column
 	private long id;
 	
-	@Column
+	@Column(length = 100)
+	@NotBlank
+	@Size(min = 1,max = 100)
 	private String content;
 	
 	@Column
@@ -34,9 +39,11 @@ public class Chat {
 	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "room_id", nullable = false)
+	@NotNull
 	private Room room;
 
 	@Column(updatable = false)
+	@NotNull
 	private LocalDateTime createdAt;
 	
 	@Column
@@ -44,6 +51,7 @@ public class Chat {
 	
 	@ManyToOne
 	@JoinColumn(name = "creator_id")
+	@NotNull
 	private User creator;
 
 	public long getId() {
