@@ -21,6 +21,7 @@ import io.github.bucheapp.roost.dto.request.CreateUserRequest;
 import io.github.bucheapp.roost.dto.request.PermissionRequest;
 import io.github.bucheapp.roost.dto.request.UpdateEmailRequest;
 import io.github.bucheapp.roost.dto.request.UpdatePasswordRequest;
+import io.github.bucheapp.roost.dto.request.UserStateUpdateRequest;
 import io.github.bucheapp.roost.dto.response.PermissionResponse;
 import io.github.bucheapp.roost.dto.response.UserPrivateResponse;
 import io.github.bucheapp.roost.dto.response.UserPublicResponse;
@@ -166,21 +167,16 @@ public class UserController {
 		return ResponseEntity.noContent().build();
 	}
 	
-	@PreAuthorize("hasAuthority('FREEZE_USER')")
-	@PatchMapping("/{publicId}/freeze")
-	public ResponseEntity<Void> freezeUser(
-			@PathVariable long publicId
+	@PreAuthorize("hasAuthority('UPDATE_USERSTATE')")
+	@PatchMapping("/{publicId}/state")
+	public ResponseEntity<UserPublicResponse> freezeUser(
+			@PathVariable long publicId,
+			@RequestBody UserStateUpdateRequest req
 			) {
-		userService.setFrozen(publicId, true);
-		return ResponseEntity.noContent().build();
-	}
-	
-	@PreAuthorize("hasAuthority('FREEZE_USER')")
-	@PatchMapping("/{publicId}/unfreeze")
-	public ResponseEntity<Void> unfreezeUser(
-			@PathVariable long publicId
-			) {
-		userService.setFrozen(publicId, false);
-		return ResponseEntity.noContent().build();
+		User user = userService.updateUserState(publicId, req);
+		
+		UserPublicResponse userResponse = new UserPublicResponse(user);
+		
+		return ResponseEntity.ok(userResponse);
 	}
 }

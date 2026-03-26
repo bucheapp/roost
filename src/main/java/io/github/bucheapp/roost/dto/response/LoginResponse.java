@@ -1,8 +1,8 @@
 package io.github.bucheapp.roost.dto.response;
 
 public class LoginResponse {
-	public String accessToken;
-	public String refreshToken;
+	private String accessToken;
+	private String refreshToken;
 	
 	public LoginResponse(String accessToken,String refreshToken) {
 		this.accessToken = accessToken;

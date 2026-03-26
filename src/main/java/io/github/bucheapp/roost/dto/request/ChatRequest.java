@@ -1,5 +1,21 @@
 package io.github.bucheapp.roost.dto.request;
 
-public class ChatRequest {
+import io.github.bucheapp.roost.models.ChatType;
 
+public class ChatRequest {
+	private String content;
+	private ChatType type;
+	
+	public String getContent() {
+		return content;
+	}
+	public void setContent(String content) {
+		this.content = content;
+	}
+	public ChatType getType() {
+		return type;
+	}
+	public void setType(ChatType type) {
+		this.type = type;
+	}
 }

@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import io.github.bucheapp.roost.models.User;
+import io.github.bucheapp.roost.models.UserState;
 import io.github.bucheapp.roost.repositories.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -73,7 +74,7 @@ public class JwtServiceImpl implements JwtService {
 			User user = userRepository.findById(userId)
 					.orElseThrow(() -> new UsernameNotFoundException("ユーザが存在しません"));
 			
-			if (user.isFrozen()) {
+			if (user.getState() == UserState.FROZEN) {
 				return false;
 			}
 			

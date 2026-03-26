@@ -1,8 +1,8 @@
 package io.github.bucheapp.roost.dto.request;
 
 public class LoginRequest {
-	public String name;
-	public String password;
+	private String name;
+	private String password;
 	
 	public String getName() {
 		return name;

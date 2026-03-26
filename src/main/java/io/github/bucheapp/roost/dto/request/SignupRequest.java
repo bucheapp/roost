@@ -1,9 +1,9 @@
 package io.github.bucheapp.roost.dto.request;
 
 public class SignupRequest {
-	public String name;
-	public String email;
-	public String password;
+	private String name;
+	private String email;
+	private String password;
 	
 	public String getName() {
 		return name;

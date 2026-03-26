@@ -1,7 +1,7 @@
 package io.github.bucheapp.roost.models;
 
-public enum CommunityStatus {
+public enum CommunityProperty {
 	FIXED,
-	IPEN,
+	OPEN,
 	PERMANENT
 }

@@ -6,6 +6,7 @@ import io.github.bucheapp.roost.models.Room;
 
 public interface RoomService {
 	Room getRoomByPublicId(long publicId);
-	Room createRoom(long id,RoomRequest req);
+	Room createRoom(long id,long publicId,RoomRequest req);
 	Room updateRoomByPublicId(long publicId,RoomUpdateRequest req);
+	void deleteRoomByPublicId(long publicId);
 }

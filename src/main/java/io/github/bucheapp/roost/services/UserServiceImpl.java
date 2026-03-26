@@ -1,5 +1,7 @@
 package io.github.bucheapp.roost.services;
 
+import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -15,6 +17,7 @@ import io.github.bucheapp.roost.dto.request.CreateUserRequest;
 import io.github.bucheapp.roost.dto.request.LoginRequest;
 import io.github.bucheapp.roost.dto.request.PermissionRequest;
 import io.github.bucheapp.roost.dto.request.SignupRequest;
+import io.github.bucheapp.roost.dto.request.UserStateUpdateRequest;
 import io.github.bucheapp.roost.dto.response.LoginResponse;
 import io.github.bucheapp.roost.dto.response.SignupResponse;
 import io.github.bucheapp.roost.models.Permission;
@@ -46,16 +49,15 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private WorkerIdProvider workerIdProvider;
 	
-	@Value("${DATACENTER_ID}")
-	private String datacenterId;
+	@Value("${app.snowflake.datacenter-id}")
+	private long datacenterId;
 	
 	@Override
 	@Transactional
 	public SignupResponse register(SignupRequest req) {
-
-		String name = req.name;
-		String email = req.email;
-		String rawPassword = req.password;
+		String name = req.getName();
+		String email = req.getEmail();
+		String rawPassword = req.getPassword();
 
 		if (userRepository.existsByEmail(email)) {
 			throw new RuntimeException("既に登録されています");
@@ -70,7 +72,7 @@ public class UserServiceImpl implements UserService {
 
 		User user = new User(name, email, hashedPassword);
 
-		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), Long.parseLong(datacenterId));
+		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
 		
 		user.setPublicId(snowflake.nextId());
 		user.setRole(roleRepository.findByName("USER")
@@ -133,23 +135,23 @@ public class UserServiceImpl implements UserService {
 	
 	@Override
 	@Transactional
-	public void setFrozen(long publicId,boolean frozen) {
+	public User updateUserState(long publicId,UserStateUpdateRequest req) {
 		User user = userRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
 		
-		user.setFrozen(frozen);
-
-		userRepository.save(user);
+		user.setState(req.getState());
+		
+		return userRepository.save(user);
 	}
   
 	@Override
 	public LoginResponse login(LoginRequest req) {
-		User user = userRepository.findByName(req.name)
+		User user = userRepository.findByName(req.getName())
 				.orElseThrow(() -> new RuntimeException("ユーザが存在しません"));
 
 		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-		if (!encoder.matches(req.password, user.getPassword())) {
+		if (!encoder.matches(req.getPassword(), user.getPassword())) {
 			throw new RuntimeException("パスワードが違います");
 		}
 
@@ -165,6 +167,7 @@ public class UserServiceImpl implements UserService {
 	}
   
 	@Override
+	@Transactional
 	public void logout(String refreshTokenText) {
 		refreshTokenRepository.deleteByToken(refreshTokenText);
 	}
@@ -201,14 +204,26 @@ public class UserServiceImpl implements UserService {
 				.map(Permission::getName)
 				.collect(Collectors.toSet());
 		
+		creatorPermissions.addAll(
+				Optional.ofNullable(currentUser.getRole())
+					.map(role -> role.getPermissions())
+					.orElse(Collections.emptySet())
+					.stream()
+					.map(Permission::getName)
+					.toList()
+			);
+		
 		if (!creatorPermissions.containsAll(requestedPermissions)) {
 			throw new RuntimeException("権限を付与できません");
 		}
 
 		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 		String hashedPassword = encoder.encode(rawPassword);
+		
+		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
 
 		User user = new User(name, email, hashedPassword);
+		user.setPublicId(snowflake.nextId());
 		
 		Set<Permission> permissions = requestedPermissions.stream()
 				.map(permissionName -> permissionRepository.findByName(permissionName)
@@ -236,10 +251,13 @@ public class UserServiceImpl implements UserService {
 		
 		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 		String hashedPassword = encoder.encode(rawPassword);
+		
+		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
 
 		User user = new User(name, email, hashedPassword);
 		user.setRole(roleRepository.findByName("ADMIN")
 				.orElseThrow(() -> new RuntimeException("ロールが存在しません")));
+		user.setPublicId(snowflake.nextId());
 		userRepository.save(user);
 	}
 	
@@ -265,6 +283,15 @@ public class UserServiceImpl implements UserService {
 				.stream()
 				.map(Permission::getName)
 				.collect(Collectors.toSet());
+		
+		currentUserPermissions.addAll(
+				Optional.ofNullable(currentUser.getRole())
+					.map(role -> role.getPermissions())
+					.orElse(Collections.emptySet())
+					.stream()
+					.map(Permission::getName)
+					.toList()
+			);
 		
 		if (!currentUserPermissions.containsAll(requestedPermissions)) {
 			throw new RuntimeException("権限を付与できません");
@@ -299,6 +326,15 @@ public class UserServiceImpl implements UserService {
 				.stream()
 				.map(Permission::getName)
 				.collect(Collectors.toSet());
+		
+		currentUserPermissions.addAll(
+				Optional.ofNullable(currentUser.getRole())
+					.map(role -> role.getPermissions())
+					.orElse(Collections.emptySet())
+					.stream()
+					.map(Permission::getName)
+					.toList()
+			);
 		
 		if (!currentUserPermissions.containsAll(requestedPermissions)) {
 			throw new RuntimeException("権限を剥奪できません");

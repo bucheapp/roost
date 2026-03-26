@@ -32,17 +32,24 @@ public class Community {
 	@Enumerated(EnumType.STRING)
 	private CommunityType type;
 	
-	@ElementCollection(targetClass = CommunityStatus.class)
+	@Column
 	@Enumerated(EnumType.STRING)
-	@CollectionTable(name = "community_statuses", joinColumns = @JoinColumn(name = "community_id"))
-	@Column(name = "status")
-	private Set<CommunityStatus> statuses = new HashSet<>();
-    
+	private CommunityState state;
+	
+	@ElementCollection(targetClass = CommunityProperty.class)
+	@Enumerated(EnumType.STRING)
+	@CollectionTable(name = "community_properties", joinColumns = @JoinColumn(name = "community_id"))
+	@Column
+	private Set<CommunityProperty> properties = new HashSet<>();
+	
 	@Column(unique = true)
 	private long publicId;
 	
 	@Column(updatable = false)
 	private LocalDateTime createdAt;
+	
+	@Column
+	private LocalDateTime updatedAt;
 	
 	@Column(updatable = false)
 	private LocalDateTime archivedAt;
@@ -50,10 +57,84 @@ public class Community {
 	@ManyToOne
 	@JoinColumn(name = "creator_id")
 	private User creator;
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public CommunityType getType() {
+		return type;
+	}
+
+	public void setType(CommunityType type) {
+		this.type = type;
+	}
+
+	public CommunityState getState() {
+		return state;
+	}
+
+	public void setState(CommunityState state) {
+		this.state = state;
+	}
+
+	public Set<CommunityProperty> getProperties() {
+		return properties;
+	}
+
+	public void setProperties(Set<CommunityProperty> properties) {
+		this.properties = properties;
+	}
+
+	public long getPublicId() {
+		return publicId;
+	}
+
+	public void setPublicId(long publicId) {
+		this.publicId = publicId;
+	}
+
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
 	
-	@Column
-	boolean frozen;
-	
-	@Column
-	boolean archived;
+	public LocalDateTime getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(LocalDateTime updatedAt) {
+		this.updatedAt = updatedAt;
+	}
+
+	public LocalDateTime getArchivedAt() {
+		return archivedAt;
+	}
+
+	public void setArchivedAt(LocalDateTime archivedAt) {
+		this.archivedAt = archivedAt;
+	}
+
+	public User getCreator() {
+		return creator;
+	}
+
+	public void setCreator(User creator) {
+		this.creator = creator;
+	}
 }
