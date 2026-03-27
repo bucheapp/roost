@@ -13,6 +13,7 @@ import io.github.bucheapp.roost.models.Permission;
 import io.github.bucheapp.roost.models.Profile;
 import io.github.bucheapp.roost.models.Role;
 import io.github.bucheapp.roost.models.User;
+import io.github.bucheapp.roost.models.UserState;
 import io.github.bucheapp.roost.repositories.PermissionRepository;
 import io.github.bucheapp.roost.repositories.RoleRepository;
 import io.github.bucheapp.roost.repositories.UserRepository;
@@ -84,6 +85,7 @@ public class DataInitializer implements CommandLineRunner {
 			User adminUser = new User(adminUsername,"admin@example.com",encoder.encode(adminPassword));
 			adminUser.setRole(superAdmin);
 			adminUser.setPublicId(snowflake.nextId());
+			adminUser.setState(UserState.ACTIVE);
 			Profile profile = new Profile();
 			profile.setCreatedAt(LocalDateTime.now());
 			adminUser.setProfile(profile);

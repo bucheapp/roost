@@ -45,14 +45,13 @@ public class User {
 	@Email
 	private String email;
 	
-	@Column(length = 18)
+	@Column
 	@NotBlank
-	@Size(min = 8,max = 18)
-	@Pattern(regexp = "^[\\da-zA-Z_]*$")
 	private String password;
 	
 	@Column
 	@Enumerated(EnumType.STRING)
+	@NotNull
 	UserState state;
 	
 	@ManyToOne
