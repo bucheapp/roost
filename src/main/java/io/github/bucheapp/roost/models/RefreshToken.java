@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "refresh_token")
@@ -21,6 +22,7 @@ public class RefreshToken {
 	private long id;
 	
 	@Column
+	@NotBlank
 	private String token;
 	
 	@ManyToOne(fetch = FetchType.LAZY)

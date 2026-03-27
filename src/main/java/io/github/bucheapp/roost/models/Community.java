@@ -16,6 +16,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "communities")
@@ -25,7 +29,10 @@ public class Community {
 	@Column
 	private long id;
 	
-	@Column
+	@Column(length = 30)
+	@NotBlank
+	@Size(min = 3,max = 30)
+	@Pattern(regexp = "^[\\p{L}]+$")
 	private String name;
 	
 	@Column
@@ -40,12 +47,14 @@ public class Community {
 	@Enumerated(EnumType.STRING)
 	@CollectionTable(name = "community_properties", joinColumns = @JoinColumn(name = "community_id"))
 	@Column
+	@NotNull
 	private Set<CommunityProperty> properties = new HashSet<>();
 	
 	@Column(unique = true)
 	private long publicId;
 	
 	@Column(updatable = false)
+	@NotNull
 	private LocalDateTime createdAt;
 	
 	@Column
@@ -56,6 +65,7 @@ public class Community {
 	
 	@ManyToOne
 	@JoinColumn(name = "creator_id")
+	@NotNull
 	private User creator;
 
 	public long getId() {

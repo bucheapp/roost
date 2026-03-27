@@ -3,8 +3,11 @@ package io.github.bucheapp.roost.models;
 import java.util.HashSet;
 import java.util.Set;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,7 +16,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "users")
@@ -23,23 +32,31 @@ public class User {
 	@Column
 	private long id;
 	
-	@Column
+	@Column(length = 20)
+	@NotBlank
+	@Size(min = 3, max = 20)
+	@Pattern(regexp = "^[\\p{L}\\p{N}?!]+$")
 	private String name;
 	
 	@Column(unique = true)
 	private long publicId;
 	
 	@Column
+	@Email
 	private String email;
 	
 	@Column
+	@NotBlank
 	private String password;
 	
 	@Column
+	@Enumerated(EnumType.STRING)
+	@NotNull
 	UserState state;
 	
 	@ManyToOne
 	@JoinColumn(name = "role_id")
+	@NotNull
 	private Role role;
 
 	@ManyToMany(fetch = FetchType.EAGER)
@@ -48,7 +65,11 @@ public class User {
 		joinColumns = @JoinColumn(name = "user_id"),
 		inverseJoinColumns = @JoinColumn(name = "permission_id")
 	)
+	@NotNull
 	private Set<Permission> permissions = new HashSet<>();
+	
+	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Profile profile;
 	
 	public User() {}
 	
@@ -120,5 +141,13 @@ public class User {
 
 	public void setPermissions(Set<Permission> permissions) {
 		this.permissions = permissions;
+	}
+
+	public Profile getProfile() {
+		return profile;
+	}
+
+	public void setProfile(Profile profile) {
+		this.profile = profile;
 	}
 }

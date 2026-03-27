@@ -6,7 +6,9 @@ import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import io.github.bucheapp.roost.dto.request.RoomRequest;
 import io.github.bucheapp.roost.dto.request.UpdateRoomRequest;
@@ -42,7 +44,7 @@ public class RoomServiceImpl implements RoomService {
 	@Override
 	public Room getRoom(long publicId) {
 		return roomRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new RuntimeException("ルームが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found"));
 	}
 
 	@Override
@@ -52,10 +54,10 @@ public class RoomServiceImpl implements RoomService {
 		String name = req.getName();
 		
 		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 		
 		Community community = communityRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new RuntimeException("コミュニティが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Community not found"));
 		
 		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
 		LocalDateTime now = LocalDateTime.now();
@@ -75,7 +77,7 @@ public class RoomServiceImpl implements RoomService {
 	public Room updateRoom(long publicId, UpdateRoomRequest req) {
 		String name = req.getName();
 		Room room = roomRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new RuntimeException("ルームが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found"));
 		
 		LocalDateTime now = LocalDateTime.now();
 		
@@ -89,7 +91,7 @@ public class RoomServiceImpl implements RoomService {
 	@Transactional
 	public void deleteRoom(long publicId) {
 		Room room = roomRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new RuntimeException("ルームが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found"));
 		
 		roomRepository.delete(room);
 	}

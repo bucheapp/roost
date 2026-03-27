@@ -7,7 +7,9 @@ import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import io.github.bucheapp.roost.dto.request.CommunityRequest;
 import io.github.bucheapp.roost.dto.request.UpdateCommunityPropertyRequest;
@@ -42,7 +44,7 @@ public class CommunityServiceImpl implements CommunityService {
 	@Override
 	public Community getCommunity(long publicId) {
 		return communityRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new RuntimeException("コミュニティが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Community not found"));
 	}
 
 	@Override
@@ -57,7 +59,7 @@ public class CommunityServiceImpl implements CommunityService {
 		
 		for(Community community : communityList) {
 			if(community.getState() != CommunityState.ARCHIVED) {
-				new RuntimeException("同じ名前のコミュニティが既に存在しています");
+				new ResponseStatusException(HttpStatus.CONFLICT, "A community with that name already exists.");
 				break;
 			}
 		}
@@ -65,7 +67,7 @@ public class CommunityServiceImpl implements CommunityService {
 		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
 		
 		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 		
 		LocalDateTime now = LocalDateTime.now();
 		
@@ -87,7 +89,7 @@ public class CommunityServiceImpl implements CommunityService {
 		CommunityType type = req.getType();
 		
 		Community community = communityRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new RuntimeException("コミュニティが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Community not found"));
 		
 		LocalDateTime now = LocalDateTime.now();
 		
@@ -102,7 +104,7 @@ public class CommunityServiceImpl implements CommunityService {
 	@Transactional
 	public Community updateCommunityState(long publicId, UpdateCommunityStateRequest req) {
 		Community community = communityRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new RuntimeException("コミュニティが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Community not found"));
 		
 		LocalDateTime now = LocalDateTime.now();
 		community.setState(req.getState());
@@ -115,7 +117,7 @@ public class CommunityServiceImpl implements CommunityService {
 	@Transactional
 	public Community updateCommunityProperty(long publicId, UpdateCommunityPropertyRequest req) {
 		Community community = communityRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new RuntimeException("コミュニティが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Community not found"));
 		
 		LocalDateTime now = LocalDateTime.now();
 		community.setProperties(req.getProperties());
