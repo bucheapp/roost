@@ -10,8 +10,10 @@ import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import io.github.bucheapp.roost.dto.request.CreateAdminUserRequest;
 import io.github.bucheapp.roost.dto.request.CreateUserRequest;
@@ -64,7 +66,7 @@ public class UserServiceImpl implements UserService {
 		long userId = authContext.getCurrentUserId();
 		
 		return userRepository.findById(userId)
-				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 	}
 	
 	@Override
@@ -72,9 +74,13 @@ public class UserServiceImpl implements UserService {
 	public User updateCurrentUser(UpdateUserRequest req) {
 		long userId = authContext.getCurrentUserId();
 		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 		
 		if(req.getEmail() != null) {
+			if (userRepository.existsByEmail(req.getEmail())) {
+				throw new ResponseStatusException(HttpStatus.CONFLICT, "This email address is already in use");
+			}
+			
 			user.setEmail(req.getEmail());
 		}
 		
@@ -93,7 +99,7 @@ public class UserServiceImpl implements UserService {
 		long userId = authContext.getCurrentUserId();
 		
 		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
 		userRepository.delete(user);
 	}
@@ -101,7 +107,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public User getUser(long publicId) {
 		return userRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 	}
 	
 	@Override
@@ -115,15 +121,15 @@ public class UserServiceImpl implements UserService {
 		Set<String> requestedPermissions = req.getPermissions();
 		
 		if (userRepository.existsByEmail(email)) {
-			throw new RuntimeException("既に登録されています");
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "This email address is already in use");
 		}
 
 		if (userRepository.existsByName(name)) {
-			throw new RuntimeException("既にその名前は存在します");
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "This name is already in use");
 		}
 		
 		User currentUser = userRepository.findById(userId)
-				.orElseThrow(() -> new RuntimeException("ユーザが存在しません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 		
 		Set<String> creatorPermissions = currentUser.getPermissions()
 				.stream()
@@ -140,7 +146,7 @@ public class UserServiceImpl implements UserService {
 			);
 		
 		if (!creatorPermissions.containsAll(requestedPermissions)) {
-			throw new RuntimeException("権限を付与できません");
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Permissions cannot be granted");
 		}
 
 		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
@@ -156,7 +162,7 @@ public class UserServiceImpl implements UserService {
 		
 		Set<Permission> permissions = requestedPermissions.stream()
 				.map(permissionName -> permissionRepository.findByName(permissionName)
-				.orElseThrow(() -> new RuntimeException("権限がありません: " + permissionName)))
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Permission not found:" + permissionName)))
 				.collect(Collectors.toSet());
 		
 		user.setPermissions(permissions);
@@ -171,11 +177,11 @@ public class UserServiceImpl implements UserService {
 		String rawPassword = req.getPassword();
 		
 		if (userRepository.existsByEmail(email)) {
-			throw new RuntimeException("既に登録されています");
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "This email address is already in use");
 		}
 
 		if (userRepository.existsByName(name)) {
-			throw new RuntimeException("既にその名前は存在します");
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "This name is already in use");
 		}
 		
 		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
@@ -185,7 +191,7 @@ public class UserServiceImpl implements UserService {
 
 		User user = new User(name, email, hashedPassword);
 		user.setRole(roleRepository.findByName("ADMIN")
-				.orElseThrow(() -> new RuntimeException("ロールが存在しません")));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Role not found")));
 		
 		Profile profile = new Profile();
 		profile.setCreatedAt(LocalDateTime.now());
@@ -197,8 +203,27 @@ public class UserServiceImpl implements UserService {
 	@Override
 	@Transactional
 	public User updateUserState(long publicId,UpdateUserStateRequest req) {
+		long userId = authContext.getCurrentUserId();
+		
+		User currentUser = userRepository.findById(userId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+		
 		User user = userRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+		
+		Set<String> userPermissions = user.getPermissions()
+				.stream()
+				.map(Permission::getName)
+				.collect(Collectors.toSet());
+		
+		Set<String> currentUserPermissions = currentUser.getPermissions()
+				.stream()
+				.map(Permission::getName)
+				.collect(Collectors.toSet());
+		
+		if (!currentUserPermissions.containsAll(userPermissions)) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Permissions cannot be granted");
+		}
 		
 		user.setState(req.getState());
 		
@@ -213,11 +238,11 @@ public class UserServiceImpl implements UserService {
 		String rawPassword = req.getPassword();
 
 		if (userRepository.existsByEmail(email)) {
-			throw new RuntimeException("既に登録されています");
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "This email address is already in use");
 		}
 
 		if (userRepository.existsByName(name)) {
-			throw new RuntimeException("既にその名前は存在します");
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "This name is already in use");
 		}
 
 		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
@@ -234,7 +259,7 @@ public class UserServiceImpl implements UserService {
 		
 		user.setPublicId(snowflake.nextId());
 		user.setRole(roleRepository.findByName("USER")
-				.orElseThrow(() -> new RuntimeException("ロールが存在しません")));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Role not found")));
 
 		User saved = userRepository.saveAndFlush(user);
 
@@ -252,12 +277,12 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public LoginResponse login(LoginRequest req) {
 		User user = userRepository.findByName(req.getName())
-				.orElseThrow(() -> new RuntimeException("ユーザが存在しません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
 		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
 		if (!encoder.matches(req.getPassword(), user.getPassword())) {
-			throw new RuntimeException("パスワードが違います");
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Incorrect password");
 		}
 
 		String accessTokenText = jwtService.generateAccessToken(user);
@@ -280,7 +305,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public String refresh(String refreshTokenText) {
 		RefreshToken refreshToken = refreshTokenRepository.findByToken(refreshTokenText)
-				.orElseThrow(() -> new RuntimeException("トークンが存在しない"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Token not found"));
 
 		return jwtService.generateAccessToken(refreshToken.getUser());
 	}
@@ -288,7 +313,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public Set<Permission> getPermissions(long publicId) {
 		User user = userRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 		return user.getPermissions();
 	}
 	
@@ -298,12 +323,17 @@ public class UserServiceImpl implements UserService {
 		long userId = authContext.getCurrentUserId();
 		
 		User currentUser = userRepository.findById(userId)
-				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 		
 		User user = userRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 		
 		Set<String> requestedPermissions = req.getPermissions();
+		
+		Set<String> userPermissions = user.getPermissions()
+				.stream()
+				.map(Permission::getName)
+				.collect(Collectors.toSet());
 		
 		Set<String> currentUserPermissions = currentUser.getPermissions()
 				.stream()
@@ -319,12 +349,13 @@ public class UserServiceImpl implements UserService {
 					.toList()
 			);
 		
-		if (!currentUserPermissions.containsAll(requestedPermissions)) {
-			throw new RuntimeException("権限を付与できません");
+		if (!currentUserPermissions.containsAll(requestedPermissions) ||
+				!currentUserPermissions.containsAll(userPermissions)) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Permissions cannot be granted");
 		}
 		
 		if(currentUser.getId() == user.getId()) {
-			throw new RuntimeException("自分には権限を付与できません");
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot grant permissions to yourself");
 		}
 		
 		Set<Permission> permissions = requestedPermissions.stream()
@@ -343,12 +374,17 @@ public class UserServiceImpl implements UserService {
 		long userId = authContext.getCurrentUserId();
 		
 		User currentUser = userRepository.findById(userId)
-				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 		
 		User user = userRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 		
 		Set<String> requestedPermissions = req.getPermissions();
+		
+		Set<String> userPermissions = user.getPermissions()
+				.stream()
+				.map(Permission::getName)
+				.collect(Collectors.toSet());
 		
 		Set<String> currentUserPermissions = currentUser.getPermissions()
 				.stream()
@@ -364,12 +400,13 @@ public class UserServiceImpl implements UserService {
 					.toList()
 			);
 		
-		if (!currentUserPermissions.containsAll(requestedPermissions)) {
-			throw new RuntimeException("権限を剥奪できません");
+		if (!currentUserPermissions.containsAll(requestedPermissions) ||
+				!currentUserPermissions.containsAll(userPermissions)) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Permissions could not be revoked");
 		}
 		
 		if (currentUser.getId() == user.getId()) {
-			throw new RuntimeException("自分の権限は変更できません");
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot revoke permissions from yourself");
 		}
 		
 		user.getPermissions().removeIf(p ->

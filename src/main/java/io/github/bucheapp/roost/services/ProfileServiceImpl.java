@@ -3,7 +3,9 @@ package io.github.bucheapp.roost.services;
 import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import io.github.bucheapp.roost.dto.request.UpdateProfileRequest;
 import io.github.bucheapp.roost.models.Profile;
@@ -28,16 +30,16 @@ public class ProfileServiceImpl implements ProfileService {
 		long userId = authContext.getCurrentUserId();
 		
 		return profileRepository.findByUserId(userId)
-				.orElseThrow(() -> new RuntimeException("プロフィールが存在しません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profile not found"));
 	}
 
 	@Override
 	public Profile getProfile(long publicId) {
 		User user = userRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new RuntimeException("ユーザが存在しません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
 		return profileRepository.findByUser(user)
-				.orElseThrow(() -> new RuntimeException("プロフィールが存在しません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profile not found"));
 	}
 
 	@Override
@@ -46,7 +48,7 @@ public class ProfileServiceImpl implements ProfileService {
 		long userId = authContext.getCurrentUserId();
 		
 		Profile profile = profileRepository.findByUserId(userId)
-				.orElseThrow(() -> new RuntimeException("プロフィールが存在しません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profile not found"));
 
 		if (req.getBio() != null) profile.setBio(req.getBio());
 		if (req.getIconUrl() != null) profile.setIconUrl(req.getIconUrl());

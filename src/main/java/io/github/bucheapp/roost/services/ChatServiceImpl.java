@@ -6,7 +6,9 @@ import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import io.github.bucheapp.roost.dto.request.ChatRequest;
 import io.github.bucheapp.roost.dto.request.UpdateChatRequest;
@@ -43,7 +45,7 @@ public class ChatServiceImpl implements ChatService {
 	@Override
 	public Chat getChat(long publicId) {
 		return chatRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new RuntimeException("チャットが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chat not found"));
 	}
 
 	@Override
@@ -54,10 +56,10 @@ public class ChatServiceImpl implements ChatService {
 		ChatType type = req.getType();
 		
 		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 		
 		Room room = roomRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new RuntimeException("ユーザが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 		
 		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
 		LocalDateTime now = LocalDateTime.now();
@@ -81,7 +83,7 @@ public class ChatServiceImpl implements ChatService {
 		LocalDateTime now = LocalDateTime.now();
 		
 		Chat chat = chatRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new RuntimeException("チャットが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chat not found"));
 		
 		chat.setContent(content);
 		chat.setUpdatedAt(now);
@@ -93,7 +95,7 @@ public class ChatServiceImpl implements ChatService {
 	@Transactional
 	public void deleteChat(long publicId) {
 		Chat chat = chatRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new RuntimeException("チャットが見つかりません"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chat not found"));
 		
 		chatRepository.delete(chat);
 	}

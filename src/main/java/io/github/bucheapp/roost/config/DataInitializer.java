@@ -1,5 +1,6 @@
 package io.github.bucheapp.roost.config;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import io.github.bucheapp.roost.models.Permission;
+import io.github.bucheapp.roost.models.Profile;
 import io.github.bucheapp.roost.models.Role;
 import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.repositories.PermissionRepository;
@@ -82,6 +84,10 @@ public class DataInitializer implements CommandLineRunner {
 			User adminUser = new User(adminUsername,"admin@example.com",encoder.encode(adminPassword));
 			adminUser.setRole(superAdmin);
 			adminUser.setPublicId(snowflake.nextId());
+			Profile profile = new Profile();
+			profile.setCreatedAt(LocalDateTime.now());
+			adminUser.setProfile(profile);
+			profile.setUser(adminUser);
 			
 			userRepository.save(adminUser);
 		}
