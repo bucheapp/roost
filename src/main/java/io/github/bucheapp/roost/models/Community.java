@@ -1,20 +1,24 @@
 package io.github.bucheapp.roost.models;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -47,8 +51,7 @@ public class Community {
 	@Enumerated(EnumType.STRING)
 	@CollectionTable(name = "community_properties", joinColumns = @JoinColumn(name = "community_id"))
 	@Column
-	@NotNull
-	private Set<CommunityProperty> properties = new HashSet<>();
+	private Set<CommunityProperty> properties;
 	
 	@Column(unique = true)
 	private long publicId;
@@ -63,10 +66,17 @@ public class Community {
 	@Column(updatable = false)
 	private LocalDateTime archivedAt;
 	
-	@ManyToOne
-	@JoinColumn(name = "creator_id")
-	@NotNull
-	private User creator;
+	@OneToMany(mappedBy = "community", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private List<OperatorHistory> operatorHistory;
+	
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private Set<Member> members;
+	
+	public Community() {
+		this.properties = new HashSet<>();
+		this.operatorHistory = new ArrayList<>();
+		this.members = new HashSet<>();
+	}
 
 	public long getId() {
 		return id;
@@ -140,11 +150,34 @@ public class Community {
 		this.archivedAt = archivedAt;
 	}
 
-	public User getCreator() {
-		return creator;
+	public List<OperatorHistory> getOperatorHistory() {
+		return operatorHistory;
 	}
 
-	public void setCreator(User creator) {
-		this.creator = creator;
+	public void setOperatorHistory(List<OperatorHistory> operatorHistory) {
+		this.operatorHistory = operatorHistory;
+	}
+	
+	public void addOperatorHistory(User user) {
+		operatorHistory.add(new OperatorHistory(
+				user,
+				LocalDateTime.now()
+				));
+	}
+
+	public Set<Member> getMembers() {
+		return members;
+	}
+
+	public void setMembers(Set<Member> members) {
+		this.members = members;
+	}
+	
+	public void addMember(Member member) {
+		this.members.add(member);
+	}
+	
+	public void removeMember(Member member) {
+		this.members.remove(member);
 	}
 }

@@ -66,14 +66,17 @@ public class User {
 		inverseJoinColumns = @JoinColumn(name = "permission_id")
 	)
 	@NotNull
-	private Set<Permission> permissions = new HashSet<>();
+	private Set<Permission> permissions;
 	
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Profile profile;
 	
-	public User() {}
+	public User() {
+		this.permissions = new HashSet<>();
+	}
 	
 	public User(String name,String email,String password) {
+		super();
 		this.name = name;
 		this.email = email;
 		this.password = password;

@@ -30,4 +30,17 @@ public class Permission {
 	public void setName(String name) {
 		this.name = name;
 	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof Permission)) return false;
+		Permission other = (Permission) o;
+		return id != 0 && id == other.id;
+	}
+
+	@Override
+	public int hashCode() {
+		return Long.hashCode(id);
+	}
 }

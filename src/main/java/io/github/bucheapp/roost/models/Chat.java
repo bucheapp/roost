@@ -17,6 +17,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 @Entity
 @Table(name = "chats")
 public class Chat {
@@ -39,6 +42,7 @@ public class Chat {
 	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "room_id", nullable = false)
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	@NotNull
 	private Room room;
 

@@ -1,12 +1,14 @@
 package io.github.bucheapp.roost.dto.response;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
 import io.github.bucheapp.roost.models.Community;
 import io.github.bucheapp.roost.models.CommunityProperty;
 import io.github.bucheapp.roost.models.CommunityState;
 import io.github.bucheapp.roost.models.CommunityType;
+import io.github.bucheapp.roost.models.OperatorHistory;
 
 public class CommunityResponse {
 	private CommunityType type;
@@ -16,6 +18,7 @@ public class CommunityResponse {
 	private LocalDateTime createdAt;
 	private LocalDateTime archivedAt;
 	private String name;
+	private Set<OperatorHistoryResponse> operatorHistoryResponses;
 	
 	public CommunityResponse(Community community) {
 		this.type = community.getType();
@@ -25,6 +28,16 @@ public class CommunityResponse {
 		this.createdAt = community.getCreatedAt();
 		this.archivedAt = community.getArchivedAt();
 		this.name = community.getName();
+		
+		this.operatorHistoryResponses = new HashSet<>();
+		
+		for(OperatorHistory operatoryHistory : community.getOperatorHistory()) {
+			this.operatorHistoryResponses.add(
+					new OperatorHistoryResponse(
+							operatoryHistory
+							)
+					);
+		}
 	}
 
 	public CommunityType getType() {
@@ -81,5 +94,33 @@ public class CommunityResponse {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+}
+
+class OperatorHistoryResponse {
+	private long publicId;
+	private LocalDateTime time;
+	
+	public OperatorHistoryResponse(
+			OperatorHistory operatorHistory
+			) {
+		this.publicId = operatorHistory.getUser().getPublicId();
+		this.time = operatorHistory.getTime();
+	}
+
+	public long getPublicId() {
+		return publicId;
+	}
+
+	public void setPublicId(long publicId) {
+		this.publicId = publicId;
+	}
+
+	public LocalDateTime getTime() {
+		return time;
+	}
+
+	public void setTime(LocalDateTime time) {
+		this.time = time;
 	}
 }
