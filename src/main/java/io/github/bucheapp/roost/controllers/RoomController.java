@@ -1,7 +1,10 @@
 package io.github.bucheapp.roost.controllers;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,13 +17,18 @@ import org.springframework.web.bind.annotation.RestController;
 import io.github.bucheapp.roost.dto.request.RoomRequest;
 import io.github.bucheapp.roost.dto.request.UpdateRoomRequest;
 import io.github.bucheapp.roost.dto.response.RoomResponse;
+import io.github.bucheapp.roost.dto.response.RoomSWResponse;
 import io.github.bucheapp.roost.models.Room;
+import io.github.bucheapp.roost.models.SWType;
 import io.github.bucheapp.roost.services.RoomService;
 
 @RestController
 public class RoomController {
 	@Autowired
 	private RoomService roomService;
+	
+	@Autowired
+	private SimpMessagingTemplate template;
 	
 	@GetMapping("api/rooms/{publicId}")
 	public ResponseEntity<RoomResponse> getRoom(
@@ -44,6 +52,9 @@ public class RoomController {
 		
 		RoomResponse roomResponse = new RoomResponse(room);
 		
+		RoomSWResponse roomSWResponse = new RoomSWResponse(room,SWType.NEW);
+		template.convertAndSend("/topic/community/" + roomResponse.getCommunityId() + "/room", roomSWResponse);
+		
 		return ResponseEntity.ok(roomResponse);
 	}
 	
@@ -57,6 +68,9 @@ public class RoomController {
 		
 		RoomResponse roomResponse = new RoomResponse(room);
 		
+		RoomSWResponse roomSWResponse = new RoomSWResponse(room,SWType.NEW);
+		template.convertAndSend("/topic/room/" + publicId, roomSWResponse);
+		
 		return ResponseEntity.ok(roomResponse);
 	}
 	
@@ -66,6 +80,12 @@ public class RoomController {
 			@PathVariable long publicId
 			) {
 		roomService.deleteRoom(publicId);
+		
+		Map<String, Object> payload = Map.of(
+				"publicId", publicId,
+				"swType", SWType.DELETE
+			);
+		template.convertAndSend("/topic/room/" + publicId, (Object) payload);
 		
 		return ResponseEntity.noContent().build();
 	}

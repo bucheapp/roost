@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -19,7 +20,9 @@ import io.github.bucheapp.roost.dto.request.UpdateCommunityPropertyRequest;
 import io.github.bucheapp.roost.dto.request.UpdateCommunityRequest;
 import io.github.bucheapp.roost.dto.request.UpdateCommunityStateRequest;
 import io.github.bucheapp.roost.dto.response.CommunityResponse;
+import io.github.bucheapp.roost.dto.response.CommunitySWResponse;
 import io.github.bucheapp.roost.models.Community;
+import io.github.bucheapp.roost.models.SWType;
 import io.github.bucheapp.roost.services.CommunityService;
 
 @RestController
@@ -27,6 +30,9 @@ import io.github.bucheapp.roost.services.CommunityService;
 public class CommunityController {
 	@Autowired
 	private CommunityService communityService;
+	
+	@Autowired
+	private SimpMessagingTemplate template;
 	
 	@GetMapping("/{publicId}")
 	public ResponseEntity<CommunityResponse> getCommunity(
@@ -61,6 +67,9 @@ public class CommunityController {
 		
 		CommunityResponse communityResponse = new CommunityResponse(community);
 		
+		CommunitySWResponse communitySWResponse = new CommunitySWResponse(community,SWType.NEW);
+		template.convertAndSend("/topic/community/global", communitySWResponse);
+		
 		return ResponseEntity.ok(communityResponse);
 	}
 	
@@ -73,6 +82,9 @@ public class CommunityController {
 		Community community = communityService.updateCommunity(publicId, req);
 		
 		CommunityResponse communityResponse = new CommunityResponse(community);
+		
+		CommunitySWResponse communitySWResponse = new CommunitySWResponse(community,SWType.UPDATE);
+		template.convertAndSend("/topic/community/global", communitySWResponse);
 		
 		return ResponseEntity.ok(communityResponse);
 	}
