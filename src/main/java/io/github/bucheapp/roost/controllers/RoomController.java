@@ -33,7 +33,7 @@ public class RoomController {
 		return ResponseEntity.ok(roomResponse);
 	}
 	
-	@PreAuthorize("hasAuthority('CREATE_ROOM')")
+	@PreAuthorize("hasAuthority('CREATE_ROOM') or @communitySecurity.isHost(#publicId)")
 	@PostMapping("api/communities/{publicId}/rooms")
 	public ResponseEntity<RoomResponse> createRoom(
 			@PathVariable long publicId,
@@ -47,7 +47,7 @@ public class RoomController {
 		return ResponseEntity.ok(roomResponse);
 	}
 	
-	@PreAuthorize("hasAuthority('UPDATE_ROOM')")
+	@PreAuthorize("hasAuthority('UPDATE_ROOM') or @communitySecurity.isHost(#publicId)")
 	@PatchMapping("api/rooms/{publicId}")
 	public ResponseEntity<RoomResponse> updateRoom(
 			@PathVariable long publicId,
@@ -60,7 +60,7 @@ public class RoomController {
 		return ResponseEntity.ok(roomResponse);
 	}
 	
-	@PreAuthorize("hasAuthority('DELETE_ROOM')")
+	@PreAuthorize("hasAuthority('DELETE_ROOM') or @communitySecurity.isHost(#publicId)")
 	@DeleteMapping("api/rooms/{publicId}")
 	public ResponseEntity<Void> deleteRoom(
 			@PathVariable long publicId

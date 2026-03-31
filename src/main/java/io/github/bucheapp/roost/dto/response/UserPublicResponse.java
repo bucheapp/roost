@@ -5,10 +5,12 @@ import io.github.bucheapp.roost.models.UserState;
 
 public class UserPublicResponse implements UserResponse {
 	private String name;
+	private long publicId;
 	private UserState state;
 	
 	public UserPublicResponse(User user) {
 		this.name = user.getName();
+		this.publicId = user.getPublicId();
 		this.state = user.getState();
 	}
 
@@ -18,6 +20,14 @@ public class UserPublicResponse implements UserResponse {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public long getPublicId() {
+		return publicId;
+	}
+
+	public void setPublicId(long publicId) {
+		this.publicId = publicId;
 	}
 
 	public UserState getState() {

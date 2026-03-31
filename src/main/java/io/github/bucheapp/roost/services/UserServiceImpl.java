@@ -145,6 +145,7 @@ public class UserServiceImpl implements UserService {
 					.toList()
 			);
 		
+		//自分が持ってる権限の範囲内しか付与できない
 		if (!creatorPermissions.containsAll(requestedPermissions)) {
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Permissions cannot be granted");
 		}
@@ -221,6 +222,7 @@ public class UserServiceImpl implements UserService {
 				.map(Permission::getName)
 				.collect(Collectors.toSet());
 		
+		//自分が持ってる権限の範囲内しか付与できない
 		if (!currentUserPermissions.containsAll(userPermissions)) {
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Permissions cannot be granted");
 		}
@@ -354,6 +356,7 @@ public class UserServiceImpl implements UserService {
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Permissions cannot be granted");
 		}
 		
+		//自分の権限は変更できない
 		if(currentUser.getId() == user.getId()) {
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot grant permissions to yourself");
 		}
@@ -405,6 +408,7 @@ public class UserServiceImpl implements UserService {
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Permissions could not be revoked");
 		}
 		
+		//自分の権限は変更できない
 		if (currentUser.getId() == user.getId()) {
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot revoke permissions from yourself");
 		}

@@ -1,6 +1,7 @@
 package io.github.bucheapp.roost.services;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 import jakarta.transaction.Transactional;
@@ -12,12 +13,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import io.github.bucheapp.roost.dto.request.CommunityRequest;
+import io.github.bucheapp.roost.dto.request.CommunitySearchRequest;
 import io.github.bucheapp.roost.dto.request.UpdateCommunityPropertyRequest;
 import io.github.bucheapp.roost.dto.request.UpdateCommunityRequest;
 import io.github.bucheapp.roost.dto.request.UpdateCommunityStateRequest;
 import io.github.bucheapp.roost.models.Community;
 import io.github.bucheapp.roost.models.CommunityState;
 import io.github.bucheapp.roost.models.CommunityType;
+import io.github.bucheapp.roost.models.Member;
 import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.repositories.CommunityRepository;
 import io.github.bucheapp.roost.repositories.UserRepository;
@@ -45,6 +48,29 @@ public class CommunityServiceImpl implements CommunityService {
 	public Community getCommunity(long publicId) {
 		return communityRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Community not found"));
+	}
+	
+	//TODO: Pageableで検索する
+	@Override
+	public List<Community> search(CommunitySearchRequest req) {
+		List<Community> communities;
+		
+		if (req.getProperties() != null && !req.getProperties().isEmpty()) {
+			communities = communityRepository.findByPropertiesIn(req.getProperties());
+		} else {
+			communities = communityRepository.findAll();
+		}
+		
+		if ("NEW".equals(req.getSort())) {
+			communities.sort(Comparator.comparing(Community::getCreatedAt).reversed());
+		} else if("OLD".equals(req.getSort())) {
+			communities.sort(Comparator.comparing(Community::getCreatedAt));
+		}
+		
+		int from = req.getPage() * req.getSize();
+		int to = Math.min(from + req.getSize(), communities.size());
+
+		return communities.subList(from, to);
 	}
 
 	@Override
@@ -77,7 +103,12 @@ public class CommunityServiceImpl implements CommunityService {
 		newCommunity.setState(CommunityState.ACTIVE);
 		newCommunity.setPublicId(snowflake.nextId());
 		newCommunity.setCreatedAt(now);
-		newCommunity.addOperatorHistory(user);
+		newCommunity.addHostHistory(user);
+		
+		Member member = new Member();
+		member.setUser(user);
+		member.setTime(LocalDateTime.now());
+		newCommunity.addMember(member);
 		
 		return communityRepository.save(newCommunity);
 	}

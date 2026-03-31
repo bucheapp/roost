@@ -8,19 +8,21 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
-@Table(name = "operator_history")
-public class OperatorHistory {
+@Table(name = "host_history")
+public class HostHistory {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column
 	private long id;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id")
 	@NotNull
 	private User user;
 	
@@ -28,7 +30,7 @@ public class OperatorHistory {
 	@NotNull
 	private LocalDateTime time;
 	
-	public OperatorHistory(User user,LocalDateTime time) {
+	public HostHistory(User user,LocalDateTime time) {
 		this.user = user;
 		this.time = time;
 	}

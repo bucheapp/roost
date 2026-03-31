@@ -1,5 +1,7 @@
 package io.github.bucheapp.roost.controllers;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.github.bucheapp.roost.dto.request.CommunityRequest;
+import io.github.bucheapp.roost.dto.request.CommunitySearchRequest;
 import io.github.bucheapp.roost.dto.request.UpdateCommunityPropertyRequest;
 import io.github.bucheapp.roost.dto.request.UpdateCommunityRequest;
 import io.github.bucheapp.roost.dto.request.UpdateCommunityStateRequest;
@@ -34,6 +37,18 @@ public class CommunityController {
 		CommunityResponse communityResponse = new CommunityResponse(community);
 		
 		return ResponseEntity.ok(communityResponse);
+	}
+	
+	@GetMapping("/api/communities")
+	public ResponseEntity<List<CommunityResponse>> getCommunities(
+		CommunitySearchRequest req
+	) {
+		List<Community> communities = communityService.search(req);
+		List<CommunityResponse> communityResponses = communities.stream()
+				.map(CommunityResponse::new)
+				.toList();
+
+		return ResponseEntity.ok(communityResponses);
 	}
 	
 	@PreAuthorize("hasAuthority('CREATE_COMMUNITY')")
@@ -62,7 +77,7 @@ public class CommunityController {
 		return ResponseEntity.ok(communityResponse);
 	}
 	
-	@PreAuthorize("hasAuthority('UPDATE_COMMUNITYSTATE')")
+	@PreAuthorize("hasAuthority('UPDATE_COMMUNITYSTATE') or @communitySecurity.isHost(#publicId)")
 	@PatchMapping("/{publicId}/state")
 	public ResponseEntity<CommunityResponse> updateCommunityState(
 			@PathVariable long publicId,

@@ -41,7 +41,7 @@ public class Chat {
 	private long publicId;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "room_id", nullable = false)
+	@JoinColumn(name = "room_id")
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@NotNull
 	private Room room;

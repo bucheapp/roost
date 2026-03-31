@@ -67,14 +67,14 @@ public class Community {
 	private LocalDateTime archivedAt;
 	
 	@OneToMany(mappedBy = "community", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private List<OperatorHistory> operatorHistory;
+	private List<HostHistory> hostHistory;
 	
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Set<Member> members;
 	
 	public Community() {
 		this.properties = new HashSet<>();
-		this.operatorHistory = new ArrayList<>();
+		this.hostHistory = new ArrayList<>();
 		this.members = new HashSet<>();
 	}
 
@@ -150,16 +150,16 @@ public class Community {
 		this.archivedAt = archivedAt;
 	}
 
-	public List<OperatorHistory> getOperatorHistory() {
-		return operatorHistory;
+	public List<HostHistory> getOperatorHistory() {
+		return hostHistory;
 	}
 
-	public void setOperatorHistory(List<OperatorHistory> operatorHistory) {
-		this.operatorHistory = operatorHistory;
+	public void setHostHistory(List<HostHistory> hostHistory) {
+		this.hostHistory = hostHistory;
 	}
 	
-	public void addOperatorHistory(User user) {
-		operatorHistory.add(new OperatorHistory(
+	public void addHostHistory(User user) {
+		hostHistory.add(new HostHistory(
 				user,
 				LocalDateTime.now()
 				));
@@ -179,5 +179,9 @@ public class Community {
 	
 	public void removeMember(Member member) {
 		this.members.remove(member);
+	}
+	
+	public User getHost() {
+		return this.hostHistory.getLast().getUser();
 	}
 }

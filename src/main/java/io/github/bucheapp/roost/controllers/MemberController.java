@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -51,15 +52,36 @@ public class MemberController {
 	
 	@DeleteMapping("api/communities/{publicId}/members")
 	public ResponseEntity<Set<MemberResponse>> leaveMember(
-			@PathVariable long publicId,
-			@RequestBody MemberRequest req
+			@PathVariable long publicId
 			) {
-		Set<Member> members = memberService.leaveMember(publicId, req);
 		
-		Set<MemberResponse> memberResponses = members.stream()
-				.map(MemberResponse::new)
-				.collect(Collectors.toSet());
+		memberService.leaveMember(publicId);
 		
-		return ResponseEntity.ok(memberResponses);
+		return ResponseEntity.noContent().build();
+	}
+	
+	@DeleteMapping("api/communities/{publicId}/members/{userPublicId}")
+	@PreAuthorize(
+		"hasAuthority('KICK_MEMBER') or @communitySecurity.isHost(#publicId)"
+	)
+	public ResponseEntity<Void> kickMember(
+		@PathVariable long publicId,
+		@PathVariable long userPublicId
+	) {
+		memberService.kickMember(publicId, userPublicId);
+		
+		return ResponseEntity.noContent().build();
+	}
+	
+	@DeleteMapping("api/communities/{publicId}/members/{userPublicId}")
+	@PreAuthorize(
+		"hasAuthority('BAN_MEMBER') or @communitySecurity.isHost(#publicId)"
+	)
+	public ResponseEntity<Void> banMember(
+		@PathVariable long publicId,
+		@PathVariable long userPublicId
+	) {
+		memberService.kickMember(publicId, userPublicId);
+		return ResponseEntity.noContent().build();
 	}
 }

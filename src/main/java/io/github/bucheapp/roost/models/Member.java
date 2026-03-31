@@ -30,6 +30,7 @@ public class Member {
 	LocalDateTime time;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id")
 	User user;
 	
 	public long getId() {

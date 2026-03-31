@@ -8,5 +8,7 @@ import io.github.bucheapp.roost.models.Member;
 public interface MemberService {
 	Set<Member> joinMember(long publicId,MemberRequest req);
 	Set<Member> getMember(long publicId);
-	Set<Member> leaveMember(long publicId,MemberRequest req);
+	void leaveMember(long publicId);
+	void kickMember(long publicId,long userPublicId);
+	void banMember(long publicId,long userPublicId);
 }

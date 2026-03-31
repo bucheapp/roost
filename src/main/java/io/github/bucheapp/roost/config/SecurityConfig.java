@@ -42,6 +42,7 @@ public class SecurityConfig {
 					.requestMatchers("/api/users/me").authenticated()
 					.requestMatchers(HttpMethod.GET, "/api/users/{publicId}").permitAll() 
 					.requestMatchers(HttpMethod.GET,"/api/communities/{publicId}").permitAll()
+					.requestMatchers(HttpMethod.GET,"/api/communities/{publicId}/members").permitAll()
 					.requestMatchers(HttpMethod.GET,"/api/rooms/{publicId}").permitAll()
 					.requestMatchers(HttpMethod.GET,"/api/chats/{publicId}").permitAll()
 					.anyRequest().authenticated()
