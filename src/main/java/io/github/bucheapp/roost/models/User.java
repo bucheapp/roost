@@ -65,7 +65,6 @@ public class User {
 		joinColumns = @JoinColumn(name = "user_id"),
 		inverseJoinColumns = @JoinColumn(name = "permission_id")
 	)
-	@NotNull
 	private Set<Permission> permissions;
 	
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -76,7 +75,7 @@ public class User {
 	}
 	
 	public User(String name,String email,String password) {
-		super();
+		this();
 		this.name = name;
 		this.email = email;
 		this.password = password;

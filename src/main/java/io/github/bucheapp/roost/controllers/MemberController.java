@@ -77,7 +77,7 @@ public class MemberController {
 		return ResponseEntity.noContent().build();
 	}
 	
-	@DeleteMapping("api/communities/{publicId}/members/{userPublicId}")
+	@DeleteMapping("api/communities/{publicId}/members/{userPublicId}/kick")
 	@PreAuthorize(
 		"hasAuthority('KICK_MEMBER') or @communitySecurity.isHost(#publicId)"
 	)
@@ -98,7 +98,7 @@ public class MemberController {
 		return ResponseEntity.noContent().build();
 	}
 	
-	@DeleteMapping("api/communities/{publicId}/members/{userPublicId}")
+	@DeleteMapping("api/communities/{publicId}/members/{userPublicId}/ban")
 	@PreAuthorize(
 		"hasAuthority('BAN_MEMBER') or @communitySecurity.isHost(#publicId)"
 	)

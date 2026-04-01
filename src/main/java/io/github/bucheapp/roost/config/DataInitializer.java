@@ -130,22 +130,24 @@ public class DataInitializer implements CommandLineRunner {
 				Member member = new Member();
 				member.setUser(adminUser);
 				member.setTime(LocalDateTime.now());
+				member.setCommunity(community);
 				community.addMember(member);
 				
 				communityRepository.save(community);
-				roomRepository.save(createRoom("ようこそ", community,snowflake.nextId()));
-				roomRepository.save(createRoom("質問", community,snowflake.nextId()));
-				roomRepository.save(createRoom("雑談", community,snowflake.nextId()));
+				roomRepository.save(createRoom("ようこそ", community,snowflake.nextId(),adminUser));
+				roomRepository.save(createRoom("質問", community,snowflake.nextId(),adminUser));
+				roomRepository.save(createRoom("雑談", community,snowflake.nextId(),adminUser));
 			}
 		}
 	}
 	
-	private Room createRoom(String name, Community community,long publicId) {
+	private Room createRoom(String name, Community community,long publicId,User user) {
 		Room room = new Room();
 		room.setName(name);
 		room.setCommunity(community);
 		room.setPublicId(publicId);
 		room.setCreatedAt(LocalDateTime.now());
+		room.setCreator(user);
 		return room;
 	}
 	

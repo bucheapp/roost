@@ -49,6 +49,7 @@ public class MemberServiceImpl implements MemberService {
 			Member member = new Member();
 			member.setUser(user);
 			member.setTime(LocalDateTime.now());
+			member.setCommunity(community);
 			
 			members.add(member);
 		} else {

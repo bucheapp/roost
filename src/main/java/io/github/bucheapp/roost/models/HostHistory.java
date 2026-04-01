@@ -21,6 +21,10 @@ public class HostHistory {
 	@Column
 	private long id;
 	
+	@ManyToOne
+	@JoinColumn(name = "community_id")
+	private Community community;
+	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
 	@NotNull

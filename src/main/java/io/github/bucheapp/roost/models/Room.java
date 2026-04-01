@@ -29,7 +29,7 @@ public class Room {
 	
 	@Column(length = 10)
 	@NotBlank
-	@Size(min = 3,max = 10)
+	@Size(min = 1,max = 10)
 	@Pattern(regexp = "^[\\p{L}]+$")
 	private String name;
 	
