@@ -84,6 +84,9 @@ public class RoomServiceImpl implements RoomService {
 		room.setName(name);
 		room.setUpdatedAt(now);
 		
+		Community community = room.getCommunity();
+		community.checkStateActive();
+		
 		return roomRepository.save(room);
 	}
 
@@ -92,6 +95,9 @@ public class RoomServiceImpl implements RoomService {
 	public void deleteRoom(long publicId) {
 		Room room = roomRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found"));
+		
+		Community community = room.getCommunity();
+		community.checkStateActive();
 		
 		roomRepository.delete(room);
 	}

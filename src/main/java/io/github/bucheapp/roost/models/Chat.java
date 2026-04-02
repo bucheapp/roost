@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,29 +11,20 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import io.github.bucheapp.roost.dto.response.ChatResponse;
+
 @Entity
 @Table(name = "chats")
-public class Chat {
+public abstract class Chat {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column
 	private long id;
-	
-	@Column(length = 100)
-	@NotBlank
-	@Size(min = 1,max = 100)
-	private String content;
-	
-	@Column
-	@Enumerated(EnumType.STRING)
-	ChatType type;
 	
 	@Column(unique = true)
 	private long publicId;
@@ -55,7 +44,6 @@ public class Chat {
 	
 	@ManyToOne
 	@JoinColumn(name = "creator_id")
-	@NotNull
 	private User creator;
 
 	public long getId() {
@@ -64,22 +52,6 @@ public class Chat {
 
 	public void setId(long id) {
 		this.id = id;
-	}
-
-	public String getContent() {
-		return content;
-	}
-
-	public void setContent(String content) {
-		this.content = content;
-	}
-
-	public ChatType getType() {
-		return type;
-	}
-
-	public void setType(ChatType type) {
-		this.type = type;
 	}
 
 	public long getPublicId() {
@@ -113,7 +85,7 @@ public class Chat {
 	public void setUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
 	}
-
+	
 	public User getCreator() {
 		return creator;
 	}
@@ -121,4 +93,6 @@ public class Chat {
 	public void setCreator(User creator) {
 		this.creator = creator;
 	}
+
+	public abstract ChatResponse toResponse();
 }

@@ -11,4 +11,10 @@ public class AuthContext {
 		CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 		return userDetails.getId();
 	}
+	
+	public boolean hasAuthority(String permission) {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		return authentication.getAuthorities().stream()
+				.anyMatch(a -> a.getAuthority().equals(permission));
+	}
 }
