@@ -14,6 +14,7 @@ import io.github.bucheapp.roost.dto.request.ChatRequest;
 import io.github.bucheapp.roost.dto.request.UpdateChatRequest;
 import io.github.bucheapp.roost.models.Chat;
 import io.github.bucheapp.roost.models.ChatType;
+import io.github.bucheapp.roost.models.Community;
 import io.github.bucheapp.roost.models.Room;
 import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.repositories.ChatRepository;
@@ -88,6 +89,10 @@ public class ChatServiceImpl implements ChatService {
 		chat.setContent(content);
 		chat.setUpdatedAt(now);
 		
+		Room room = chat.getRoom();
+		Community community = room.getCommunity();
+		community.checkStateActive();
+		
 		return chatRepository.save(chat);
 	}
 
@@ -96,6 +101,10 @@ public class ChatServiceImpl implements ChatService {
 	public void deleteChat(long publicId) {
 		Chat chat = chatRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chat not found"));
+		
+		Room room = chat.getRoom();
+		Community community = room.getCommunity();
+		community.checkStateActive();
 		
 		chatRepository.delete(chat);
 	}

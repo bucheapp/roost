@@ -90,6 +90,9 @@ public class CommunityServiceImpl implements CommunityService {
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Member not found"));
 
 		community.addHostHistory(member.getUser());
+		community.checkStateActive();
+		
+		communityRepository.save(community);
 	}
 
 	@Override
@@ -104,7 +107,7 @@ public class CommunityServiceImpl implements CommunityService {
 
 		for (Community community : communityList) {
 			if (community.getState() != CommunityState.ARCHIVED) {
-				new ResponseStatusException(HttpStatus.CONFLICT, "A community with that name already exists.");
+				new ResponseStatusException(HttpStatus.CONFLICT, "A community with that name already exists");
 				break;
 			}
 		}
@@ -142,12 +145,19 @@ public class CommunityServiceImpl implements CommunityService {
 
 		Community community = communityRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Community not found"));
+		
+		community.archiveIfNeeded();
+		
+		if(community.getState() != CommunityState.ACTIVE) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Inactive communities cannot be edited");
+		}
 
 		LocalDateTime now = LocalDateTime.now();
 
 		community.setName(name);
 		community.setType(type);
 		community.setUpdatedAt(now);
+		community.checkStateActive();
 
 		return communityRepository.save(community);
 	}

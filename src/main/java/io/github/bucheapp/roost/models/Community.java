@@ -27,6 +27,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 @Entity
 @Table(name = "communities")
 public class Community {
@@ -188,8 +191,14 @@ public class Community {
 	}
 	
 	public void archiveIfNeeded() {
-		if(LocalDateTime.now().isAfter(archiveAt) && !(state == CommunityState.FROZEN)) {
+		if(archiveAt != null && LocalDateTime.now().isAfter(archiveAt) && !(state == CommunityState.FROZEN)) {
 			state = CommunityState.ARCHIVED;
+		}
+	}
+	
+	public void checkStateActive() {
+		if(state != CommunityState.ACTIVE) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "The community is not active");
 		}
 	}
 	
