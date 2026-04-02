@@ -8,14 +8,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import io.github.bucheapp.roost.dto.request.ChatRequest;
-import io.github.bucheapp.roost.dto.request.UpdateChatRequest;
 import io.github.bucheapp.roost.models.Chat;
 import io.github.bucheapp.roost.models.ChatType;
 import io.github.bucheapp.roost.models.Community;
 import io.github.bucheapp.roost.models.Room;
+import io.github.bucheapp.roost.models.TextChat;
 import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.repositories.ChatRepository;
 import io.github.bucheapp.roost.repositories.RoomRepository;
@@ -53,7 +54,6 @@ public class ChatServiceImpl implements ChatService {
 	@Transactional
 	public Chat createChat(long publicId, ChatRequest req) {
 		long userId = authContext.getCurrentUserId();
-		String content = req.getContent();
 		ChatType type = req.getType();
 		
 		User user = userRepository.findById(userId)
@@ -65,28 +65,56 @@ public class ChatServiceImpl implements ChatService {
 		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
 		LocalDateTime now = LocalDateTime.now();
 		
-		Chat chat = new Chat();
-		chat.setContent(content);
-		chat.setType(type);
+		Chat chat = null;
+		
+		if(type == ChatType.TEXT) {
+			MultipartFile file = req.getFile();
+			if(file != null) {
+				checkByte(req.getFile());
+				//TODO: ファイルを作成するロジックを作成
+			}
+			chat = new TextChat(req);
+		} else {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "It's an unknown type");
+		}
+		
 		chat.setPublicId(snowflake.nextId());
 		chat.setCreatedAt(now);
-		chat.setCreator(user);
 		chat.setRoom(room);
+		chat.setCreator(user);
 		
 		return chatRepository.save(chat);
 	}
 
 	@Override
 	@Transactional
-	public Chat updateChat(long publicId, UpdateChatRequest req) {
-		String content = req.getContent();
+	public Chat updateChat(long publicId, ChatRequest req) {
+		ChatType type = req.getType();
+		long userId = authContext.getCurrentUserId();
 		
 		LocalDateTime now = LocalDateTime.now();
 		
 		Chat chat = chatRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chat not found"));
 		
-		chat.setContent(content);
+		User creator = chat.getCreator();
+		
+		if(creator.getId() != userId) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot edit other users' chats");
+		}
+		
+		if(type == ChatType.TEXT) {
+			MultipartFile file = req.getFile();
+			TextChat textChat = (TextChat) chat;
+			textChat.setContent(req.getContent());
+			if(file != null) {
+				checkByte(req.getFile());
+				//TODO: ファイルを作成するロジックを作成
+			}
+		} else {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "It's an unknown type");
+		}
+		
 		chat.setUpdatedAt(now);
 		
 		Room room = chat.getRoom();
@@ -99,13 +127,36 @@ public class ChatServiceImpl implements ChatService {
 	@Override
 	@Transactional
 	public void deleteChat(long publicId) {
+		long userId = authContext.getCurrentUserId();
+		
 		Chat chat = chatRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chat not found"));
 		
 		Room room = chat.getRoom();
 		Community community = room.getCommunity();
+		
+		User creator = chat.getCreator();
+		
+		if(creator.getId() != userId || 
+				!authContext.hasAuthority("DELETE_CHAT") ||
+				community.getHost().getId() != userId
+				) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot delete chats from other users");
+		}
+		
 		community.checkStateActive();
 		
 		chatRepository.delete(chat);
+	}
+
+	@Override
+	public void checkByte(MultipartFile file) {
+		if(file.isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "file is empty");
+		}
+		
+		if (file.getSize() > 10 * 1024 * 1024) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The file size exceeds 10MB");
+		}
 	}
 }

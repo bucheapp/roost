@@ -1,6 +1,10 @@
 package io.github.bucheapp.roost.models;
 
 public enum ChatType {
+	BASE,
 	TEXT,
-	SUGGESTION
+	SUGGESTION,
+	VOTE,
+	APPROVAL,
+	SCHEDULE
 }
