@@ -19,6 +19,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -63,8 +65,8 @@ public class Community {
 	@Column
 	private LocalDateTime updatedAt;
 	
-	@Column(updatable = false)
-	private LocalDateTime archivedAt;
+	@Column
+	private LocalDateTime archiveAt;
 	
 	@OneToMany(mappedBy = "community", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<HostHistory> hostHistory;
@@ -142,12 +144,12 @@ public class Community {
 		this.updatedAt = updatedAt;
 	}
 
-	public LocalDateTime getArchivedAt() {
-		return archivedAt;
+	public LocalDateTime getArchiveAt() {
+		return archiveAt;
 	}
 
-	public void setArchivedAt(LocalDateTime archivedAt) {
-		this.archivedAt = archivedAt;
+	public void setArchiveAt(LocalDateTime archiveAt) {
+		this.archiveAt = archiveAt;
 	}
 
 	public List<HostHistory> getOperatorHistory() {
@@ -183,5 +185,17 @@ public class Community {
 	
 	public User getHost() {
 		return this.hostHistory.getLast().getUser();
+	}
+	
+	public void archiveIfNeeded() {
+		if(LocalDateTime.now().isAfter(archiveAt) && !(state == CommunityState.FROZEN)) {
+			state = CommunityState.ARCHIVED;
+		}
+	}
+	
+	@PreUpdate
+	@PrePersist
+	public void preUpdate() {
+		archiveIfNeeded();
 	}
 }

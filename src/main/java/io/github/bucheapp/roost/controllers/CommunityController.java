@@ -114,4 +114,14 @@ public class CommunityController {
 		
 		return ResponseEntity.ok(communityResponse);
 	}
+	
+	@PostMapping("api/communities/{publicId}/host/{userPublicId}")
+	public ResponseEntity<Void> assignmentHost(
+			@PathVariable long publicId,
+			@PathVariable long userPublicId
+			) {
+		communityService.assignmentHost(publicId, userPublicId);
+		
+		return ResponseEntity.noContent().build();
+	}
 }

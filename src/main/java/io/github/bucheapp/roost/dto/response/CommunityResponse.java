@@ -16,7 +16,6 @@ public class CommunityResponse {
 	private Set<CommunityProperty> properties;
 	private long publicId;
 	private LocalDateTime createdAt;
-	private LocalDateTime archivedAt;
 	private String name;
 	private Set<HostHistoryResponse> hostHistoryResponses;
 	
@@ -26,7 +25,6 @@ public class CommunityResponse {
 		this.properties = community.getProperties();
 		this.publicId = community.getPublicId();
 		this.createdAt = community.getCreatedAt();
-		this.archivedAt = community.getArchivedAt();
 		this.name = community.getName();
 		
 		this.hostHistoryResponses = new HashSet<>();
@@ -78,14 +76,6 @@ public class CommunityResponse {
 
 	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
-	}
-
-	public LocalDateTime getArchivedAt() {
-		return archivedAt;
-	}
-
-	public void setArchivedAt(LocalDateTime archivedAt) {
-		this.archivedAt = archivedAt;
 	}
 
 	public String getName() {

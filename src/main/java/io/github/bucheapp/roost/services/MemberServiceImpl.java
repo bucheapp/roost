@@ -84,8 +84,9 @@ public class MemberServiceImpl implements MemberService {
 		Member member = memberRepository.findByCommunityAndUser(community, user)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Member not found"));
 
+		//ホストは他の人をホストにしない限り脱退できない
 		if (community.getHost().getId() == userId) {
-			//TODO: ホストの場合は別の処理を追加
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "The host cannot leave the community");
 		}
 
 		memberRepository.delete(member);
@@ -102,9 +103,8 @@ public class MemberServiceImpl implements MemberService {
 		Member member = memberRepository.findByCommunityAndUser(community, user)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Member not found"));
 		
-		//ホストはキックできない
 		if (community.getHost().getPublicId() == userPublicId) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Couldn't kick");
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Couldn't kick");
 		}
 		
 		memberRepository.delete(member);
