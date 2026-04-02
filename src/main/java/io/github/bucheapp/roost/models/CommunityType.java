@@ -8,5 +8,6 @@ public enum CommunityType {
 	GAMING,
 	LITERATURE,
 	EDUCATION,
-	ENTERTAINMENT
+	ENTERTAINMENT,
+	NONE
 }

@@ -17,7 +17,6 @@ import io.github.bucheapp.roost.services.ProfileService;
 @RestController
 @RequestMapping("api/users")
 public class ProfileController {
-
 	@Autowired
 	private ProfileService profileService;
 

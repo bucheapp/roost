@@ -1,6 +1,7 @@
 package io.github.bucheapp.roost.config;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,13 +10,21 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import io.github.bucheapp.roost.models.Community;
+import io.github.bucheapp.roost.models.CommunityProperty;
+import io.github.bucheapp.roost.models.CommunityState;
+import io.github.bucheapp.roost.models.CommunityType;
+import io.github.bucheapp.roost.models.Member;
 import io.github.bucheapp.roost.models.Permission;
 import io.github.bucheapp.roost.models.Profile;
 import io.github.bucheapp.roost.models.Role;
+import io.github.bucheapp.roost.models.Room;
 import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.models.UserState;
+import io.github.bucheapp.roost.repositories.CommunityRepository;
 import io.github.bucheapp.roost.repositories.PermissionRepository;
 import io.github.bucheapp.roost.repositories.RoleRepository;
+import io.github.bucheapp.roost.repositories.RoomRepository;
 import io.github.bucheapp.roost.repositories.UserRepository;
 import io.github.bucheapp.roost.services.WorkerIdProvider;
 import io.github.bucheapp.roost.util.Snowflake;
@@ -30,6 +39,12 @@ public class DataInitializer implements CommandLineRunner {
 	
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private CommunityRepository communityRepository;
+	
+	@Autowired
+	private RoomRepository roomRepository;
 	
 	@Value("${ADMIN_USERNAME}")
 	private String adminUsername;
@@ -60,6 +75,8 @@ public class DataInitializer implements CommandLineRunner {
 		Permission createChat = getOrCreatePermission("CREATE_CHAT");
 		Permission updateChat = getOrCreatePermission("UPDATE_CHAT");
 		Permission deleteChat = getOrCreatePermission("DELETE_CHAT");
+		Permission kickMember = getOrCreatePermission("KICK_MEMBER");
+		Permission banMember = getOrCreatePermission("BAN_MEMBER");
 		getOrCreatePermission("CREATE_ADMINUSER");
 		
 		Role superAdmin = getOrCreateRole("SUPER_ADMIN");
@@ -70,7 +87,9 @@ public class DataInitializer implements CommandLineRunner {
 		admin.setPermissions(Set.of(updateUserState,createUser,getPermission,
 				grantPermission,revokePermission,createCommunity,
 				updateCommunity,updateCommunityState,updateCommunityProperty,
-				createRoom,updateRoom,deleteRoom,createChat,updateChat,deleteChat));
+				createRoom,updateRoom,deleteRoom,createChat,updateChat,deleteChat,
+				kickMember,banMember
+				));
 		roleRepository.save(admin);
 		
 		Role user = getOrCreateRole("USER");
@@ -92,7 +111,44 @@ public class DataInitializer implements CommandLineRunner {
 			profile.setUser(adminUser);
 			
 			userRepository.save(adminUser);
+			
+			//OpenCommunity作成
+			if(communityRepository.findByName("OpenCommunity").isEmpty()) {
+				Set<CommunityProperty> properties = new HashSet<>();
+				properties.add(CommunityProperty.OPEN);
+				properties.add(CommunityProperty.FIXED);
+				properties.add(CommunityProperty.PERMANENT);
+				
+				Community community = new Community();
+				community.setName("OpenCommunity");
+				community.setProperties(properties);
+				community.setType(CommunityType.NONE);
+				community.addHostHistory(adminUser);
+				community.setState(CommunityState.ACTIVE);
+				community.setPublicId(snowflake.nextId());
+				community.setCreatedAt(LocalDateTime.now());
+				Member member = new Member();
+				member.setUser(adminUser);
+				member.setTime(LocalDateTime.now());
+				member.setCommunity(community);
+				community.addMember(member);
+				
+				communityRepository.save(community);
+				roomRepository.save(createRoom("ようこそ", community,snowflake.nextId(),adminUser));
+				roomRepository.save(createRoom("質問", community,snowflake.nextId(),adminUser));
+				roomRepository.save(createRoom("雑談", community,snowflake.nextId(),adminUser));
+			}
 		}
+	}
+	
+	private Room createRoom(String name, Community community,long publicId,User user) {
+		Room room = new Room();
+		room.setName(name);
+		room.setCommunity(community);
+		room.setPublicId(publicId);
+		room.setCreatedAt(LocalDateTime.now());
+		room.setCreator(user);
+		return room;
 	}
 	
 	private Role getOrCreateRole(String name) {

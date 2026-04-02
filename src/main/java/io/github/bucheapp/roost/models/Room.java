@@ -16,6 +16,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 @Entity
 @Table(name = "rooms")
 public class Room {
@@ -26,7 +29,7 @@ public class Room {
 	
 	@Column(length = 10)
 	@NotBlank
-	@Size(min = 3,max = 10)
+	@Size(min = 1,max = 10)
 	@Pattern(regexp = "^[\\p{L}]+$")
 	private String name;
 	
@@ -34,7 +37,8 @@ public class Room {
 	private long publicId;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "community_id", nullable = false)
+	@JoinColumn(name = "community_id")
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	@NotNull
 	private Community community;
 

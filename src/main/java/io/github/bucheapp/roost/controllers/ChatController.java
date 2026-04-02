@@ -1,7 +1,10 @@
 package io.github.bucheapp.roost.controllers;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 import io.github.bucheapp.roost.dto.request.ChatRequest;
 import io.github.bucheapp.roost.dto.request.UpdateChatRequest;
 import io.github.bucheapp.roost.dto.response.ChatResponse;
+import io.github.bucheapp.roost.dto.response.ChatSWResponse;
 import io.github.bucheapp.roost.models.Chat;
+import io.github.bucheapp.roost.models.SWType;
 import io.github.bucheapp.roost.services.ChatService;
 
 @RestController
@@ -23,6 +28,9 @@ import io.github.bucheapp.roost.services.ChatService;
 public class ChatController {
 	@Autowired
 	private ChatService chatService;
+	
+	@Autowired
+	private SimpMessagingTemplate template;
 	
 	@GetMapping
 	public ResponseEntity<ChatResponse> getChat(
@@ -45,6 +53,9 @@ public class ChatController {
 		
 		ChatResponse chatResponse = new ChatResponse(chat);
 		
+		ChatSWResponse chatSWResponse = new ChatSWResponse(chat,SWType.NEW);
+		template.convertAndSend("/topic/room/" + chatResponse.getRoomId() + "/chat", chatSWResponse);
+		
 		return ResponseEntity.ok(chatResponse);
 	}
 	
@@ -58,6 +69,9 @@ public class ChatController {
 		
 		ChatResponse chatResponse = new ChatResponse(chat);
 		
+		ChatSWResponse chatSWResponse = new ChatSWResponse(chat,SWType.UPDATE);
+		template.convertAndSend("/topic/chat/" + publicId, chatSWResponse);
+		
 		return ResponseEntity.ok(chatResponse);
 	}
 	
@@ -67,6 +81,12 @@ public class ChatController {
 			@PathVariable long publicId
 			) {
 		chatService.deleteChat(publicId);
+		
+		Map<String, Object> payload = Map.of(
+				"publicId", publicId,
+				"swType", SWType.DELETE
+			);
+		template.convertAndSend("/topic/chat/" + publicId, (Object) payload);
 		
 		return ResponseEntity.noContent().build();
 	}

@@ -1,20 +1,26 @@
 package io.github.bucheapp.roost.models;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -47,8 +53,7 @@ public class Community {
 	@Enumerated(EnumType.STRING)
 	@CollectionTable(name = "community_properties", joinColumns = @JoinColumn(name = "community_id"))
 	@Column
-	@NotNull
-	private Set<CommunityProperty> properties = new HashSet<>();
+	private Set<CommunityProperty> properties;
 	
 	@Column(unique = true)
 	private long publicId;
@@ -60,13 +65,20 @@ public class Community {
 	@Column
 	private LocalDateTime updatedAt;
 	
-	@Column(updatable = false)
-	private LocalDateTime archivedAt;
+	@Column
+	private LocalDateTime archiveAt;
 	
-	@ManyToOne
-	@JoinColumn(name = "creator_id")
-	@NotNull
-	private User creator;
+	@OneToMany(mappedBy = "community", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private List<HostHistory> hostHistory;
+	
+	@OneToMany(mappedBy = "community", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private Set<Member> members;
+	
+	public Community() {
+		this.properties = new HashSet<>();
+		this.hostHistory = new ArrayList<>();
+		this.members = new HashSet<>();
+	}
 
 	public long getId() {
 		return id;
@@ -132,19 +144,58 @@ public class Community {
 		this.updatedAt = updatedAt;
 	}
 
-	public LocalDateTime getArchivedAt() {
-		return archivedAt;
+	public LocalDateTime getArchiveAt() {
+		return archiveAt;
 	}
 
-	public void setArchivedAt(LocalDateTime archivedAt) {
-		this.archivedAt = archivedAt;
+	public void setArchiveAt(LocalDateTime archiveAt) {
+		this.archiveAt = archiveAt;
 	}
 
-	public User getCreator() {
-		return creator;
+	public List<HostHistory> getOperatorHistory() {
+		return hostHistory;
 	}
 
-	public void setCreator(User creator) {
-		this.creator = creator;
+	public void setHostHistory(List<HostHistory> hostHistory) {
+		this.hostHistory = hostHistory;
+	}
+	
+	public void addHostHistory(User user) {
+		hostHistory.add(new HostHistory(
+				user,
+				LocalDateTime.now()
+				));
+	}
+
+	public Set<Member> getMembers() {
+		return members;
+	}
+
+	public void setMembers(Set<Member> members) {
+		this.members = members;
+	}
+	
+	public void addMember(Member member) {
+		this.members.add(member);
+	}
+	
+	public void removeMember(Member member) {
+		this.members.remove(member);
+	}
+	
+	public User getHost() {
+		return this.hostHistory.getLast().getUser();
+	}
+	
+	public void archiveIfNeeded() {
+		if(LocalDateTime.now().isAfter(archiveAt) && !(state == CommunityState.FROZEN)) {
+			state = CommunityState.ARCHIVED;
+		}
+	}
+	
+	@PreUpdate
+	@PrePersist
+	public void preUpdate() {
+		archiveIfNeeded();
 	}
 }

@@ -1,7 +1,10 @@
 package io.github.bucheapp.roost.controllers;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -12,11 +15,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.github.bucheapp.roost.dto.request.CommunityRequest;
+import io.github.bucheapp.roost.dto.request.CommunitySearchRequest;
 import io.github.bucheapp.roost.dto.request.UpdateCommunityPropertyRequest;
 import io.github.bucheapp.roost.dto.request.UpdateCommunityRequest;
 import io.github.bucheapp.roost.dto.request.UpdateCommunityStateRequest;
 import io.github.bucheapp.roost.dto.response.CommunityResponse;
+import io.github.bucheapp.roost.dto.response.CommunitySWResponse;
 import io.github.bucheapp.roost.models.Community;
+import io.github.bucheapp.roost.models.SWType;
 import io.github.bucheapp.roost.services.CommunityService;
 
 @RestController
@@ -24,6 +30,9 @@ import io.github.bucheapp.roost.services.CommunityService;
 public class CommunityController {
 	@Autowired
 	private CommunityService communityService;
+	
+	@Autowired
+	private SimpMessagingTemplate template;
 	
 	@GetMapping("/{publicId}")
 	public ResponseEntity<CommunityResponse> getCommunity(
@@ -36,6 +45,18 @@ public class CommunityController {
 		return ResponseEntity.ok(communityResponse);
 	}
 	
+	@GetMapping("/api/communities")
+	public ResponseEntity<List<CommunityResponse>> getCommunities(
+		CommunitySearchRequest req
+	) {
+		List<Community> communities = communityService.search(req);
+		List<CommunityResponse> communityResponses = communities.stream()
+				.map(CommunityResponse::new)
+				.toList();
+
+		return ResponseEntity.ok(communityResponses);
+	}
+	
 	@PreAuthorize("hasAuthority('CREATE_COMMUNITY')")
 	@PostMapping
 	public ResponseEntity<CommunityResponse> createCommunity(
@@ -45,6 +66,9 @@ public class CommunityController {
 		Community community = communityService.createCommunity(req);
 		
 		CommunityResponse communityResponse = new CommunityResponse(community);
+		
+		CommunitySWResponse communitySWResponse = new CommunitySWResponse(community,SWType.NEW);
+		template.convertAndSend("/topic/community/global", communitySWResponse);
 		
 		return ResponseEntity.ok(communityResponse);
 	}
@@ -59,10 +83,13 @@ public class CommunityController {
 		
 		CommunityResponse communityResponse = new CommunityResponse(community);
 		
+		CommunitySWResponse communitySWResponse = new CommunitySWResponse(community,SWType.UPDATE);
+		template.convertAndSend("/topic/community/global", communitySWResponse);
+		
 		return ResponseEntity.ok(communityResponse);
 	}
 	
-	@PreAuthorize("hasAuthority('UPDATE_COMMUNITYSTATE')")
+	@PreAuthorize("hasAuthority('UPDATE_COMMUNITYSTATE') or @communitySecurity.isHost(#publicId)")
 	@PatchMapping("/{publicId}/state")
 	public ResponseEntity<CommunityResponse> updateCommunityState(
 			@PathVariable long publicId,
@@ -86,5 +113,15 @@ public class CommunityController {
 		CommunityResponse communityResponse = new CommunityResponse(community);
 		
 		return ResponseEntity.ok(communityResponse);
+	}
+	
+	@PostMapping("api/communities/{publicId}/host/{userPublicId}")
+	public ResponseEntity<Void> assignmentHost(
+			@PathVariable long publicId,
+			@PathVariable long userPublicId
+			) {
+		communityService.assignmentHost(publicId, userPublicId);
+		
+		return ResponseEntity.noContent().build();
 	}
 }
