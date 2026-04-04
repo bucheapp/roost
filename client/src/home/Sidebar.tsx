@@ -3,18 +3,32 @@ import "./Sidebar.css";
 
 import Header from "./Header";
 import SearchGroup from "./SearchGroup";
-import FixedGroup from "./groups/FixedGroup";
-import NewGroup from "./groups/NewGroup";
-import PopularGroup from "./groups/PopularGroup";
+import FixedGroup from "./components/groups/FixedGroup";
+import NewGroup from "./components/groups/NewGroup";
+import PopularGroup from "./components/groups/PopularGroup";
+import AffiliationGroup from "./components/groups/AffiliationGroup";
 
-const Sidebar: React.FC = () => {
+type Props = {
+	isOpen: boolean;
+	isMobile: boolean;
+	onClose: () => void;
+};
+
+const Sidebar: React.FC<Props> = ({ isOpen, isMobile, onClose }) => {
 	return (
-		<div className="sidebar">
+		<div className={`sidebar ${isOpen ? "open" : ""}`}>
+			<button 
+			style={{ display: (isMobile && isOpen) ? "block" : "none" }}
+			className="close-btn" onClick={onClose}>
+				×
+			</button>
+
 			<Header />
 			<SearchGroup />
 			<FixedGroup />
 			<NewGroup />
 			<PopularGroup />
+			<AffiliationGroup />
 		</div>
 	);
 };
