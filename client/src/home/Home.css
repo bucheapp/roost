@@ -1,0 +1,22 @@
+.layout {
+	display: flex;
+	height: 100vh;
+}
+
+.main {
+	flex: 1;
+	position: relative;
+	display: flex;
+	justify-content: center;
+	align-items: flex-start;
+	padding: 20px;
+}
+
+.content {
+	width: 100%;
+	max-width: 800px;
+	background: #ffffff;
+	padding: 20px;
+	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
