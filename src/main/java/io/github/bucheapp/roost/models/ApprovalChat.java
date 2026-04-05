@@ -1,11 +1,15 @@
 package io.github.bucheapp.roost.models;
 
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotNull;
 
 import io.github.bucheapp.roost.dto.response.ApprovalChatResponse;
 
+@Entity
+@DiscriminatorValue("APPROVAL")
 public class ApprovalChat extends Chat {
 	@ManyToOne
 	@JoinColumn(name = "target_user_id")

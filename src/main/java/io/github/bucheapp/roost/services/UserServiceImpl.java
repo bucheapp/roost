@@ -28,6 +28,7 @@ import io.github.bucheapp.roost.models.Permission;
 import io.github.bucheapp.roost.models.Profile;
 import io.github.bucheapp.roost.models.RefreshToken;
 import io.github.bucheapp.roost.models.User;
+import io.github.bucheapp.roost.models.UserState;
 import io.github.bucheapp.roost.repositories.PermissionRepository;
 import io.github.bucheapp.roost.repositories.RefreshTokenRepository;
 import io.github.bucheapp.roost.repositories.RoleRepository;
@@ -239,7 +240,7 @@ public class UserServiceImpl implements UserService {
 		String email = req.getEmail();
 		String rawPassword = req.getPassword();
 
-		if (userRepository.existsByEmail(email)) {
+		if (!email.isBlank() && userRepository.existsByEmail(email)) {
 			throw new ResponseStatusException(HttpStatus.CONFLICT, "This email address is already in use");
 		}
 
@@ -251,6 +252,7 @@ public class UserServiceImpl implements UserService {
 		String hashedPassword = encoder.encode(rawPassword);
 
 		User user = new User(name, email, hashedPassword);
+		user.setState(UserState.ACTIVE);
 		Profile profile = new Profile();
 		profile.setCreatedAt(LocalDateTime.now());
 		
