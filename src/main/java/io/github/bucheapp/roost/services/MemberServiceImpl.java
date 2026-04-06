@@ -19,6 +19,7 @@ import io.github.bucheapp.roost.repositories.CommunityRepository;
 import io.github.bucheapp.roost.repositories.MemberRepository;
 import io.github.bucheapp.roost.repositories.UserRepository;
 import io.github.bucheapp.roost.security.AuthContext;
+import io.github.bucheapp.roost.util.MessageUtil;
 
 @Service
 public class MemberServiceImpl implements MemberService {
@@ -32,18 +33,21 @@ public class MemberServiceImpl implements MemberService {
 	private MemberRepository memberRepository;
 	
 	@Autowired
+	private MessageUtil messageUtil;
+	
+	@Autowired
 	private AuthContext authContext;
 	
 	@Override
 	@Transactional
 	public Set<Member> joinMember(long publicId,MemberRequest req) {
 		Community community = communityRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Community not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("community.notfound")));
 		
 		Set<Member> members = community.getMembers();
 		
 		User user = userRepository.findByPublicId(req.getPublicId())
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 		
 		if(community.getProperties().contains(CommunityProperty.OPEN)) {
 			Member member = new Member();
@@ -64,7 +68,7 @@ public class MemberServiceImpl implements MemberService {
 	@Override
 	public Set<Member> getMember(long publicId) {
 		Community community = communityRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Community not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("community.notfound")));
 		
 		Set<Member> members = community.getMembers();
 		
@@ -74,19 +78,19 @@ public class MemberServiceImpl implements MemberService {
 	@Override
 	public void leaveMember(long publicId) {
 		Community community = communityRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Community not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("community.notfound")));
 
 		long userId = authContext.getCurrentUserId();
 
 		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 
 		Member member = memberRepository.findByCommunityAndUser(community, user)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Member not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("member.notfound")));
 
 		//ホストは他の人をホストにしない限り脱退できない
 		if (community.getHost().getId() == userId) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "The host cannot leave the community");
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.get("host.cannot.leave"));
 		}
 
 		memberRepository.delete(member);
@@ -95,16 +99,16 @@ public class MemberServiceImpl implements MemberService {
 	@Override
 	public void kickMember(long publicId, long userPublicId) {
 		Community community = communityRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Community not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("community.notfound")));
 		
 		User user = userRepository.findByPublicId(userPublicId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 		
 		Member member = memberRepository.findByCommunityAndUser(community, user)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Member not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("member.notfound")));
 		
 		if (community.getHost().getPublicId() == userPublicId) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Couldn't kick");
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.get("couldnt.kick"));
 		}
 		
 		memberRepository.delete(member);

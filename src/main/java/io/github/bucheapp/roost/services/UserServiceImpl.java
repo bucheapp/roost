@@ -17,23 +17,17 @@ import org.springframework.web.server.ResponseStatusException;
 
 import io.github.bucheapp.roost.dto.request.CreateAdminUserRequest;
 import io.github.bucheapp.roost.dto.request.CreateUserRequest;
-import io.github.bucheapp.roost.dto.request.LoginRequest;
 import io.github.bucheapp.roost.dto.request.PermissionRequest;
-import io.github.bucheapp.roost.dto.request.SignupRequest;
 import io.github.bucheapp.roost.dto.request.UpdateUserRequest;
 import io.github.bucheapp.roost.dto.request.UpdateUserStateRequest;
-import io.github.bucheapp.roost.dto.response.LoginResponse;
-import io.github.bucheapp.roost.dto.response.SignupResponse;
 import io.github.bucheapp.roost.models.Permission;
 import io.github.bucheapp.roost.models.Profile;
-import io.github.bucheapp.roost.models.RefreshToken;
 import io.github.bucheapp.roost.models.User;
-import io.github.bucheapp.roost.models.UserState;
 import io.github.bucheapp.roost.repositories.PermissionRepository;
-import io.github.bucheapp.roost.repositories.RefreshTokenRepository;
 import io.github.bucheapp.roost.repositories.RoleRepository;
 import io.github.bucheapp.roost.repositories.UserRepository;
 import io.github.bucheapp.roost.security.AuthContext;
+import io.github.bucheapp.roost.util.MessageUtil;
 import io.github.bucheapp.roost.util.Snowflake;
 
 @Service
@@ -45,19 +39,16 @@ public class UserServiceImpl implements UserService {
 	private RoleRepository roleRepository;
 	
 	@Autowired
-	private RefreshTokenRepository refreshTokenRepository;
-	
-	@Autowired
 	private PermissionRepository permissionRepository;
-	
-	@Autowired
-	private JwtService jwtService;
 	
 	@Autowired
 	private WorkerIdProvider workerIdProvider;
 	
 	@Autowired
 	private AuthContext authContext;
+	
+	@Autowired
+	private MessageUtil messageUtil;
 	
 	@Value("${app.snowflake.datacenter-id}")
 	private long datacenterId;
@@ -67,7 +58,7 @@ public class UserServiceImpl implements UserService {
 		long userId = authContext.getCurrentUserId();
 		
 		return userRepository.findById(userId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 	}
 	
 	@Override
@@ -75,11 +66,11 @@ public class UserServiceImpl implements UserService {
 	public User updateCurrentUser(UpdateUserRequest req) {
 		long userId = authContext.getCurrentUserId();
 		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 		
 		if(req.getEmail() != null) {
 			if (userRepository.existsByEmail(req.getEmail())) {
-				throw new ResponseStatusException(HttpStatus.CONFLICT, "This email address is already in use");
+				throw new ResponseStatusException(HttpStatus.CONFLICT, messageUtil.get("email.conflict"));
 			}
 			
 			user.setEmail(req.getEmail());
@@ -100,7 +91,7 @@ public class UserServiceImpl implements UserService {
 		long userId = authContext.getCurrentUserId();
 		
 		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 
 		userRepository.delete(user);
 	}
@@ -108,7 +99,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public User getUser(long publicId) {
 		return userRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 	}
 	
 	@Override
@@ -122,15 +113,15 @@ public class UserServiceImpl implements UserService {
 		Set<String> requestedPermissions = req.getPermissions();
 		
 		if (userRepository.existsByEmail(email)) {
-			throw new ResponseStatusException(HttpStatus.CONFLICT, "This email address is already in use");
+			throw new ResponseStatusException(HttpStatus.CONFLICT, messageUtil.get("email.conflict"));
 		}
 
 		if (userRepository.existsByName(name)) {
-			throw new ResponseStatusException(HttpStatus.CONFLICT, "This name is already in use");
+			throw new ResponseStatusException(HttpStatus.CONFLICT, messageUtil.get("name.conflict"));
 		}
 		
 		User currentUser = userRepository.findById(userId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 		
 		Set<String> creatorPermissions = currentUser.getPermissions()
 				.stream()
@@ -148,7 +139,7 @@ public class UserServiceImpl implements UserService {
 		
 		//自分が持ってる権限の範囲内しか付与できない
 		if (!creatorPermissions.containsAll(requestedPermissions)) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Permissions cannot be granted");
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.get("permissions.cannot.be.granted"));
 		}
 
 		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
@@ -164,7 +155,7 @@ public class UserServiceImpl implements UserService {
 		
 		Set<Permission> permissions = requestedPermissions.stream()
 				.map(permissionName -> permissionRepository.findByName(permissionName)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Permission not found:" + permissionName)))
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("permission.notfound"))))
 				.collect(Collectors.toSet());
 		
 		user.setPermissions(permissions);
@@ -178,12 +169,12 @@ public class UserServiceImpl implements UserService {
 		String email = req.getEmail();
 		String rawPassword = req.getPassword();
 		
-		if (userRepository.existsByEmail(email)) {
-			throw new ResponseStatusException(HttpStatus.CONFLICT, "This email address is already in use");
+		if (email != null && !email.isBlank() && userRepository.existsByEmail(email)) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT, messageUtil.get("email.conflict"));
 		}
 
 		if (userRepository.existsByName(name)) {
-			throw new ResponseStatusException(HttpStatus.CONFLICT, "This name is already in use");
+			throw new ResponseStatusException(HttpStatus.CONFLICT, messageUtil.get("name.conflict"));
 		}
 		
 		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
@@ -193,7 +184,7 @@ public class UserServiceImpl implements UserService {
 
 		User user = new User(name, email, hashedPassword);
 		user.setRole(roleRepository.findByName("ADMIN")
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Role not found")));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("role.notfound"))));
 		
 		Profile profile = new Profile();
 		profile.setCreatedAt(LocalDateTime.now());
@@ -208,10 +199,10 @@ public class UserServiceImpl implements UserService {
 		long userId = authContext.getCurrentUserId();
 		
 		User currentUser = userRepository.findById(userId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 		
 		User user = userRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 		
 		Set<String> userPermissions = user.getPermissions()
 				.stream()
@@ -225,7 +216,7 @@ public class UserServiceImpl implements UserService {
 		
 		//自分が持ってる権限の範囲内しか付与できない
 		if (!currentUserPermissions.containsAll(userPermissions)) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Permissions cannot be granted");
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.get("permissions.cannot.be.granted"));
 		}
 		
 		user.setState(req.getState());
@@ -234,90 +225,9 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	@Override
-	@Transactional
-	public SignupResponse register(SignupRequest req) {
-		String name = req.getName();
-		String email = req.getEmail();
-		String rawPassword = req.getPassword();
-
-		if (!email.isBlank() && userRepository.existsByEmail(email)) {
-			throw new ResponseStatusException(HttpStatus.CONFLICT, "This email address is already in use");
-		}
-
-		if (userRepository.existsByName(name)) {
-			throw new ResponseStatusException(HttpStatus.CONFLICT, "This name is already in use");
-		}
-
-		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-		String hashedPassword = encoder.encode(rawPassword);
-
-		User user = new User(name, email, hashedPassword);
-		user.setState(UserState.ACTIVE);
-		Profile profile = new Profile();
-		profile.setCreatedAt(LocalDateTime.now());
-		
-		profile.setUser(user);
-		user.setProfile(profile);
-
-		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
-		
-		user.setPublicId(snowflake.nextId());
-		user.setRole(roleRepository.findByName("USER")
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Role not found")));
-
-		User saved = userRepository.saveAndFlush(user);
-
-		String accessTokenText = jwtService.generateAccessToken(saved);
-		String refreshTokenText = jwtService.generateRefreshToken(saved);
-
-		RefreshToken refreshToken =
-				new RefreshToken(refreshTokenText, saved, JwtServiceImpl.REFRESHTOKEN_VALIDITY);
-
-		refreshTokenRepository.save(refreshToken);
-
-		return new SignupResponse(accessTokenText, refreshTokenText);
-	}
-  
-	@Override
-	public LoginResponse login(LoginRequest req) {
-		User user = userRepository.findByName(req.getName())
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-
-		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-
-		if (!encoder.matches(req.getPassword(), user.getPassword())) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Incorrect password");
-		}
-
-		String accessTokenText = jwtService.generateAccessToken(user);
-		String refreshTokenText = jwtService.generateRefreshToken(user);
-
-		RefreshToken refreshToken =
-				new RefreshToken(refreshTokenText, user, JwtServiceImpl.REFRESHTOKEN_VALIDITY);
-
-		refreshTokenRepository.save(refreshToken);
-
-		return new LoginResponse(accessTokenText, refreshTokenText);
-	}
-  
-	@Override
-	@Transactional
-	public void logout(String refreshTokenText) {
-		refreshTokenRepository.deleteByToken(refreshTokenText);
-	}
-	
-	@Override
-	public String refresh(String refreshTokenText) {
-		RefreshToken refreshToken = refreshTokenRepository.findByToken(refreshTokenText)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Token not found"));
-
-		return jwtService.generateAccessToken(refreshToken.getUser());
-	}
-	
-	@Override
 	public Set<Permission> getPermissions(long publicId) {
 		User user = userRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 		return user.getPermissions();
 	}
 	
@@ -327,10 +237,10 @@ public class UserServiceImpl implements UserService {
 		long userId = authContext.getCurrentUserId();
 		
 		User currentUser = userRepository.findById(userId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 		
 		User user = userRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 		
 		Set<String> requestedPermissions = req.getPermissions();
 		
@@ -355,17 +265,17 @@ public class UserServiceImpl implements UserService {
 		
 		if (!currentUserPermissions.containsAll(requestedPermissions) ||
 				!currentUserPermissions.containsAll(userPermissions)) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Permissions cannot be granted");
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.get("permissions.cannot.be.granted"));
 		}
 		
 		//自分の権限は変更できない
 		if(currentUser.getId() == user.getId()) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot grant permissions to yourself");
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.get("permissions.cannot.be.granted"));
 		}
 		
 		Set<Permission> permissions = requestedPermissions.stream()
 				.map(permissionName -> permissionRepository.findByName(permissionName)
-				.orElseThrow(() -> new RuntimeException("Permission not found: " + permissionName)))
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"permission.notfound")))
 				.collect(Collectors.toSet());
 		
 		user.getPermissions().addAll(permissions);
@@ -379,10 +289,10 @@ public class UserServiceImpl implements UserService {
 		long userId = authContext.getCurrentUserId();
 		
 		User currentUser = userRepository.findById(userId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 		
 		User user = userRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 		
 		Set<String> requestedPermissions = req.getPermissions();
 		
@@ -407,12 +317,12 @@ public class UserServiceImpl implements UserService {
 		
 		if (!currentUserPermissions.containsAll(requestedPermissions) ||
 				!currentUserPermissions.containsAll(userPermissions)) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Permissions could not be revoked");
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.get("permissions.cannot.be.revoked"));
 		}
 		
 		//自分の権限は変更できない
 		if (currentUser.getId() == user.getId()) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot revoke permissions from yourself");
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "permissions.cannot.be.revoked");
 		}
 		
 		user.getPermissions().removeIf(p ->

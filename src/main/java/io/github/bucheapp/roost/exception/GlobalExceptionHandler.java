@@ -1,14 +1,27 @@
 package io.github.bucheapp.roost.exception;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.server.ResponseStatusException;
 
+import io.github.bucheapp.roost.dto.response.ExceptionResponse;
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
 	@ExceptionHandler(ResponseStatusException.class)
-	public ResponseEntity<Void> handleResponseStatusException(ResponseStatusException ex) {
-		return ResponseEntity.status(ex.getStatusCode()).build();
+	public ResponseEntity<ExceptionResponse> handleResponseStatusException(ResponseStatusException ex) {
+		String msg = ex.getReason();
+		
+		ExceptionResponse exceptionResponse = new ExceptionResponse(msg);
+		
+		return ResponseEntity.status(ex.getStatusCode()).body(exceptionResponse);
+	}
+	
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<ExceptionResponse> handleException(Exception ex) {
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ExceptionResponse("Internal server error"));
 	}
 }

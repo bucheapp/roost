@@ -80,6 +80,15 @@
 	transform: scale(0.98);
 }
 
+.error {
+	color: #ff4d4f;
+	background: #fff1f0;
+	border: 1px solid #ffa39e;
+	padding: 5px;
+	border-radius: 6px;
+	font-size: 13px;
+}
+
 @keyframes fadeIn {
 	from {
 		opacity: 0;

@@ -22,6 +22,7 @@ import io.github.bucheapp.roost.repositories.ChatRepository;
 import io.github.bucheapp.roost.repositories.RoomRepository;
 import io.github.bucheapp.roost.repositories.UserRepository;
 import io.github.bucheapp.roost.security.AuthContext;
+import io.github.bucheapp.roost.util.MessageUtil;
 import io.github.bucheapp.roost.util.Snowflake;
 
 @Service
@@ -41,13 +42,16 @@ public class ChatServiceImpl implements ChatService {
 	@Autowired
 	private WorkerIdProvider workerIdProvider;
 	
+	@Autowired
+	private MessageUtil messageUtil;
+	
 	@Value("${app.snowflake.datacenter-id}")
 	private long datacenterId;
 	
 	@Override
 	public Chat getChat(long publicId) {
 		return chatRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chat not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("chat.notfound")));
 	}
 
 	@Override
@@ -57,10 +61,10 @@ public class ChatServiceImpl implements ChatService {
 		ChatType type = req.getType();
 		
 		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 		
 		Room room = roomRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 		
 		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
 		LocalDateTime now = LocalDateTime.now();
@@ -75,7 +79,7 @@ public class ChatServiceImpl implements ChatService {
 			}
 			chat = new TextChat(req);
 		} else {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "It's an unknown type");
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, messageUtil.get("unknown.chattype"));
 		}
 		
 		chat.setPublicId(snowflake.nextId());
@@ -95,12 +99,12 @@ public class ChatServiceImpl implements ChatService {
 		LocalDateTime now = LocalDateTime.now();
 		
 		Chat chat = chatRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chat not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("chat.notfound")));
 		
 		User creator = chat.getCreator();
 		
 		if(creator.getId() != userId) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot edit other users' chats");
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.get("cannot.edit.chat"));
 		}
 		
 		if(type == ChatType.TEXT) {
@@ -112,7 +116,7 @@ public class ChatServiceImpl implements ChatService {
 				//TODO: ファイルを作成するロジックを作成
 			}
 		} else {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "It's an unknown type");
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, messageUtil.get("unknown.chattype"));
 		}
 		
 		chat.setUpdatedAt(now);
@@ -130,7 +134,7 @@ public class ChatServiceImpl implements ChatService {
 		long userId = authContext.getCurrentUserId();
 		
 		Chat chat = chatRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chat not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("chat.notfound")));
 		
 		Room room = chat.getRoom();
 		Community community = room.getCommunity();
@@ -141,7 +145,7 @@ public class ChatServiceImpl implements ChatService {
 				!authContext.hasAuthority("DELETE_CHAT") ||
 				community.getHost().getId() != userId
 				) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot delete chats from other users");
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.get("cannot.delete.chat"));
 		}
 		
 		community.checkStateActive();
@@ -152,11 +156,11 @@ public class ChatServiceImpl implements ChatService {
 	@Override
 	public void checkByte(MultipartFile file) {
 		if(file.isEmpty()) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "file is empty");
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, messageUtil.get("file.isempty"));
 		}
 		
 		if (file.getSize() > 10 * 1024 * 1024) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The file size exceeds 10MB");
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, messageUtil.get("file.size.exceeds"));
 		}
 	}
 }

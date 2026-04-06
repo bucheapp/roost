@@ -23,13 +23,17 @@ import io.github.bucheapp.roost.dto.response.AccessTokenResponse;
 import io.github.bucheapp.roost.dto.response.LoginResponse;
 import io.github.bucheapp.roost.dto.response.RefreshTokenResponse;
 import io.github.bucheapp.roost.dto.response.SignupResponse;
-import io.github.bucheapp.roost.services.UserService;
+import io.github.bucheapp.roost.services.AuthService;
+import io.github.bucheapp.roost.util.MessageUtil;
 
 @RestController
 @RequestMapping("api/auth")
 public class AuthController {
 	@Autowired
-	private UserService userService;
+	private AuthService authService;
+	
+	@Autowired
+	private MessageUtil messageUtil;
 	
 	@PostMapping("/signup")
 	public ResponseEntity<AccessTokenResponse> signup(
@@ -47,7 +51,7 @@ public class AuthController {
 			}
 		}
 
-		SignupResponse res = userService.register(req);
+		SignupResponse res = authService.register(req);
 
 		Cookie cookie = new Cookie("refreshToken", res.getRefreshToken());
 		cookie.setHttpOnly(true);
@@ -77,7 +81,7 @@ public class AuthController {
 			}
 		}
 
-		LoginResponse res = userService.login(req);
+		LoginResponse res = authService.login(req);
 
 		Cookie cookie = new Cookie("refreshToken", res.getRefreshToken());
 		cookie.setHttpOnly(true);
@@ -91,7 +95,7 @@ public class AuthController {
 	
 	@PostMapping("/logout")
 	public ResponseEntity<Void> logout(@CookieValue String refreshToken) {
-		userService.logout(refreshToken);
+		authService.logout(refreshToken);
 		
 		ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
 				.httpOnly(true)
@@ -116,6 +120,12 @@ public class AuthController {
 			for (Cookie cookie : cookies) {
 				if ("refreshToken".equals(cookie.getName())) {
 					String refreshToken = cookie.getValue();
+					if(!authService.checkRefreshToken(refreshToken)) {
+						throw new ResponseStatusException(
+								HttpStatus.UNAUTHORIZED,
+								messageUtil.get("token.invalid")
+							);
+					}
 					refreshTokenResponse = new RefreshTokenResponse(refreshToken);
 				}
 			}
@@ -126,7 +136,7 @@ public class AuthController {
 	
 	@GetMapping("/refresh")
 	public ResponseEntity<AccessTokenResponse> refresh(@CookieValue String refreshToken) {
-		String accessToken = userService.refresh(refreshToken);
+		String accessToken = authService.refresh(refreshToken);
 		
 		AccessTokenResponse accessTokenResponse = new AccessTokenResponse(accessToken);
 

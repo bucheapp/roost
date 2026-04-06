@@ -13,6 +13,8 @@ const Signup: React.FC = () => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 
+	const [error, setError] = useState("");
+
 	useEffect(() => {
 		const checkAuth = async () => {
 			try {
@@ -53,7 +55,12 @@ const Signup: React.FC = () => {
 
 			navigate("/user/me");
 		} catch (err) {
-			console.error(err);
+			if (axios.isAxiosError(err)) {
+				const msg = err.response?.data?.msg || "登録に失敗しました";
+				setError(msg);
+			} else {
+				setError("不明なエラーです");
+			}
 		}
 	};
 
@@ -95,6 +102,7 @@ const Signup: React.FC = () => {
 								onChange={(e) => setPassword(e.target.value)}
 							/>
 						</div>
+						{error && <div className="error">{error}</div>}
 						<button className="signup-btn">登録する</button>
 					</form>
 				</div>

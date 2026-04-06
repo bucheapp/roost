@@ -32,6 +32,9 @@ public class RefreshToken {
 	@Column
 	private Instant expiryDate;
 	
+	@Column
+	private boolean revoked;
+	
 	public RefreshToken() {};
 	
 	public RefreshToken(String token,User user, long millis) {
@@ -70,5 +73,13 @@ public class RefreshToken {
 
 	public void setExpiryDate(Instant expiryDate) {
 		this.expiryDate = expiryDate;
+	}
+
+	public boolean isRevoked() {
+		return revoked;
+	}
+
+	public void setRevoked(boolean revoked) {
+		this.revoked = revoked;
 	}
 }

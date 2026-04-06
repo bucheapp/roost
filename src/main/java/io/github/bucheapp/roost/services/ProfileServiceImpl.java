@@ -13,6 +13,7 @@ import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.repositories.ProfileRepository;
 import io.github.bucheapp.roost.repositories.UserRepository;
 import io.github.bucheapp.roost.security.AuthContext;
+import io.github.bucheapp.roost.util.MessageUtil;
 
 @Service
 public class ProfileServiceImpl implements ProfileService {
@@ -24,22 +25,25 @@ public class ProfileServiceImpl implements ProfileService {
 	
 	@Autowired
 	private AuthContext authContext;
+	
+	@Autowired
+	private MessageUtil messageUtil;
 
 	@Override
 	public Profile getCurrentUserProfile() {
 		long userId = authContext.getCurrentUserId();
 		
 		return profileRepository.findByUserId(userId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profile not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("profile.notfound")));
 	}
 
 	@Override
 	public Profile getProfile(long publicId) {
 		User user = userRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 
 		return profileRepository.findByUser(user)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profile not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("profile.notfound")));
 	}
 
 	@Override
@@ -48,7 +52,7 @@ public class ProfileServiceImpl implements ProfileService {
 		long userId = authContext.getCurrentUserId();
 		
 		Profile profile = profileRepository.findByUserId(userId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profile not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("profile.notfound")));
 
 		if (req.getBio() != null) profile.setBio(req.getBio());
 		if (req.getIconUrl() != null) profile.setIconUrl(req.getIconUrl());
