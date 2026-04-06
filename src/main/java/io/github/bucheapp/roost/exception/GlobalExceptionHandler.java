@@ -12,6 +12,7 @@ import io.github.bucheapp.roost.dto.response.ExceptionResponse;
 public class GlobalExceptionHandler {
 	@ExceptionHandler(ResponseStatusException.class)
 	public ResponseEntity<ExceptionResponse> handleResponseStatusException(ResponseStatusException ex) {
+		ex.printStackTrace();
 		String msg = ex.getReason();
 		
 		ExceptionResponse exceptionResponse = new ExceptionResponse(msg);
@@ -21,6 +22,7 @@ public class GlobalExceptionHandler {
 	
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ExceptionResponse> handleException(Exception ex) {
+		ex.printStackTrace();
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(new ExceptionResponse("Internal server error"));
 	}

@@ -12,6 +12,13 @@
 	padding: 20px;
 }
 
+.overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0,0,0,0.3);
+	z-index: 900;
+}
+
 .content {
 	width: 100%;
 	max-width: 800px;
@@ -19,11 +26,24 @@
 	padding: 20px;
 	border-radius: 8px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	position: relative;
 }
 
-.overlay {
-	position: fixed;
-	inset: 0;
-	background: rgba(0,0,0,0.3);
-	z-index: 900;
+.user-btn {
+	position: absolute;
+	top: 20px;
+	right: 20px;
+	background: #6b63ff;
+	color: white;
+	border: none;
+	border-radius: 4px;
+	padding: 8px 12px;
+	cursor: pointer;
+	font-weight: bold;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+	transition: background 0.2s;
+}
+
+.user-btn:hover {
+	background: #554ddf;
 }

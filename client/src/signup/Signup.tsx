@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Signup.css";
+import styles from "./Signup.module.css";
 import axios from "axios";
 
 const baseURL = import.meta.env.VITE_API_URL;
@@ -66,7 +67,7 @@ const Signup: React.FC = () => {
 
 	return (
 		<div className="layout">
-			<div className="main">
+			<div className={styles.main}>
 				<div className="signup-card">
 					<h2 className="title">ユーザ登録</h2>
 
