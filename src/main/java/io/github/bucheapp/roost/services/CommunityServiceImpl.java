@@ -26,6 +26,7 @@ import io.github.bucheapp.roost.repositories.CommunityRepository;
 import io.github.bucheapp.roost.repositories.MemberRepository;
 import io.github.bucheapp.roost.repositories.UserRepository;
 import io.github.bucheapp.roost.security.AuthContext;
+import io.github.bucheapp.roost.util.MessageUtil;
 import io.github.bucheapp.roost.util.Snowflake;
 
 @Service
@@ -44,6 +45,9 @@ public class CommunityServiceImpl implements CommunityService {
 
 	@Autowired
 	private AuthContext authContext;
+	
+	@Autowired
+	private MessageUtil messageUtil;
 
 	@Value("${app.snowflake.datacenter-id}")
 	private long datacenterId;
@@ -51,7 +55,7 @@ public class CommunityServiceImpl implements CommunityService {
 	@Override
 	public Community getCommunity(long publicId) {
 		Community community = communityRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Community not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("community.notfound")));
 
 		return communityRepository.save(community);
 	}
@@ -81,13 +85,13 @@ public class CommunityServiceImpl implements CommunityService {
 
 	public void assignmentHost(long publicId, long userPublicId) {
 		Community community = communityRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Community not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("community.notfound")));
 
 		User user = userRepository.findByPublicId(userPublicId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 
 		Member member = memberRepository.findByCommunityAndUser(community, user)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Member not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("member.notfound")));
 
 		community.addHostHistory(member.getUser());
 		community.checkStateActive();
@@ -107,7 +111,7 @@ public class CommunityServiceImpl implements CommunityService {
 
 		for (Community community : communityList) {
 			if (community.getState() != CommunityState.ARCHIVED) {
-				new ResponseStatusException(HttpStatus.CONFLICT, "A community with that name already exists");
+				new ResponseStatusException(HttpStatus.CONFLICT, messageUtil.get("community.name.conflict"));
 				break;
 			}
 		}
@@ -115,7 +119,7 @@ public class CommunityServiceImpl implements CommunityService {
 		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
 
 		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 
 		LocalDateTime now = LocalDateTime.now();
 
@@ -144,12 +148,12 @@ public class CommunityServiceImpl implements CommunityService {
 		CommunityType type = req.getType();
 
 		Community community = communityRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Community not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("community.notfound")));
 		
 		community.archiveIfNeeded();
 		
 		if(community.getState() != CommunityState.ACTIVE) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Inactive communities cannot be edited");
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.get("community.notactive"));
 		}
 
 		LocalDateTime now = LocalDateTime.now();
@@ -166,7 +170,7 @@ public class CommunityServiceImpl implements CommunityService {
 	@Transactional
 	public Community updateCommunityState(long publicId, UpdateCommunityStateRequest req) {
 		Community community = communityRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Community not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("community.notfound")));
 
 		LocalDateTime now = LocalDateTime.now();
 		community.setState(req.getState());
@@ -179,7 +183,7 @@ public class CommunityServiceImpl implements CommunityService {
 	@Transactional
 	public Community updateCommunityProperty(long publicId, UpdateCommunityPropertyRequest req) {
 		Community community = communityRepository.findByPublicId(publicId)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Community not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("community.notfound")));
 
 		LocalDateTime now = LocalDateTime.now();
 		community.setProperties(req.getProperties());

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.models.UserState;
 import io.github.bucheapp.roost.repositories.UserRepository;
+import io.github.bucheapp.roost.util.MessageUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -25,6 +26,9 @@ public class JwtServiceImpl implements JwtService {
 	
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private MessageUtil messageUtil;
 	
 	public final static long ACCESSTOKEN_VALIDITY = 60 * 60 * 1000;
 	public final static long REFRESHTOKEN_VALIDITY = 7 * 24 * 60 * 60 * 1000;
@@ -75,7 +79,7 @@ public class JwtServiceImpl implements JwtService {
 			Long userId = Long.parseLong(claimsJws.getBody().getSubject());
 			
 			User user = userRepository.findById(userId)
-					.orElseThrow(() -> new UsernameNotFoundException("User not found"));
+					.orElseThrow(() -> new UsernameNotFoundException(messageUtil.get("user.notfound")));
 			
 			if (user.getState() == UserState.FROZEN) {
 				return false;

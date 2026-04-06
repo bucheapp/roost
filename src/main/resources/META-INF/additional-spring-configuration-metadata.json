@@ -14,14 +14,5 @@
     "type": "java.lang.String",
     "description": "A description for 'app.snowflake.datacenter-id'"
   }
-]}{
-    "name": "app.snowflake.datacenter-id",
-    "type": "java.lang.String",
-    "description": "A description for 'app.snowflake.datacenter-id'"
-  }
-]}{
-    "name": "app.snowflake.datacenter-id",
-    "type": "java.lang.String",
-    "description": "A description for 'app.snowflake.datacenter-id'"
-  }
-]}
+  ]
+}
