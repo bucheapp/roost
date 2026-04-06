@@ -3,14 +3,6 @@
 	height: 100vh;
 }
 
-.main {
-	flex: 1;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	padding: 20px;
-}
-
 .signup-card {
 	width: 100%;
 	max-width: 420px;
