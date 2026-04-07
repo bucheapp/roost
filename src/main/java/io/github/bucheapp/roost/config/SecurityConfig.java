@@ -39,6 +39,7 @@ public class SecurityConfig {
 				)
 				.authorizeHttpRequests(auth -> auth
 					.requestMatchers("/api/auth/**").permitAll()
+					.requestMatchers("/icons/**").permitAll()
 					.requestMatchers("/api/users/me").authenticated()
 					.requestMatchers(HttpMethod.GET, "/api/users/{publicId}").permitAll() 
 					.requestMatchers(HttpMethod.GET,"/api/communities").permitAll()

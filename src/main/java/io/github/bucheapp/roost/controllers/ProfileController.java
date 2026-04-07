@@ -1,15 +1,19 @@
 package io.github.bucheapp.roost.controllers;
 
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.github.bucheapp.roost.dto.request.UpdateProfileRequest;
+import io.github.bucheapp.roost.dto.response.ProfilePrivateResponse;
+import io.github.bucheapp.roost.dto.response.ProfilePublicResponse;
 import io.github.bucheapp.roost.dto.response.ProfileResponse;
 import io.github.bucheapp.roost.models.Profile;
 import io.github.bucheapp.roost.services.ProfileService;
@@ -25,7 +29,7 @@ public class ProfileController {
 			@PathVariable long publicId) {
 
 		Profile profile = profileService.getProfile(publicId);
-		ProfileResponse profileResponse = new ProfileResponse(profile);
+		ProfilePublicResponse profileResponse = new ProfilePublicResponse(profile);
 
 		return ResponseEntity.ok(profileResponse);
 	}
@@ -33,14 +37,14 @@ public class ProfileController {
 	@GetMapping("/me/profile")
 	public ResponseEntity<ProfileResponse> getProfile() {
 		Profile profile = profileService.getCurrentUserProfile();
-		ProfileResponse profileResponse = new ProfileResponse(profile);
+		ProfilePrivateResponse profileResponse = new ProfilePrivateResponse(profile);
 		
 		return ResponseEntity.ok(profileResponse);
 	}
 	
 	@PatchMapping("/me/profile")
 	public ResponseEntity<Void> updateProfile(
-			@RequestBody UpdateProfileRequest req) {
+			@ModelAttribute UpdateProfileRequest req) throws IOException {
 
 		profileService.updateCurrentUserProfile(req);
 

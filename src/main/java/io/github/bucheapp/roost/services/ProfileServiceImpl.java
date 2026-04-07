@@ -1,10 +1,14 @@
 package io.github.bucheapp.roost.services;
 
+import java.io.IOException;
+import java.util.UUID;
+
 import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import io.github.bucheapp.roost.dto.request.UpdateProfileRequest;
@@ -17,6 +21,9 @@ import io.github.bucheapp.roost.util.MessageUtil;
 
 @Service
 public class ProfileServiceImpl implements ProfileService {
+	@Autowired
+	private ImageService imageService;
+	
 	@Autowired
 	private ProfileRepository profileRepository;
 	
@@ -48,20 +55,28 @@ public class ProfileServiceImpl implements ProfileService {
 
 	@Override
 	@Transactional
-	public Profile updateCurrentUserProfile(UpdateProfileRequest req) {
+	public Profile updateCurrentUserProfile(UpdateProfileRequest req) throws IOException {
 		long userId = authContext.getCurrentUserId();
 		
 		Profile profile = profileRepository.findByUserId(userId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("profile.notfound")));
 
 		if (req.getBio() != null) profile.setBio(req.getBio());
-		if (req.getIconUrl() != null) profile.setIconUrl(req.getIconUrl());
 		if (req.getGender() != null) profile.setGender(req.getGender());
 		if (req.getDateOfBirth() != null) profile.setDateOfBirth(req.getDateOfBirth());
 		if (req.getPhoneNumber() != null) profile.setPhoneNumber(req.getPhoneNumber());
 		if (req.getAddress() != null) profile.setAddress(req.getAddress());
 		if (req.getGithubUrl() != null) profile.setGithubUrl(req.getGithubUrl());
-		if (req.getCreatedAt() != null) profile.setCreatedAt(req.getCreatedAt());
+		
+		MultipartFile iconFile = req.getIconFile();
+		if(iconFile != null) {
+			if(profile.getIconUrl() != null) {
+				imageService.deleteIconImage(profile.getIconUrl());
+			}
+			
+			UUID uuid = imageService.createIconImage(iconFile);
+			profile.setIconUrl(uuid.toString());
+		}
 
 		return profileRepository.save(profile);
 	}
