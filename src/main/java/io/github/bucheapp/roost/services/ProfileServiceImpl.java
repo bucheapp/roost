@@ -64,7 +64,6 @@ public class ProfileServiceImpl implements ProfileService {
 		if (req.getBio() != null) profile.setBio(req.getBio());
 		if (req.getGender() != null) profile.setGender(req.getGender());
 		if (req.getDateOfBirth() != null) profile.setDateOfBirth(req.getDateOfBirth());
-		if (req.getPhoneNumber() != null) profile.setPhoneNumber(req.getPhoneNumber());
 		if (req.getAddress() != null) profile.setAddress(req.getAddress());
 		if (req.getGithubUrl() != null) profile.setGithubUrl(req.getGithubUrl());
 		

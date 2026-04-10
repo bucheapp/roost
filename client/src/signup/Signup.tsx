@@ -54,7 +54,7 @@ const Signup: React.FC = () => {
 				}
 			);
 
-			navigate("/user/me");
+			navigate("/user/me/profile");
 		} catch (err) {
 			if (axios.isAxiosError(err)) {
 				const msg = err.response?.data?.msg || "登録に失敗しました";

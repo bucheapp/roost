@@ -21,7 +21,7 @@ public class ImageServiceImpl implements ImageService {
 	@Override
 	public UUID createIconImage(MultipartFile iconFile) throws IOException {
 		BufferedImage originalImage = ImageIO.read(iconFile.getInputStream());
-		BufferedImage resizedImage = new BufferedImage(160, 160, BufferedImage.TYPE_INT_ARGB);
+		BufferedImage resizedImage = new BufferedImage(160, 160, BufferedImage.TYPE_INT_RGB);
 		
 		Graphics2D g = resizedImage.createGraphics();
 		
@@ -39,7 +39,11 @@ public class ImageServiceImpl implements ImageService {
 		
 		File outputFile = new File(dataDir,uuid.toString() + ".jpg");
 		
-		ImageIO.write(resizedImage, "jpg", outputFile);
+		boolean success = ImageIO.write(resizedImage, "jpg", outputFile);
+
+		if (!success) {
+			throw new RuntimeException("画像書き込み失敗");
+		}
 		
 		return uuid;
 	}

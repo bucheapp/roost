@@ -11,7 +11,6 @@ public class UpdateProfileRequest {
 	private MultipartFile iconFile;
 	private Gender gender;
 	private LocalDate dateOfBirth;
-	private String phoneNumber;
 	private String address;
 	private String githubUrl;
 	
@@ -38,12 +37,6 @@ public class UpdateProfileRequest {
 	}
 	public void setDateOfBirth(LocalDate dateOfBirth) {
 		this.dateOfBirth = dateOfBirth;
-	}
-	public String getPhoneNumber() {
-		return phoneNumber;
-	}
-	public void setPhoneNumber(String phoneNumber) {
-		this.phoneNumber = phoneNumber;
 	}
 	public String getAddress() {
 		return address;

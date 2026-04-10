@@ -42,6 +42,7 @@ public class SecurityConfig {
 					.requestMatchers("/icons/**").permitAll()
 					.requestMatchers("/api/users/me").authenticated()
 					.requestMatchers(HttpMethod.GET, "/api/users/{publicId}").permitAll() 
+					.requestMatchers(HttpMethod.GET, "/api/users/{publicId}/profile").permitAll() 
 					.requestMatchers(HttpMethod.GET,"/api/communities").permitAll()
 					.requestMatchers(HttpMethod.GET,"/api/communities/{publicId}").permitAll()
 					.requestMatchers(HttpMethod.GET,"/api/communities/{publicId}/members").permitAll()

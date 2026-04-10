@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.github.bucheapp.roost.dto.request.CreateAdminUserRequest;
 import io.github.bucheapp.roost.dto.request.CreateUserRequest;
 import io.github.bucheapp.roost.dto.request.PermissionRequest;
+import io.github.bucheapp.roost.dto.request.UpdatePasswordRequest;
 import io.github.bucheapp.roost.dto.request.UpdateUserRequest;
 import io.github.bucheapp.roost.dto.request.UpdateUserStateRequest;
 import io.github.bucheapp.roost.dto.response.PermissionResponse;
@@ -56,6 +57,16 @@ public class UserController {
 	public ResponseEntity<UserResponse> updateUser(
 			@RequestBody UpdateUserRequest req) {
 		User user = userService.updateCurrentUser(req);
+		
+		UserPrivateResponse userResponse = new UserPrivateResponse(user);
+
+		return ResponseEntity.ok(userResponse);
+	}
+	
+	@PatchMapping("/me/password")
+	public ResponseEntity<UserResponse> updatePassword(
+			@RequestBody UpdatePasswordRequest req) {
+		User user = userService.updatePassword(req);
 		
 		UserPrivateResponse userResponse = new UserPrivateResponse(user);
 

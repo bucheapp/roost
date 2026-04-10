@@ -11,7 +11,6 @@ public class ProfilePrivateResponse implements ProfileResponse {
 	private String iconUrl;
 	private Gender gender;
 	private LocalDate dateOfBirth;
-	private String phoneNumber;
 	private String address;
 	private String githubUrl;
 	private LocalDateTime createdAt;
@@ -21,7 +20,6 @@ public class ProfilePrivateResponse implements ProfileResponse {
 		this.iconUrl = profile.getIconUrl();
 		this.gender = profile.getGender();
 		this.dateOfBirth = profile.getDateOfBirth();
-		this.phoneNumber = profile.getPhoneNumber();
 		this.address = profile.getAddress();
 		this.githubUrl = profile.getGithubUrl();
 		this.createdAt = profile.getCreatedAt();
@@ -57,14 +55,6 @@ public class ProfilePrivateResponse implements ProfileResponse {
 
 	public void setDateOfBirth(LocalDate dateOfBirth) {
 		this.dateOfBirth = dateOfBirth;
-	}
-
-	public String getPhoneNumber() {
-		return phoneNumber;
-	}
-
-	public void setPhoneNumber(String phoneNumber) {
-		this.phoneNumber = phoneNumber;
 	}
 
 	public String getAddress() {

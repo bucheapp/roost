@@ -49,7 +49,7 @@ const Login: React.FC = () => {
 				}
 			);
 
-			navigate("/user/me");
+			navigate("/user/me/profile");
 		} catch (err) {
 			if (axios.isAxiosError(err)) {
 				const msg = err.response?.data?.msg || "ログインに失敗しました";

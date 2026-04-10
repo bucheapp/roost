@@ -3,7 +3,10 @@ import "./App.css";
 import Home from "./home/Home";
 import Signup from "./signup/Signup";
 import Login from "./login/Login";
-import User from "./user/User";
+import UserProfile from "./user/UserProfile";
+import UserProfileEdit from "./user/UserProfileEdit";
+import UserPasswordEdit from "./user/UserPasswordEdit";
+import UserEdit from "./user/UserEdit";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 const App: React.FC = () => {
@@ -13,7 +16,18 @@ const App: React.FC = () => {
 				<Route path="/" element={<Home />} />
 				<Route path="/signup" element={<Signup />} />
 				<Route path="/login" element={<Login />} />
-				<Route path="/user" element={<User />} />
+				<Route path="/user">
+					<Route path="me">
+						<Route path="profile" element={<UserProfile />} />
+						<Route path="edit" element={<UserEdit />} />
+						<Route path="profile/edit" element={<UserProfileEdit />} />
+						<Route path="password/edit" element={<UserPasswordEdit />} />
+					</Route>
+
+					<Route path=":publicId">
+						<Route path="profile" element={<UserProfile />} />
+					</Route>
+				</Route>
 			</Routes>
 		</BrowserRouter>
 	);

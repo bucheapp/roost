@@ -14,7 +14,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import org.hibernate.annotations.OnDelete;
@@ -42,11 +41,6 @@ public class Profile {
 	
 	@Column
 	private LocalDate dateOfBirth;
-	
-	@Column(length = 30)
-	@Size(max = 30)
-	@Pattern(regexp = "^[0-9+\\-() ]+$")
-	private String phoneNumber;
 	
 	@Column(length = 255)
 	@Size(max = 255)
@@ -103,14 +97,6 @@ public class Profile {
 
 	public void setDateOfBirth(LocalDate dateOfBirth) {
 		this.dateOfBirth = dateOfBirth;
-	}
-
-	public String getPhoneNumber() {
-		return phoneNumber;
-	}
-
-	public void setPhoneNumber(String phoneNumber) {
-		this.phoneNumber = phoneNumber;
 	}
 
 	public String getAddress() {

@@ -18,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 import io.github.bucheapp.roost.dto.request.CreateAdminUserRequest;
 import io.github.bucheapp.roost.dto.request.CreateUserRequest;
 import io.github.bucheapp.roost.dto.request.PermissionRequest;
+import io.github.bucheapp.roost.dto.request.UpdatePasswordRequest;
 import io.github.bucheapp.roost.dto.request.UpdateUserRequest;
 import io.github.bucheapp.roost.dto.request.UpdateUserStateRequest;
 import io.github.bucheapp.roost.models.Permission;
@@ -76,11 +77,32 @@ public class UserServiceImpl implements UserService {
 			user.setEmail(req.getEmail());
 		}
 		
-		if(req.getPassword() != null) {
-			BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-			String hashedPassword = encoder.encode(req.getPassword());
-			user.setPassword(hashedPassword);
+		if(req.getName() != null) {
+			if(userRepository.existsByName(req.getName())) {
+				throw new ResponseStatusException(HttpStatus.CONFLICT, messageUtil.get("name.conflict"));
+			}
+			
+			user.setName(req.getName());
 		}
+		
+		return userRepository.save(user);
+	}
+	
+	@Override
+	@Transactional
+	public User updatePassword(UpdatePasswordRequest req) {
+		long userId = authContext.getCurrentUserId();
+		
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
+		
+		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+		
+		if (!encoder.matches(req.getCurrentPassword(), user.getPassword())) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, messageUtil.get("incorrect.password"));
+		}
+		
+		user.setPassword(encoder.encode(req.getNewPassword()));
 		
 		return userRepository.save(user);
 	}
@@ -222,6 +244,26 @@ public class UserServiceImpl implements UserService {
 		user.setState(req.getState());
 		
 		return userRepository.save(user);
+	}
+
+	@Override
+	public String hideEmail(String email) {
+		String[] parts = email.split("@");
+		if (parts.length != 2) {
+			return email;
+		}
+		String localPart = parts[0];
+		String domain = parts[1];
+		
+		int showLength = (int) Math.ceil(localPart.length() / 2.0);
+		String visible = localPart.substring(0, showLength);
+		
+		StringBuilder hidden = new StringBuilder(visible);
+		for (int i = showLength; i < localPart.length(); i++) {
+			hidden.append("*");
+		}
+		
+		return hidden + "@" + domain;
 	}
 	
 	@Override
