@@ -146,7 +146,7 @@ const UserProfile: React.FC = () => {
 				<div className="content">
 					<div className="profile-header">
 						<img
-							src={profile.iconUrl ? baseURL + "/icons/" + profile.iconUrl + ".jpg" : "/default-avatar.jpg"}
+							src={profile.iconUrl ? baseURL + "/icons/" + profile.iconUrl + ".jpg" : baseURL + "/icons/default_icon.jpg"}
 							className="avatar"
 						/>
 						<div>

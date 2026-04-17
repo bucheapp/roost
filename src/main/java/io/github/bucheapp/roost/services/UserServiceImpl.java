@@ -1,7 +1,9 @@
 package io.github.bucheapp.roost.services;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -10,6 +12,10 @@ import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,9 +27,12 @@ import io.github.bucheapp.roost.dto.request.PermissionRequest;
 import io.github.bucheapp.roost.dto.request.UpdatePasswordRequest;
 import io.github.bucheapp.roost.dto.request.UpdateUserRequest;
 import io.github.bucheapp.roost.dto.request.UpdateUserStateRequest;
+import io.github.bucheapp.roost.dto.request.UserCommunitySearchRequest;
+import io.github.bucheapp.roost.models.Community;
 import io.github.bucheapp.roost.models.Permission;
 import io.github.bucheapp.roost.models.Profile;
 import io.github.bucheapp.roost.models.User;
+import io.github.bucheapp.roost.repositories.CommunityRepository;
 import io.github.bucheapp.roost.repositories.PermissionRepository;
 import io.github.bucheapp.roost.repositories.RoleRepository;
 import io.github.bucheapp.roost.repositories.UserRepository;
@@ -38,6 +47,9 @@ public class UserServiceImpl implements UserService {
 	
 	@Autowired
 	private RoleRepository roleRepository;
+	
+	@Autowired
+	private CommunityRepository communityRepository;
 	
 	@Autowired
 	private PermissionRepository permissionRepository;
@@ -372,5 +384,35 @@ public class UserServiceImpl implements UserService {
 		);
 
 		userRepository.save(user);
+	}
+	
+	@Override
+	public Page<Community> getCommunities(
+			long publicId,
+			UserCommunitySearchRequest req
+			) {
+		User user = userRepository.findByPublicId(publicId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
+		long userId = user.getId();
+		
+		int page = req.getPage();
+		int size = req.getSize();
+		List<String> sort = req.getSort();
+		
+		List<Sort.Order> orders = new ArrayList<>();
+		
+		for(String s : sort) {
+			String[] parts = s.split(",");
+			String property = parts[0];
+			Sort.Direction direction = parts.length > 1
+				? Sort.Direction.fromString(parts[1])
+				: Sort.Direction.ASC;
+
+			orders.add(new Sort.Order(direction, property));
+		}
+
+		Pageable pageable = PageRequest.of(page, size, Sort.by(orders));
+		return communityRepository
+				.findDistinctByMembers_User_Id(userId, pageable);
 	}
 }

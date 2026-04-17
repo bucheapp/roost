@@ -14,7 +14,6 @@ const UserPasswordEdit: React.FC = () => {
 	const [newPassword, setNewPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
 
-	// 変更検知
 	const isChanged = () => {
 		return currentPassword !== "" || newPassword !== "" || confirmPassword !== "";
 	};
@@ -30,7 +29,6 @@ const UserPasswordEdit: React.FC = () => {
 	const handleSubmit = async () => {
 		if (!auth) return;
 
-		// バリデーション
 		if (!currentPassword || !newPassword || !confirmPassword) {
 			alert("すべて入力してください");
 			return;

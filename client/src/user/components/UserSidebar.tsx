@@ -17,8 +17,7 @@ const UserSidebar: React.FC<Props> = ({ isOpen, isMobile, onClose }) => {
 
   const menu = [
     { label: "プロフィール", path: isMe ? "/user/me/profile" : `/user/${publicId}/profile` },
-    { label: "所属コミュニティ", path: isMe ? "/user/me/community" : `/user/${publicId}/community` },
-    ...(isMe ? [{ label: "設定", path: "/user/me/settings" }] : [])
+    { label: "所属コミュニティ", path: isMe ? "/user/me/community" : `/user/${publicId}/community` }
   ];
 
   return (
