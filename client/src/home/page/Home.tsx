@@ -1,24 +1,10 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Home.css";
-import Sidebar from "./Sidebar";
-import { AuthContext } from "../AuthContext";
-import { fetchWithAuth } from "../utils/fetchWithAuth";
-
-function useIsMobile() {
-	const [isMobile, setIsMobile] = useState(
-		window.matchMedia("(max-width: 768px)").matches
-	);
-
-	useEffect(() => {
-		const media = window.matchMedia("(max-width: 768px)");
-		const listener = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-		media.addEventListener("change", listener);
-		return () => media.removeEventListener("change", listener);
-	}, []);
-
-	return isMobile;
-}
+import Sidebar from "../components/Sidebar.tsx";
+import { AuthContext } from "../../AuthContext.ts";
+import { fetchWithAuth } from "../../utils/fetchWithAuth.ts";
+import { useIsMobile } from "../../utils/useIsMobile.ts";
 
 const baseURL = import.meta.env.VITE_API_URL;
 
@@ -51,7 +37,7 @@ const Home: React.FC = () => {
 				const text = await res.text();
 				const data = text ? JSON.parse(text) : null;
 
-				if(data == null) {
+				if (data == null) {
 					setIsLoggedIn(false);
 				} else {
 					setIsLoggedIn(true);
@@ -100,13 +86,14 @@ const Home: React.FC = () => {
 			)}
 
 			<div className="main">
-				<button
-					className="open-btn"
-					onClick={() => setIsOpen(true)}
-					style={{ display: isMobile && !isOpen ? "block" : "none" }}
-				>
-					☰
-				</button>
+				{isMobile && !isOpen && (
+					<button
+						className="open-btn"
+						onClick={() => setIsOpen(true)}
+					>
+						☰
+					</button>
+				)}
 
 				<div className="content">中央コンテンツ</div>
 

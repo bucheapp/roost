@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../AuthContext";
-import { fetchWithAuth } from "../utils/fetchWithAuth";
+import { AuthContext } from "../../AuthContext";
+import { fetchWithAuth } from "../../utils/fetchWithAuth";
+import { useUnsavedChanges } from "../../utils/useUnsavedChanges"
 import "./UserEdit.css";
 
 type User = {
@@ -47,10 +48,8 @@ const UserEdit: React.FC = () => {
     };
 
     const handleClose = () => {
-        if (isChanged()) {
-            const ok = window.confirm("保存されていない変更があります。閉じますか？");
-            if (!ok) return;
-        }
+        const { confirmClose } = useUnsavedChanges(isChanged);
+        if (!confirmClose()) return;
         navigate(-1);
     };
 
@@ -92,7 +91,7 @@ const UserEdit: React.FC = () => {
 
                 <div className="form-group">
                     <label>
-                        ユーザ名 {name !== (initial?.name || "") && <span className="edited">●</span>}
+                        ユーザ名 {name !== (initial?.name || "") && <span className="edited">*</span>}
                     </label>
                     <input
                         type="text"
@@ -103,7 +102,7 @@ const UserEdit: React.FC = () => {
 
                 <div className="form-group">
                     <label>
-                        Email {email !== (initial?.email || "") && <span className="edited">●</span>}
+                        Email {email !== (initial?.email || "") && <span className="edited">*</span>}
                     </label>
                     <input
                         type="email"

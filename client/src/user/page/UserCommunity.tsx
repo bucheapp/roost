@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { AuthContext } from "../AuthContext";
-import { fetchWithAuth } from "../utils/fetchWithAuth";
-import UserSidebar from "./components/UserSidebar";
+import { AuthContext } from "../../AuthContext.ts";
+import { fetchWithAuth } from "../../utils/fetchWithAuth.ts";
+import UserSidebar from "../components/UserSidebar.tsx";
+import { useIsMobile } from "../../utils/useIsMobile.ts";
 import "./UserCommunity.css";
 
 type Community = {
@@ -18,21 +19,6 @@ type CommunitiesResponse = {
 };
 
 const baseURL = import.meta.env.VITE_API_URL;
-
-function useIsMobile() {
-	const [isMobile, setIsMobile] = useState(
-		window.matchMedia("(max-width: 768px)").matches
-	);
-
-	useEffect(() => {
-		const media = window.matchMedia("(max-width: 768px)");
-		const listener = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-		media.addEventListener("change", listener);
-		return () => media.removeEventListener("change", listener);
-	}, []);
-
-	return isMobile;
-}
 
 const UserCommunity: React.FC = () => {
 	const { publicId } = useParams();
@@ -53,7 +39,7 @@ const UserCommunity: React.FC = () => {
 
 		const fetcher = auth
 			? (url: string) =>
-					fetchWithAuth(url, {}, auth.accessToken, auth.setAccessToken)
+				fetchWithAuth(url, {}, auth.accessToken, auth.setAccessToken)
 			: (url: string) => fetch(url);
 
 		const size = isMe ? 10 : 5;
@@ -89,13 +75,14 @@ const UserCommunity: React.FC = () => {
 			)}
 
 			<div className="main">
-				<button
-					className="open-btn"
-					onClick={() => setIsOpen(true)}
-					style={{ display: isMobile && !isOpen ? "block" : "none" }}
-				>
-					☰
-				</button>
+				{isMobile && !isOpen && (
+					<button
+						className="open-btn"
+						onClick={() => setIsOpen(true)}
+					>
+						☰
+					</button>
+				)}
 
 				<div className="content">
 					<h2 className="title">所属コミュニティ</h2>

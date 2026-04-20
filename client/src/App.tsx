@@ -1,16 +1,16 @@
 import React from "react";
 import "./App.css";
-import Home from "./home/Home";
-import Signup from "./signup/Signup";
-import Login from "./login/Login";
-import UserProfile from "./user/UserProfile";
-import UserProfileEdit from "./user/UserProfileEdit";
-import UserPasswordEdit from "./user/UserPasswordEdit";
-import UserEdit from "./user/UserEdit";
+import Home from "./home/page/Home";
+import Signup from "./signup/page/Signup";
+import Login from "./login/page/Login";
+import UserProfile from "./user/page/UserProfile";
+import UserProfileEdit from "./user/page/UserProfileEdit";
+import UserPasswordEdit from "./user/page/UserPasswordEdit";
+import UserEdit from "./user/page/UserEdit";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import UserManagement from "./user/UserManagement";
-import UserCreate from "./user/UserCreate";
-import UserCommunity from "./user/UserCommunity";
+import UserManagement from "./user/page/UserManagement";
+import UserCreate from "./user/page/UserCreate";
+import UserCommunity from "./user/page/UserCommunity";
 
 const App: React.FC = () => {
 	return (

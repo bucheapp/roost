@@ -22,7 +22,7 @@ services:
       ADMIN_USERNAME: ${ADMIN_USERNAME}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     volumes:
-      - ./data:/data
+      - data_volume:/data
   frontend:
     build:
       context: ./client
@@ -36,3 +36,4 @@ services:
       - backend
 volumes:
   pgdata:
+  data_volume:

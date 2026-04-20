@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../AuthContext";
-import { fetchWithAuth } from "../utils/fetchWithAuth";
+import { AuthContext } from "../../AuthContext";
+import { fetchWithAuth } from "../../utils/fetchWithAuth";
+import { useUnsavedChanges } from "../../utils/useUnsavedChanges"
 import "./UserProfileEdit.css";
 
 type Profile = {
@@ -64,10 +65,8 @@ const UserProfileEdit: React.FC = () => {
 	};
 
 	const handleClose = () => {
-		if (isChanged()) {
-			const ok = window.confirm("保存されていない変更があります。閉じますか？");
-			if (!ok) return;
-		}
+		const { confirmClose } = useUnsavedChanges(isChanged);
+		if (!confirmClose()) return;
 		navigate(-1);
 	};
 

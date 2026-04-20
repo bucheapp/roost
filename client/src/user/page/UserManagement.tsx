@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { AuthContext } from "../AuthContext";
-import { fetchWithAuth } from "../utils/fetchWithAuth";
+import { AuthContext } from "../../AuthContext";
+import { fetchWithAuth } from "../../utils/fetchWithAuth";
 import "./UserManagement.css";
 
 const baseURL = import.meta.env.VITE_API_URL;

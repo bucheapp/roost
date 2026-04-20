@@ -3,10 +3,10 @@ import "./Sidebar.css";
 
 import Header from "./Header";
 import SearchGroup from "./SearchGroup";
-import FixedGroup from "./components/groups/FixedGroup";
-import NewGroup from "./components/groups/NewGroup";
-import PopularGroup from "./components/groups/PopularGroup";
-import AffiliationGroup from "./components/groups/AffiliationGroup";
+import FixedGroup from "./groups/FixedGroup";
+import NewGroup from "./groups/NewGroup";
+import PopularGroup from "./groups/PopularGroup";
+import AffiliationGroup from "./groups/AffiliationGroup";
 
 type Props = {
 	isOpen: boolean;

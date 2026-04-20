@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { AuthContext } from "../AuthContext";
-import { fetchWithAuth } from "../utils/fetchWithAuth";
-import UserSidebar from "./components/UserSidebar";
+import { AuthContext } from "../../AuthContext.ts";
+import { fetchWithAuth } from "../../utils/fetchWithAuth.ts";
+import UserSidebar from "../components/UserSidebar.tsx";
+import { useIsMobile } from "../../utils/useIsMobile.ts";
 import "./UserProfile.css";
 
 type Profile = {
@@ -17,21 +18,6 @@ type Profile = {
 };
 
 const baseURL = import.meta.env.VITE_API_URL;
-
-function useIsMobile() {
-	const [isMobile, setIsMobile] = useState(
-		window.matchMedia("(max-width: 768px)").matches
-	);
-
-	useEffect(() => {
-		const media = window.matchMedia("(max-width: 768px)");
-		const listener = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-		media.addEventListener("change", listener);
-		return () => media.removeEventListener("change", listener);
-	}, []);
-
-	return isMobile;
-}
 
 const UserProfile: React.FC = () => {
 	const { publicId } = useParams();
@@ -135,13 +121,14 @@ const UserProfile: React.FC = () => {
 			{isOpen && isMobile && <div className="overlay" onClick={() => setIsOpen(false)} />}
 
 			<div className="main">
-				<button
-					className="open-btn"
-					onClick={() => setIsOpen(true)}
-					style={{ display: isMobile && !isOpen ? "block" : "none" }}
-				>
-					☰
-				</button>
+				{isMobile && !isOpen && (
+					<button
+						className="open-btn"
+						onClick={() => setIsOpen(true)}
+					>
+						☰
+					</button>
+				)}
 
 				<div className="content">
 					<div className="profile-header">

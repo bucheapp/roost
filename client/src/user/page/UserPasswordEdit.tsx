@@ -1,7 +1,8 @@
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../AuthContext";
-import { fetchWithAuth } from "../utils/fetchWithAuth";
+import { AuthContext } from "../../AuthContext";
+import { fetchWithAuth } from "../../utils/fetchWithAuth";
+import { useUnsavedChanges } from "../../utils/useUnsavedChanges"
 import "./UserProfileEdit.css";
 
 const baseURL = import.meta.env.VITE_API_URL;
@@ -19,10 +20,8 @@ const UserPasswordEdit: React.FC = () => {
 	};
 
 	const handleClose = () => {
-		if (isChanged()) {
-			const ok = window.confirm("保存されていない変更があります。閉じますか？");
-			if (!ok) return;
-		}
+		const { confirmClose } = useUnsavedChanges(isChanged);
+		if (!confirmClose()) return;
 		navigate(-1);
 	};
 
