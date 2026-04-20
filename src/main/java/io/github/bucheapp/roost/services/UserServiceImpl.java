@@ -3,6 +3,7 @@ package io.github.bucheapp.roost.services;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -31,6 +32,7 @@ import io.github.bucheapp.roost.dto.request.UserCommunitySearchRequest;
 import io.github.bucheapp.roost.models.Community;
 import io.github.bucheapp.roost.models.Permission;
 import io.github.bucheapp.roost.models.Profile;
+import io.github.bucheapp.roost.models.Role;
 import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.repositories.CommunityRepository;
 import io.github.bucheapp.roost.repositories.PermissionRepository;
@@ -279,10 +281,45 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	@Override
+	public Set<Permission> getCurrentPermissions() {
+		long userId = authContext.getCurrentUserId();
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
+		
+		Role role = user.getRole();
+		Set<Permission> rolePermissions = role.getPermissions();
+		Set<Permission> userPermissions = user.getPermissions();
+		Set<Permission> allPermissions = new HashSet<>();
+		
+		if(rolePermissions != null) {
+			allPermissions.addAll(rolePermissions);
+		}
+		
+		if(userPermissions != null) {
+			allPermissions.addAll(userPermissions);
+		}
+		
+		return allPermissions;
+	}
+	
+	@Override
 	public Set<Permission> getPermissions(long publicId) {
 		User user = userRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
-		return user.getPermissions();
+		Role role = user.getRole();
+		Set<Permission> rolePermissions = role.getPermissions();
+		Set<Permission> userPermissions = user.getPermissions();
+		Set<Permission> allPermissions = new HashSet<>();
+		
+		if(rolePermissions != null) {
+			allPermissions.addAll(rolePermissions);
+		}
+		
+		if(userPermissions != null) {
+			allPermissions.addAll(userPermissions);
+		}
+		
+		return allPermissions;
 	}
 	
 	@Override

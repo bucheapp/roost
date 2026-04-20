@@ -8,6 +8,8 @@ import UserProfileEdit from "./user/UserProfileEdit";
 import UserPasswordEdit from "./user/UserPasswordEdit";
 import UserEdit from "./user/UserEdit";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import UserManagement from "./user/UserManagement";
+import UserCreate from "./user/UserCreate";
 
 const App: React.FC = () => {
 	return (
@@ -23,9 +25,11 @@ const App: React.FC = () => {
 						<Route path="profile/edit" element={<UserProfileEdit />} />
 						<Route path="password/edit" element={<UserPasswordEdit />} />
 					</Route>
+					<Route path="create" element={<UserCreate />} />
 
 					<Route path=":publicId">
 						<Route path="profile" element={<UserProfile />} />
+						<Route path="management" element={<UserManagement />} />
 					</Route>
 				</Route>
 			</Routes>

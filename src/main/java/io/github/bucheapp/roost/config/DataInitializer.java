@@ -60,7 +60,7 @@ public class DataInitializer implements CommandLineRunner {
 	
 	@Override
 	public void run(String... args) throws Exception {
-		Permission updateUserState = getOrCreatePermission("UUPDATE_USERSTATE");
+		Permission updateUserState = getOrCreatePermission("UPDATE_USERSTATE");
 		Permission createUser = getOrCreatePermission("CREATE_USER");
 		Permission getPermission = getOrCreatePermission("GET_PERMISSION");
 		Permission grantPermission = getOrCreatePermission("GRANT_PERMISSION");

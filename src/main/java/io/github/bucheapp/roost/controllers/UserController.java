@@ -100,6 +100,18 @@ public class UserController {
 		return ResponseEntity.ok().build();
 	}
 	
+	@GetMapping("/me/permissions")
+	public ResponseEntity<PermissionResponse> getPermissions() {
+		Set<String> permissions = userService.getCurrentPermissions()
+				.stream()
+				.map(Permission::getName)
+				.collect(Collectors.toSet());
+		
+		PermissionResponse permissionResponse = new PermissionResponse(permissions);
+		
+		return ResponseEntity.ok(permissionResponse);
+	}
+	
 	@PreAuthorize("hasAuthority('GET_PERMISSION')")
 	@GetMapping("/{publicId}/permissions")
 	public ResponseEntity<PermissionResponse> getPermissions(

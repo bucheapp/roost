@@ -28,6 +28,7 @@ public interface UserService {
 	String hideEmail(String email);
 
 	Set<Permission> getPermissions(long targetPublicId);
+	Set<Permission> getCurrentPermissions();
 	void grantPermissions(long targetPublicId,PermissionRequest req);
 	void revokePermissions(long targetPublicId,PermissionRequest req);
 }
