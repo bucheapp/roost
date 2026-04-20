@@ -22,7 +22,6 @@ const UserCreate: React.FC = () => {
 
 	const [loading, setLoading] = useState(true);
 
-	// 権限取得
 	useEffect(() => {
 		if (!auth) {
 			navigate("/login");
@@ -54,7 +53,6 @@ const UserCreate: React.FC = () => {
 			.finally(() => setLoading(false));
 	}, [auth, navigate]);
 
-	// 権限トグル
 	const togglePermission = (perm: string) => {
 		const newSet = new Set(selectedPermissions);
 		if (newSet.has(perm)) {
@@ -65,13 +63,11 @@ const UserCreate: React.FC = () => {
 		setSelectedPermissions(newSet);
 	};
 
-	// Adminトグル
 	const handleAdminToggle = () => {
 		const next = !isAdmin;
 		setIsAdmin(next);
 
 		if (next) {
-			// 全権限ON
 			setSelectedPermissions(new Set(permissions));
 		} else {
 			setSelectedPermissions(new Set());

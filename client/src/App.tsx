@@ -10,6 +10,7 @@ import UserEdit from "./user/UserEdit";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import UserManagement from "./user/UserManagement";
 import UserCreate from "./user/UserCreate";
+import UserCommunity from "./user/UserCommunity";
 
 const App: React.FC = () => {
 	return (
@@ -24,12 +25,14 @@ const App: React.FC = () => {
 						<Route path="edit" element={<UserEdit />} />
 						<Route path="profile/edit" element={<UserProfileEdit />} />
 						<Route path="password/edit" element={<UserPasswordEdit />} />
+						<Route path="community" element={<UserCommunity />} />
 					</Route>
 					<Route path="create" element={<UserCreate />} />
 
 					<Route path=":publicId">
 						<Route path="profile" element={<UserProfile />} />
 						<Route path="management" element={<UserManagement />} />
+						<Route path="community" element={<UserCommunity />} />
 					</Route>
 				</Route>
 			</Routes>
