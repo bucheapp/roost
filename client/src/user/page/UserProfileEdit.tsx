@@ -3,7 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../AuthContext";
 import { fetchWithAuth } from "../../utils/fetchWithAuth";
 import { useUnsavedChanges } from "../../utils/useUnsavedChanges"
+import styles from "./UserProfileEdit.module.css";
 import "./UserProfileEdit.css";
+import { FormGroup } from "../../components/FormGroup";
+import { ButtonGroup } from "../components/ButtonGroup";
 
 type Profile = {
 	bio: string;
@@ -108,69 +111,62 @@ const UserProfileEdit: React.FC = () => {
 	if (!profile) return <div>Loading...</div>;
 
 	return (
-		<div className="edit-layout">
-			<div className="edit-content">
-				<h2>プロフィール編集 {isChanged() && <span className="edited">*</span>}</h2>
+		<div className={styles.layout}>
+			<div className={styles.content}>
+				<h2>プロフィール編集 {isChanged() && <span className={styles.edited}>*</span>}</h2>
 
-				<div className="form-group">
-					<label>アイコン {iconFile && <span className="edited">●</span>}</label>
+				<FormGroup label="アイコン" edited={!!iconFile}>
 					<input
 						type="file"
 						accept="image/*"
 						onChange={e => setIconFile(e.target.files?.[0] || null)}
 					/>
-				</div>
+				</FormGroup>
 
-				<div className="form-group">
-					<label>自己紹介 {bio !== (initial?.bio || "") && <span className="edited">●</span>}</label>
+				<FormGroup label="自己紹介" edited={bio !== (initial?.bio || "")}>
 					<textarea value={bio} onChange={e => setBio(e.target.value)} />
-				</div>
+				</FormGroup>
 
-				<div className="form-group">
-					<label>性別 {gender !== (initial?.gender || "") && <span className="edited">●</span>}</label>
+				<FormGroup label="性別" edited={gender !== (initial?.gender || "")}>
 					<select value={gender} onChange={e => setGender(e.target.value)}>
 						<option value="">未設定</option>
 						<option value="MALE">男性</option>
 						<option value="FEMALE">女性</option>
 						<option value="OTHER">その他</option>
 					</select>
-				</div>
+				</FormGroup>
 
-				<div className="form-group">
-					<label>誕生日 {dateOfBirth !== (initial?.dateOfBirth || "") && <span className="edited">●</span>}</label>
+				<FormGroup
+					label="誕生日"
+					edited={dateOfBirth !== (initial?.dateOfBirth || "")}
+				>
 					<input
 						type="date"
 						value={dateOfBirth ? dateOfBirth.substring(0, 10) : ""}
 						onChange={e => setDateOfBirth(e.target.value)}
 					/>
-				</div>
+				</FormGroup>
 
-				<div className="form-group">
-					<label>住所 {address !== (initial?.address || "") && <span className="edited">●</span>}</label>
+				<FormGroup label="住所" edited={address !== (initial?.address || "")}>
 					<input
 						type="text"
 						value={address}
 						onChange={e => setAddress(e.target.value)}
 					/>
-				</div>
+				</FormGroup>
 
-				<div className="form-group">
-					<label>Github {githubUrl !== (initial?.githubUrl || "") && <span className="edited">●</span>}</label>
+				<FormGroup label="Github" edited={githubUrl !== (initial?.githubUrl || "")}>
 					<input
 						type="text"
 						value={githubUrl}
 						onChange={e => setGithubUrl(e.target.value)}
 					/>
-				</div>
+				</FormGroup>
 
-				<div className="button-group">
-					<button className="save-btn" onClick={handleSubmit}>
-						保存
-					</button>
-					<button className="cancel-btn" onClick={handleClose}>
-						閉じる
-					</button>
-				</div>
+				<ButtonGroup
+					onSubmit={handleSubmit}
+					onClose={handleClose}
+				/>
 			</div>
 		</div>
 	);

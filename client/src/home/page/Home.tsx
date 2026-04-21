@@ -5,6 +5,7 @@ import Sidebar from "../components/Sidebar.tsx";
 import { AuthContext } from "../../AuthContext.ts";
 import { fetchWithAuth } from "../../utils/fetchWithAuth.ts";
 import { useIsMobile } from "../../utils/useIsMobile.ts";
+import styles from "./Home.module.css";
 
 const baseURL = import.meta.env.VITE_API_URL;
 
@@ -64,7 +65,9 @@ const Home: React.FC = () => {
 			})
 			.then(data => {
 				if (!data) return;
-				setIconUrl(baseURL + "/icons/" + data.iconUrl + ".jpg");
+				if(data.iconUrl) {
+					setIconUrl(baseURL + "/icons/" + data.iconUrl + ".jpg");
+				}
 			})
 			.catch(err => console.error(err));
 	}, [auth, isLoggedIn]);
@@ -88,7 +91,7 @@ const Home: React.FC = () => {
 			<div className="main">
 				{isMobile && !isOpen && (
 					<button
-						className="open-btn"
+						className="open-sidebar-btn"
 						onClick={() => setIsOpen(true)}
 					>
 						☰
@@ -98,13 +101,13 @@ const Home: React.FC = () => {
 				<div className="content">中央コンテンツ</div>
 
 				<div
-					className="user-icon-wrapper"
+					className={styles.user_icon_wrapper}
 					onMouseEnter={() => isLoggedIn && setMenuOpen(true)}
 					onMouseLeave={() => setMenuOpen(false)}
 				>
 					<img
 						src={iconUrl}
-						className="icon"
+						className={styles.avatar}
 						alt="user icon"
 						onClick={() => {
 							if (!isLoggedIn) {
@@ -114,11 +117,11 @@ const Home: React.FC = () => {
 					/>
 
 					{menuOpen && isLoggedIn && (
-						<div className="dropdown">
-							<div onClick={() => navigate("/user/me/profile")}>
+						<div className={styles.dropdown}>
+							<div className={styles.item} onClick={() => navigate("/user/me/profile")}>
 								プロフィール
 							</div>
-							<div onClick={() => navigate("/user/me/community")}>
+							<div className={styles.item} onClick={() => navigate("/user/me/community")}>
 								コミュニティ
 							</div>
 						</div>

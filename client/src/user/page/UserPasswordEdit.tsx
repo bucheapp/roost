@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../AuthContext";
 import { fetchWithAuth } from "../../utils/fetchWithAuth";
 import { useUnsavedChanges } from "../../utils/useUnsavedChanges"
-import "./UserProfileEdit.css";
+import styles from "./UserProfileEdit.module.css";
+import { FormGroup } from "../../components/FormGroup";
+import { ButtonGroup } from "../components/ButtonGroup";
 
 const baseURL = import.meta.env.VITE_API_URL;
 
@@ -72,49 +74,38 @@ const UserPasswordEdit: React.FC = () => {
 	};
 
 	return (
-		<div className="edit-layout">
-			<div className="edit-content">
-				<h2>パスワード変更 {isChanged() && <span className="edited">*</span>}</h2>
-
-				<div className="form-group">
-					<label>現在のパスワード</label>
+		<div className={styles.layout}>
+			<div className={styles.content}>
+				<h2>パスワード変更 {isChanged() && <span className={styles.edited}>*</span>}</h2>
+				<FormGroup label="現在のパスワード">
 					<input
 						type="password"
 						value={currentPassword}
 						onChange={e => setCurrentPassword(e.target.value)}
 					/>
-				</div>
+				</FormGroup>
 
-				<div className="form-group">
-					<label>新しいパスワード</label>
+				<FormGroup label="新しいパスワード">
 					<input
 						type="password"
 						value={newPassword}
 						onChange={e => setNewPassword(e.target.value)}
 					/>
-				</div>
+				</FormGroup>
 
-				<div className="form-group">
-					<label>新しいパスワード（確認）</label>
+				<FormGroup label="新しいパスワード（確認）">
 					<input
 						type="password"
 						value={confirmPassword}
 						onChange={e => setConfirmPassword(e.target.value)}
 					/>
-				</div>
+				</FormGroup>
 
-				<div className="button-group">
-					<button
-						className="save-btn"
-						onClick={handleSubmit}
-						disabled={!isChanged()}
-					>
-						変更
-					</button>
-					<button className="cancel-btn" onClick={handleClose}>
-						閉じる
-					</button>
-				</div>
+				<ButtonGroup
+					onSubmit={handleSubmit}
+					onClose={handleClose}
+					isDisabled={!isChanged()}
+				/>
 			</div>
 		</div>
 	);

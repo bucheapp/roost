@@ -4,6 +4,7 @@ import { AuthContext } from "../../AuthContext.ts";
 import { fetchWithAuth } from "../../utils/fetchWithAuth.ts";
 import UserSidebar from "../components/UserSidebar.tsx";
 import { useIsMobile } from "../../utils/useIsMobile.ts";
+import styles from "./UserProfile.module.css";
 import "./UserProfile.css";
 
 type Profile = {
@@ -120,21 +121,21 @@ const UserProfile: React.FC = () => {
 			/>
 			{isOpen && isMobile && <div className="overlay" onClick={() => setIsOpen(false)} />}
 
-			<div className="main">
+			<div className={styles.main}>
 				{isMobile && !isOpen && (
 					<button
-						className="open-btn"
+						className="open-sidebar-btn"
 						onClick={() => setIsOpen(true)}
 					>
 						☰
 					</button>
 				)}
 
-				<div className="content">
+				<div className={styles.content}>
 					<div className="profile-header">
 						<img
 							src={profile.iconUrl ? baseURL + "/icons/" + profile.iconUrl + ".jpg" : baseURL + "/icons/default_icon.jpg"}
-							className="avatar"
+							className="profile-avatar"
 						/>
 						<div>
 							<h2>{displayOrDefault(profile.name)}</h2>
@@ -153,12 +154,12 @@ const UserProfile: React.FC = () => {
 						</div>
 					</div>
 
-					<div className="section">
+					<div className="profile-section">
 						<h3>自己紹介</h3>
 						<p>{displayOrDefault(profile.bio)}</p>
 					</div>
 
-					<div className="section grid">
+					<div className="profile-section profile-details">
 						<div>性別: {formatGender(profile.gender)}</div>
 						<div>
 							誕生日:{" "}

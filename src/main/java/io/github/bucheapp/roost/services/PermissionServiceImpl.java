@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import io.github.bucheapp.roost.dto.request.RolePermissionRequest;
@@ -14,6 +15,7 @@ import io.github.bucheapp.roost.repositories.PermissionRepository;
 import io.github.bucheapp.roost.repositories.RoleRepository;
 import io.github.bucheapp.roost.util.MessageUtil;
 
+@Service
 public class PermissionServiceImpl implements PermissionService {
 	@Autowired
 	private PermissionRepository permissionRepository;

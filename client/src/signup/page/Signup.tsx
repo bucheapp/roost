@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Signup.css";
-import styles from "./Signup.module.css";
+import "./Auth.css";
 import axios from "axios";
 import { useAuthCheck } from "../../utils/useAuthCheck";
 import { FormGroup } from "../../components/FormGroup";
+import styles from "./Auth.module.css"
 
 const baseURL = import.meta.env.VITE_API_URL;
 
@@ -52,36 +52,36 @@ const Signup: React.FC = () => {
 	return (
 		<div className="layout">
 			<div className={styles.main}>
-				<div className="signup-card">
+				<div className="auth-card">
 					<h2 className="title">ユーザ登録</h2>
 
 					<form className="form" onSubmit={handleSubmit}>
-						<FormGroup
-							label="ユーザ名 *"
-							type="text"
-							placeholder="ユーザ名を入力"
-							value={name}
-							onChange={(e) => setName(e.target.value)}
-							required
-						/>
-
-						<FormGroup
-							label="Eメール"
-							type="email"
-							placeholder="example@email.com"
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
-							required
-						/>
-
-						<FormGroup
-							label="パスワード *"
-							type="password"
-							placeholder="パスワードを入力"
-							value={password}
-							onChange={(e) => setPassword(e.target.value)}
-							required
-						/>
+						<FormGroup label="ユーザ名 *">
+							<input
+								type="text"
+								value={name}
+								required={true}
+								placeholder="ユーザ名を入力"
+								onChange={e => setName(e.target.value)}
+							/>
+						</FormGroup>
+						<FormGroup label="Email">
+							<input
+								type="email"
+								value={email}
+								placeholder="example@example.com"
+								onChange={e => setEmail(e.target.value)}
+							/>
+						</FormGroup>
+						<FormGroup label="パスワード *">
+							<input
+								type="password"
+								value={password}
+								required={true}
+								placeholder="パスワードを入力"
+								onChange={e => setPassword(e.target.value)}
+							/>
+						</FormGroup>
 
 						{error && <div className="error">{error}</div>}
 						<button className="submit-btn">登録する</button>

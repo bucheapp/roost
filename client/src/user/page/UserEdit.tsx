@@ -3,7 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../AuthContext";
 import { fetchWithAuth } from "../../utils/fetchWithAuth";
 import { useUnsavedChanges } from "../../utils/useUnsavedChanges"
-import "./UserEdit.css";
+import "./UserProfile.css"
+import styles from "./UserProfileEdit.module.css"
+import { FormGroup } from "../../components/FormGroup";
+import { ButtonGroup } from "../components/ButtonGroup";
 
 type User = {
     name: string;
@@ -85,35 +88,33 @@ const UserEdit: React.FC = () => {
     if (!user) return <div>Loading...</div>;
 
     return (
-        <div className="edit-layout">
-            <div className="edit-content">
-                <h2>ユーザー編集 {isChanged() && <span className="edited">*</span>}</h2>
-
-                <div className="form-group">
-                    <label>
-                        ユーザ名 {name !== (initial?.name || "") && <span className="edited">*</span>}
-                    </label>
+        <div className={styles.layout}>
+            <div className={styles.content}>
+                <h2>ユーザー編集 {isChanged() && <span className={styles.edited}>*</span>}</h2>
+                <FormGroup
+                    label="ユーザ名"
+                    edited={name !== (initial?.name || "")}
+                >
                     <input
                         type="text"
                         value={name}
                         onChange={e => setName(e.target.value)}
                     />
-                </div>
+                </FormGroup>
 
-                <div className="form-group">
-                    <label>
-                        Email {email !== (initial?.email || "") && <span className="edited">*</span>}
-                    </label>
+                <FormGroup
+                    label="Email"
+                    edited={email !== (initial?.email || "")}
+                >
                     <input
                         type="email"
                         value={email}
                         onChange={e => setEmail(e.target.value)}
                     />
-                </div>
+                </FormGroup>
 
-                <div className="form-group">
-                    <label>password</label>
-                    <div className="form-group password-center">
+                <FormGroup label="パスワード">
+                    <div className="password-center">
                         <button
                             className="link-btn"
                             onClick={() => navigate("/user/me/password/edit")}
@@ -121,20 +122,12 @@ const UserEdit: React.FC = () => {
                             パスワード変更
                         </button>
                     </div>
-                </div>
-
-                <div className="button-group">
-                    <button
-                        className="save-btn"
-                        onClick={handleSubmit}
-                        disabled={!isChanged()}
-                    >
-                        変更
-                    </button>
-                    <button className="cancel-btn" onClick={handleClose}>
-                        閉じる
-                    </button>
-                </div>
+                </FormGroup>
+                <ButtonGroup
+                    onSubmit={handleSubmit}
+                    onClose={handleClose}
+                    isDisabled={!isChanged()}
+                />
             </div>
         </div>
     );

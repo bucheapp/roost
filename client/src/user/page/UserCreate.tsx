@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../AuthContext";
 import { fetchWithAuth } from "../../utils/fetchWithAuth";
 import "./UserCreate.css";
+import styles from "./UserCreate.module.css"
+import { FormGroup } from "../../components/FormGroup";
 
 const baseURL = import.meta.env.VITE_API_URL;
-
 const UserCreate: React.FC = () => {
 	const navigate = useNavigate();
 	const auth = useContext(AuthContext);
@@ -33,16 +34,15 @@ const UserCreate: React.FC = () => {
 
 		fetcher(baseURL + "/api/users/me/permissions")
 			.then(res => res.json())
-			.then((data: string[]) => {
-				setPermissions(data);
+			.then((data: { permissions: string[] }) => {
+				setPermissions(data.permissions);
 
-				if (!data.includes("CREATE_USER")) {
-					alert("権限がありません");
+				if (!data.permissions.includes("CREATE_USER")) {
 					navigate("/");
 					return;
 				}
 
-				if (data.includes("CREATE_ADMINUSER")) {
+				if (data.permissions.includes("CREATE_ADMINUSER")) {
 					setCanCreateAdmin(true);
 				}
 			})
@@ -81,31 +81,41 @@ const UserCreate: React.FC = () => {
 			fetchWithAuth(url, options, auth.accessToken, auth.setAccessToken);
 
 		try {
+			let res: Response;
+
 			if (isAdmin) {
-				await fetcher(baseURL + "/api/users/admin", {
+				res = await fetcher(baseURL + "/api/users/admin", {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({
 						name,
-						email,
+						email: email || null,
 						password,
 					}),
 				});
 			} else {
-				await fetcher(baseURL + "/api/users", {
+				res = await fetcher(baseURL + "/api/users", {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({
 						name,
-						email,
+						email: email || null,
 						password,
 						permissions: Array.from(selectedPermissions),
 					}),
 				});
 			}
 
+			if (!res.ok) {
+				const errText = await res.text();
+				throw new Error(errText);
+			}
+
+			const data = await res.json();
+			console.log(data);
+
 			alert("作成成功");
-			navigate("/user/management");
+			navigate(`/user/${data.publicId}/management`);
 		} catch (err) {
 			console.error(err);
 			alert("作成失敗");
@@ -116,36 +126,44 @@ const UserCreate: React.FC = () => {
 
 	return (
 		<div className="user-create-container">
-			<h2>ユーザ作成</h2>
+			<h2 className={styles.title}>ユーザ作成</h2>
 
-			<div className="form-group">
-				<label>ユーザ名</label>
-				<input value={name} onChange={e => setName(e.target.value)} />
-			</div>
+			<FormGroup label="ユーザ名 *">
+				<input
+					type="text"
+					value={name}
+					required={true}
+					placeholder="ユーザ名を入力"
+					onChange={e => setName(e.target.value)}
+				/>
+			</FormGroup>
 
-			<div className="form-group">
-				<label>Email</label>
-				<input value={email} onChange={e => setEmail(e.target.value)} />
-			</div>
-
-			<div className="form-group">
-				<label>パスワード</label>
+			<FormGroup label="Email">
+				<input
+					type="email"
+					value={email}
+					placeholder="example@example.com"
+					onChange={e => setEmail(e.target.value)}
+				/>
+			</FormGroup>
+			<FormGroup label="パスワード *">
 				<input
 					type="password"
 					value={password}
+					required={true}
+					placeholder="パスワードを入力"
 					onChange={e => setPassword(e.target.value)}
 				/>
-			</div>
+			</FormGroup>
 
 			{canCreateAdmin && (
-				<div className="form-group">
-					<label>Admin</label>
+				<FormGroup label="Admin">
 					<input
 						type="checkbox"
 						checked={isAdmin}
 						onChange={handleAdminToggle}
 					/>
-				</div>
+				</FormGroup>
 			)}
 
 			<div className="permissions">

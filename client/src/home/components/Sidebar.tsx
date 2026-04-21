@@ -19,7 +19,7 @@ const Sidebar: React.FC<Props> = ({ isOpen, isMobile, onClose }) => {
 		<div className={`sidebar ${isOpen ? "open" : ""}`}>
 			<button 
 			style={{ display: (isMobile && isOpen) ? "block" : "none" }}
-			className="close-btn" onClick={onClose}>
+			className="close-sidebar-btn" onClick={onClose}>
 				×
 			</button>
 

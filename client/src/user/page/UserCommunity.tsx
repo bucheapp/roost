@@ -4,6 +4,7 @@ import { AuthContext } from "../../AuthContext.ts";
 import { fetchWithAuth } from "../../utils/fetchWithAuth.ts";
 import UserSidebar from "../components/UserSidebar.tsx";
 import { useIsMobile } from "../../utils/useIsMobile.ts";
+import styles from "./UserCommunity.module.css";
 import "./UserCommunity.css";
 
 type Community = {
@@ -74,36 +75,36 @@ const UserCommunity: React.FC = () => {
 				<div className="overlay" onClick={() => setIsOpen(false)} />
 			)}
 
-			<div className="main">
+			<div className={styles.main}>
 				{isMobile && !isOpen && (
 					<button
-						className="open-btn"
+						className="open-sidebar-btn"
 						onClick={() => setIsOpen(true)}
 					>
 						☰
 					</button>
 				)}
 
-				<div className="content">
-					<h2 className="title">所属コミュニティ</h2>
+				<div className={styles.content}>
+					<h2 className={styles.title}>所属コミュニティ</h2>
 
 					<div className="community-list">
 						{communities.length === 0 ? (
 							<p>コミュニティがありません</p>
 						) : (
-							communities.map((c) => (
+							communities.map((community) => (
 								<div
-									key={c.publicId}
+									key={community.publicId}
 									className="community-card"
-									onClick={() => navigate(`/test/${c.publicId}`)}
+									onClick={() => navigate(`/test/${community.publicId}`)}
 								>
-									<div className="community-name">{c.name}</div>
+									<div className="community-name">{community.name}</div>
 									<div className="community-meta">
-										<span>{c.type}</span>
-										<span>{c.state}</span>
+										<span>{community.type}</span>
+										<span>{community.state}</span>
 									</div>
 									<div className="community-date">
-										{new Date(c.createdAt).toLocaleDateString()}
+										{new Date(community.createdAt).toLocaleDateString()}
 									</div>
 								</div>
 							))

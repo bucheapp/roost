@@ -5,7 +5,7 @@ import java.util.List;
 public class UserCommunitySearchRequest {
 	private int page;
 	private int size;
-	private List<String> sort;
+	private List<SortParam> sort;
 	
 	public int getPage() {
 		return page;
@@ -19,10 +19,10 @@ public class UserCommunitySearchRequest {
 	public void setSize(int size) {
 		this.size = size;
 	}
-	public List<String> getSort() {
+	public List<SortParam> getSort() {
 		return sort;
 	}
-	public void setSort(List<String> sort) {
+	public void setSort(List<SortParam> sort) {
 		this.sort = sort;
 	}
 }

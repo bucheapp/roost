@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../AuthContext";
 import { fetchWithAuth } from "../../utils/fetchWithAuth";
 import "./UserManagement.css";
+import styles from "./UserCommunity.module.css"
 
 const baseURL = import.meta.env.VITE_API_URL;
 
@@ -43,16 +44,16 @@ const UserManagement: React.FC = () => {
 			fetcher(baseURL + `/api/users/${publicId}/permissions`).then(res => res.json()),
 		])
 			.then(([myPerms, userData, userPerms]) => {
-				setMyPermissions(myPerms);
+				setMyPermissions(myPerms.permissions);
 
 				setUser({
 					name: userData.name,
 					publicId: userData.publicId,
 					state: userData.state,
-					permissions: userPerms,
+					permissions: userPerms.permissions,
 				});
 
-				setSelectedPermissions(new Set(userPerms));
+				setSelectedPermissions(new Set(userPerms.permissions));
 			})
 			.catch(err => {
 				console.error(err);
@@ -86,8 +87,11 @@ const UserManagement: React.FC = () => {
 		const toRevoke = Array.from(current).filter(p => !next.has(p));
 
 		try {
+			let res1: Response | null = null;
+			let res2: Response | null = null;
+
 			if (toGrant.length > 0 && canGrant) {
-				await fetcher(baseURL + `/api/users/${user.publicId}/permissions`, {
+				res1 = await fetcher(baseURL + `/api/users/${user.publicId}/permissions`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({ permissions: toGrant }),
@@ -95,11 +99,21 @@ const UserManagement: React.FC = () => {
 			}
 
 			if (toRevoke.length > 0 && canRevoke) {
-				await fetcher(baseURL + `/api/users/${user.publicId}/permissions`, {
+				res2 = await fetcher(baseURL + `/api/users/${user.publicId}/permissions`, {
 					method: "DELETE",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({ permissions: toRevoke }),
 				});
+			}
+
+			if (res1 && !res1.ok) {
+				const errText = await res1.text();
+				throw new Error(errText);
+			}
+
+			if (res2 && !res2.ok) {
+				const errText = await res2.text();
+				throw new Error(errText);
 			}
 
 			alert("権限更新成功");
@@ -136,9 +150,9 @@ const UserManagement: React.FC = () => {
 
 	return (
 		<div className="user-management-container">
-			<h2>ユーザ管理</h2>
+			<h2 className={styles.title}>ユーザ管理</h2>
 
-			<div className="info">
+			<div className="user-management-info">
 				<p>ユーザ名: {user.name}</p>
 				<p>パブリックID: {user.publicId}</p>
 			</div>
@@ -159,13 +173,13 @@ const UserManagement: React.FC = () => {
 			</div>
 
 			{(canGrant || canRevoke) && (
-				<button className="btn" onClick={updatePermissions}>
+				<button className="user-management-btn" onClick={updatePermissions}>
 					権限更新
 				</button>
 			)}
 
 			{canUpdateState && (
-				<div className="state">
+				<div className="user-management-state">
 					<h3>ユーザ状態</h3>
 					<p>現在: {user.state}</p>
 

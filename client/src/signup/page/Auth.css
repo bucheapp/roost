@@ -1,9 +1,4 @@
-.layout {
-	display: flex;
-	height: 100vh;
-}
-
-.signup-card {
+.auth-card {
 	width: 100%;
 	max-width: 420px;
 	background: #ffffff;
@@ -11,14 +6,6 @@
 	border-radius: 12px;
 	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 	animation: fadeIn 0.4s ease;
-}
-
-.title {
-	text-align: center;
-	margin-bottom: 24px;
-	font-size: 22px;
-	font-weight: bold;
-	color: #333;
 }
 
 .form {
@@ -49,6 +36,14 @@
 .form-group input:focus {
 	border: 1px solid #6366f1;
 	box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.title {
+	text-align: center;
+	margin-bottom: 24px;
+	font-size: 22px;
+	font-weight: bold;
+	color: #333;
 }
 
 .submit-btn {
@@ -93,7 +88,7 @@
 }
 
 @media (max-width: 768px) {
-	.signup-card {
+	.auth-card {
 		padding: 24px 16px;
 	}
 

@@ -1,32 +1,19 @@
 import React from "react";
+import styles from "../user/page/UserProfileEdit.module.css";
 
 type Props = {
 	label: string;
-	type: string;
-	placeholder?: string;
-	value: string;
-	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-	required?: boolean;
+	children: React.ReactNode;
+	edited?: boolean;
 };
 
-export function FormGroup({
-	label,
-	type,
-	placeholder,
-	value,
-	onChange,
-	required
-}: Props) {
+export function FormGroup({ label, children, edited }: Props) {
 	return (
 		<div className="form-group">
-			<label>{label}</label>
-			<input
-				type={type}
-				placeholder={placeholder}
-				value={value}
-				onChange={onChange}
-				required={required}
-			/>
+			<label>
+				{label} {edited && <span className={styles.edited}>*</span>}
+			</label>
+			{children}
 		</div>
 	);
 }

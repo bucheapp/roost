@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import styles from "../signup/Signup.module.css";
 import axios from "axios";
 import { useAuthCheck } from "../../utils/useAuthCheck";
 import { FormGroup } from "../../components/FormGroup";
+import styles from "../../signup/page/Auth.module.css"
 
 const baseURL = import.meta.env.VITE_API_URL;
 
@@ -48,27 +48,28 @@ const Login: React.FC = () => {
 	return (
 		<div className="layout">
 			<div className={styles.main}>
-				<div className="signup-card">
+				<div className="auth-card">
 					<h2 className="title">ログイン</h2>
 
 					<form className="form" onSubmit={handleSubmit}>
-						<FormGroup
-							label="ユーザ名 *"
-							type="text"
-							placeholder="ユーザ名を入力"
-							value={name}
-							onChange={(e) => setName(e.target.value)}
-							required
-						/>
-
-						<FormGroup
-							label="パスワード *"
-							type="password"
-							placeholder="パスワードを入力"
-							value={password}
-							onChange={(e) => setPassword(e.target.value)}
-							required
-						/>
+						<FormGroup label="ユーザ名 *">
+							<input
+								type="text"
+								value={name}
+								required={true}
+								placeholder="ユーザ名を入力"
+								onChange={e => setName(e.target.value)}
+							/>
+						</FormGroup>
+						<FormGroup label="パスワード *">
+							<input
+								type="password"
+								value={password}
+								required={true}
+								placeholder="パスワードを入力"
+								onChange={e => setPassword(e.target.value)}
+							/>
+						</FormGroup>
 
 						{error && <div className="error">{error}</div>}
 

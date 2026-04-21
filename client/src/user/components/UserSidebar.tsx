@@ -31,23 +31,23 @@ const UserSidebar: React.FC<Props> = ({ isOpen, isMobile, onClose }) => {
 	];
 
 	return (
-		<div className={`sidebar ${isOpen ? "open" : ""}`}>
+		<div className={`user-sidebar ${isOpen ? "open" : ""}`}>
 			{isMobile && isOpen && (
 				<button
-					className="close-btn"
+					className="close-sidebar-btn"
 					onClick={onClose}
 				>
 					×
 				</button>
 			)}
 
-			<div className="sidebar-header">ユーザー</div>
+			<div className="user-sidebar-header">ユーザー</div>
 
-			<div className="sidebar-menu">
+			<div className="user-sidebar-menu">
 				{menu.map((item) => (
 					<div
 						key={item.label}
-						className={`sidebar-item ${
+						className={`user-sidebar-item ${
 							location.pathname === item.path
 								? "active"
 								: ""
