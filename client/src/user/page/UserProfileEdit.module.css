@@ -18,6 +18,7 @@
 
 .button_group {
 	display: flex;
+	justify-content: center;
 	gap: 10px;
 	margin-top: 20px;
 }
@@ -65,4 +66,23 @@ select {
 textarea {
 	resize: vertical;
 	min-height: 80px;
+}
+
+.icon_section {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+}
+
+.icon_preview {
+	width: 80px;
+	height: 80px;
+	border-radius: 50%;
+	object-fit: cover;
+	cursor: pointer;
+	transition: opacity 0.2s;
+}
+
+.icon_preview:hover {
+	opacity: 0.8;
 }

@@ -5,6 +5,8 @@ import { fetchWithAuth } from "../../utils/fetchWithAuth";
 import "./UserCreate.css";
 import styles from "./UserCreate.module.css"
 import { FormGroup } from "../../components/FormGroup";
+import { useIsMobile } from "../../utils/useIsMobile";
+import UserSidebar from "../components/UserSidebar";
 
 const baseURL = import.meta.env.VITE_API_URL;
 const UserCreate: React.FC = () => {
@@ -20,6 +22,9 @@ const UserCreate: React.FC = () => {
 
 	const [canCreateAdmin, setCanCreateAdmin] = useState(false);
 	const [isAdmin, setIsAdmin] = useState(false);
+
+	const isMobile = useIsMobile();
+	const [isOpen, setIsOpen] = useState(false);
 
 	const [loading, setLoading] = useState(true);
 
@@ -125,7 +130,25 @@ const UserCreate: React.FC = () => {
 	if (loading) return <div>Loading...</div>;
 
 	return (
-		<div className="user-create-container">
+		<div className="layout">
+						<UserSidebar
+				isOpen={isOpen}
+				isMobile={isMobile}
+				onClose={() => setIsOpen(false)}
+			/>
+			{isOpen && isMobile && <div className="overlay" onClick={() => setIsOpen(false)} />}
+
+			<div className={styles.main}>
+				{isMobile && !isOpen && (
+					<button
+						className="open-sidebar-btn"
+						onClick={() => setIsOpen(true)}
+					>
+						☰
+					</button>
+				)}
+		</div>
+				<div className="user-create-container">
 			<h2 className={styles.title}>ユーザ作成</h2>
 
 			<FormGroup label="ユーザ名 *">
@@ -184,6 +207,7 @@ const UserCreate: React.FC = () => {
 			<button className="submit-btn" onClick={handleSubmit}>
 				作成
 			</button>
+		</div>
 		</div>
 	);
 };

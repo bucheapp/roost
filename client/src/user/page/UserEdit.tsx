@@ -113,16 +113,6 @@ const UserEdit: React.FC = () => {
                     />
                 </FormGroup>
 
-                <FormGroup label="パスワード">
-                    <div className="password-center">
-                        <button
-                            className="link-btn"
-                            onClick={() => navigate("/user/me/password/edit")}
-                        >
-                            パスワード変更
-                        </button>
-                    </div>
-                </FormGroup>
                 <ButtonGroup
                     onSubmit={handleSubmit}
                     onClose={handleClose}

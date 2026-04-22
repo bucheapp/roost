@@ -109,8 +109,7 @@ const UserProfile: React.FC = () => {
 		}
 	};
 
-	const displayOrDefault = (value: string | null | undefined) =>
-		value && value.trim() !== "" ? value : "(設定されてません)";
+	const defaultText = isMe ? "(設定されてません)" : "";
 
 	return (
 		<div className="layout">
@@ -138,11 +137,13 @@ const UserProfile: React.FC = () => {
 							className="profile-avatar"
 						/>
 						<div>
-							<h2>{displayOrDefault(profile.name)}</h2>
+							<h2>{profile.name ? profile.name : defaultText}</h2>
 							{isMe && (
 								<>
-									<p>Email: {displayOrDefault(profile.email)}</p>
-									<p>パスワード: ********</p>
+									<div className="profile-account">
+										<p><span>Email:</span> {profile.email || defaultText}</p>
+										<p><span>パスワード:</span> ********</p>
+									</div>
 									<button
 										className="edit-btn"
 										onClick={() => navigate("/user/me/edit")}
@@ -156,19 +157,41 @@ const UserProfile: React.FC = () => {
 
 					<div className="profile-section">
 						<h3>自己紹介</h3>
-						<p>{displayOrDefault(profile.bio)}</p>
+						<p>{profile.bio ? profile.bio : defaultText}</p>
 					</div>
 
 					<div className="profile-section profile-details">
-						<div>性別: {formatGender(profile.gender)}</div>
-						<div>
-							誕生日:{" "}
-							{profile.dateOfBirth
-								? new Date(profile.dateOfBirth).toLocaleDateString()
-								: "(設定されてません)"}
+						<div className={styles.item}>
+							<span>性別:</span>
+							<span>{formatGender(profile.gender)}</span>
 						</div>
-						<div>住所: {displayOrDefault(profile.address)}</div>
-						<div>Github: {displayOrDefault(profile.githubUrl)}</div>
+
+						<div className={styles.item}>
+							<span>誕生日:</span>
+							<span>
+								{profile.dateOfBirth
+									? new Date(profile.dateOfBirth).toLocaleDateString()
+									: defaultText}
+							</span>
+						</div>
+
+						<div className={styles.item}>
+							<span>住所:</span>
+							<span>{profile.address || defaultText}</span>
+						</div>
+
+						<div className={styles.item}>
+							<span>Github:</span>
+							<span>
+								{profile.githubUrl ? (
+									<a href={profile.githubUrl} target="_blank" rel="noopener noreferrer">
+										{profile.githubUrl}
+									</a>
+								) : (
+									defaultText
+								)}
+							</span>
+						</div>
 					</div>
 
 					{isMe && (

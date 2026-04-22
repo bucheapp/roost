@@ -2,9 +2,8 @@ import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../AuthContext";
 import { fetchWithAuth } from "../../utils/fetchWithAuth";
-import { useUnsavedChanges } from "../../utils/useUnsavedChanges"
+import { useUnsavedChanges } from "../../utils/useUnsavedChanges";
 import styles from "./UserProfileEdit.module.css";
-import "./UserProfileEdit.css";
 import { FormGroup } from "../../components/FormGroup";
 import { ButtonGroup } from "../components/ButtonGroup";
 
@@ -24,20 +23,26 @@ const UserProfileEdit: React.FC = () => {
 	const auth = useContext(AuthContext);
 
 	const [profile, setProfile] = useState<Profile | null>(null);
+	const [initial, setInitial] = useState<Profile | null>(null);
 
 	const [bio, setBio] = useState("");
 	const [iconFile, setIconFile] = useState<File | null>(null);
+	const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
 	const [gender, setGender] = useState("");
 	const [dateOfBirth, setDateOfBirth] = useState("");
 	const [address, setAddress] = useState("");
 	const [githubUrl, setGithubUrl] = useState("");
 
-	const [initial, setInitial] = useState<Profile | null>(null);
-
 	useEffect(() => {
 		if (!auth) return;
 
-		fetchWithAuth(baseURL + "/api/users/me/profile", {}, auth.accessToken, auth.setAccessToken)
+		fetchWithAuth(
+			baseURL + "/api/users/me/profile",
+			{},
+			auth.accessToken,
+			auth.setAccessToken
+		)
 			.then(res => res.json())
 			.then(data => {
 				setProfile(data);
@@ -110,17 +115,45 @@ const UserProfileEdit: React.FC = () => {
 
 	if (!profile) return <div>Loading...</div>;
 
+	const iconSrc = previewUrl
+		? previewUrl
+		: profile.iconUrl
+			? baseURL + "/icons/" + profile.iconUrl + ".jpg"
+			: baseURL + "/icons/default_icon.jpg";
+
 	return (
 		<div className={styles.layout}>
 			<div className={styles.content}>
-				<h2>プロフィール編集 {isChanged() && <span className={styles.edited}>*</span>}</h2>
+				<h2>
+					プロフィール編集 {isChanged() && <span className={styles.edited}>*</span>}
+				</h2>
 
 				<FormGroup label="アイコン" edited={!!iconFile}>
-					<input
-						type="file"
-						accept="image/*"
-						onChange={e => setIconFile(e.target.files?.[0] || null)}
-					/>
+					<div className={styles.icon_section}>
+						<img
+							src={iconSrc}
+							className={styles.icon_preview}
+							onClick={() =>
+								document.getElementById("iconInput")?.click()
+							}
+						/>
+
+						<input
+							id="iconInput"
+							type="file"
+							accept="image/*"
+							style={{ display: "none" }}
+							onChange={e => {
+								const file = e.target.files?.[0] || null;
+								setIconFile(file);
+
+								if (file) {
+									const url = URL.createObjectURL(file);
+									setPreviewUrl(url);
+								}
+							}}
+						/>
+					</div>
 				</FormGroup>
 
 				<FormGroup label="自己紹介" edited={bio !== (initial?.bio || "")}>
@@ -136,10 +169,7 @@ const UserProfileEdit: React.FC = () => {
 					</select>
 				</FormGroup>
 
-				<FormGroup
-					label="誕生日"
-					edited={dateOfBirth !== (initial?.dateOfBirth || "")}
-				>
+				<FormGroup label="誕生日" edited={dateOfBirth !== (initial?.dateOfBirth || "")}>
 					<input
 						type="date"
 						value={dateOfBirth ? dateOfBirth.substring(0, 10) : ""}
@@ -163,10 +193,7 @@ const UserProfileEdit: React.FC = () => {
 					/>
 				</FormGroup>
 
-				<ButtonGroup
-					onSubmit={handleSubmit}
-					onClose={handleClose}
-				/>
+				<ButtonGroup onSubmit={handleSubmit} onClose={handleClose} />
 			</div>
 		</div>
 	);

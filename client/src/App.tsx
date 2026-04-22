@@ -11,6 +11,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import UserManagement from "./user/page/UserManagement";
 import UserCreate from "./user/page/UserCreate";
 import UserCommunity from "./user/page/UserCommunity";
+import UserSecurity from "./user/page/UserSecurity"
 
 const App: React.FC = () => {
 	return (
@@ -26,6 +27,7 @@ const App: React.FC = () => {
 						<Route path="profile/edit" element={<UserProfileEdit />} />
 						<Route path="password/edit" element={<UserPasswordEdit />} />
 						<Route path="community" element={<UserCommunity />} />
+						<Route path="security" element={<UserSecurity />} />
 					</Route>
 					<Route path="create" element={<UserCreate />} />
 

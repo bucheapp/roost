@@ -10,6 +10,17 @@
 	border-radius: 50%;
 }
 
+.profile-account p {
+	margin: 6px 0;
+	display: flex;
+	gap: 8px;
+}
+
+.profile-account span:first-child {
+	width: 100px;
+	color: #666;
+}
+
 .profile-section {
 	margin-top: 20px;
 }
@@ -17,7 +28,7 @@
 .profile-details {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
-	gap: 10px;
+	gap: 12px 40px;
 }
 
 .edit-btn {

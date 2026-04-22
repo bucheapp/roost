@@ -1,0 +1,30 @@
+.layout {
+	min-height: 100vh;
+	display: flex;
+	justify-content: center;
+	align-items: flex-start;
+	padding: 40px 20px;
+	background: #f5f6fa;
+}
+
+.content {
+	width: 100%;
+	max-width: 700px;
+	background: white;
+	padding: 24px;
+	border-radius: 10px;
+	box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.action_btn {
+	background: #6b63ff;
+	color: white;
+	border: none;
+	padding: 10px 16px;
+	border-radius: 6px;
+	cursor: pointer;
+}
+
+.action_btn:hover {
+	opacity: 0.9;
+}

@@ -1,7 +1,7 @@
 import React from "react";
 import "./Sidebar.css";
 
-import Header from "./Header";
+import Header from "./SidebarHeader";
 import SearchGroup from "./SearchGroup";
 import FixedGroup from "./groups/FixedGroup";
 import NewGroup from "./groups/NewGroup";
