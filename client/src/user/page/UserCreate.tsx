@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../AuthContext";
 import { fetchWithAuth } from "../../utils/fetchWithAuth";
 import "./UserCreate.css";
-import styles from "./UserCreate.module.css"
+import styles from "./UserCreate.module.css";
 import { FormGroup } from "../../components/FormGroup";
 import { useIsMobile } from "../../utils/useIsMobile";
 import UserSidebar from "../components/UserSidebar";
 
 const baseURL = import.meta.env.VITE_API_URL;
+
 const UserCreate: React.FC = () => {
 	const navigate = useNavigate();
 	const auth = useContext(AuthContext);
@@ -117,10 +118,10 @@ const UserCreate: React.FC = () => {
 			}
 
 			const data = await res.json();
-			console.log(data);
+			const publicId = BigInt(data.publicId);
 
 			alert("作成成功");
-			navigate(`/user/${data.publicId}/management`);
+			navigate(`/user/${publicId.toString()}/management`);
 		} catch (err) {
 			console.error(err);
 			alert("作成失敗");
@@ -131,14 +132,20 @@ const UserCreate: React.FC = () => {
 
 	return (
 		<div className="layout">
-						<UserSidebar
+			<UserSidebar
 				isOpen={isOpen}
 				isMobile={isMobile}
 				onClose={() => setIsOpen(false)}
 			/>
-			{isOpen && isMobile && <div className="overlay" onClick={() => setIsOpen(false)} />}
 
-			<div className={styles.main}>
+			{isOpen && isMobile && (
+				<div
+					className="overlay"
+					onClick={() => setIsOpen(false)}
+				/>
+			)}
+
+			<div className="main">
 				{isMobile && !isOpen && (
 					<button
 						className="open-sidebar-btn"
@@ -147,67 +154,72 @@ const UserCreate: React.FC = () => {
 						☰
 					</button>
 				)}
-		</div>
+
 				<div className="user-create-container">
-			<h2 className={styles.title}>ユーザ作成</h2>
+					<h2 className={styles.title}>ユーザ作成</h2>
 
-			<FormGroup label="ユーザ名 *">
-				<input
-					type="text"
-					value={name}
-					required={true}
-					placeholder="ユーザ名を入力"
-					onChange={e => setName(e.target.value)}
-				/>
-			</FormGroup>
-
-			<FormGroup label="Email">
-				<input
-					type="email"
-					value={email}
-					placeholder="example@example.com"
-					onChange={e => setEmail(e.target.value)}
-				/>
-			</FormGroup>
-			<FormGroup label="パスワード *">
-				<input
-					type="password"
-					value={password}
-					required={true}
-					placeholder="パスワードを入力"
-					onChange={e => setPassword(e.target.value)}
-				/>
-			</FormGroup>
-
-			{canCreateAdmin && (
-				<FormGroup label="Admin">
-					<input
-						type="checkbox"
-						checked={isAdmin}
-						onChange={handleAdminToggle}
-					/>
-				</FormGroup>
-			)}
-
-			<div className="permissions">
-				<h3>権限一覧</h3>
-				{permissions.map(perm => (
-					<label key={perm} className="permission-item">
+					<FormGroup label="ユーザ名 *">
 						<input
-							type="checkbox"
-							checked={selectedPermissions.has(perm)}
-							onChange={() => togglePermission(perm)}
-							disabled={isAdmin}
+							type="text"
+							value={name}
+							required={true}
+							placeholder="ユーザ名を入力"
+							onChange={e => setName(e.target.value)}
 						/>
-						{perm}
-					</label>
-				))}
-			</div>
+					</FormGroup>
 
-			<button className="submit-btn" onClick={handleSubmit}>
-				作成
-			</button>
-		</div>
+					<FormGroup label="Email">
+						<input
+							type="email"
+							value={email}
+							placeholder="example@example.com"
+							onChange={e => setEmail(e.target.value)}
+						/>
+					</FormGroup>
+
+					<FormGroup label="パスワード *">
+						<input
+							type="password"
+							value={password}
+							required={true}
+							placeholder="パスワードを入力"
+							onChange={e => setPassword(e.target.value)}
+						/>
+					</FormGroup>
+
+					{canCreateAdmin && (
+						<FormGroup label="Admin">
+							<input
+								type="checkbox"
+								checked={isAdmin}
+								onChange={handleAdminToggle}
+							/>
+						</FormGroup>
+					)}
+
+					<div className="permissions">
+						<h3>権限一覧</h3>
+						{permissions.map(perm => (
+							<label key={perm} className="permission-item">
+								<input
+									type="checkbox"
+									checked={selectedPermissions.has(perm)}
+									onChange={() => togglePermission(perm)}
+									disabled={isAdmin}
+								/>
+								{perm}
+							</label>
+						))}
+					</div>
+
+					<button
+						className="submit-btn"
+						onClick={handleSubmit}
+					>
+						作成
+					</button>
+				</div>
+			</div>
 		</div>
 	);
 };
