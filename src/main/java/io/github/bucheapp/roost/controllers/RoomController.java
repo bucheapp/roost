@@ -2,6 +2,8 @@ package io.github.bucheapp.roost.controllers;
 
 import java.util.Map;
 
+import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -45,7 +47,7 @@ public class RoomController {
 	@PostMapping("api/communities/{publicId}/rooms")
 	public ResponseEntity<RoomResponse> createRoom(
 			@PathVariable long publicId,
-			@RequestBody RoomRequest req
+			@Valid @RequestBody RoomRequest req
 			) {
 		
 		Room room = roomService.createRoom(publicId, req);
@@ -62,7 +64,7 @@ public class RoomController {
 	@PatchMapping("api/rooms/{publicId}")
 	public ResponseEntity<RoomResponse> updateRoom(
 			@PathVariable long publicId,
-			@RequestBody UpdateRoomRequest req
+			@Valid @RequestBody UpdateRoomRequest req
 			) {
 		Room room = roomService.updateRoom(publicId, req);
 		

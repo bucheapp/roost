@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../AuthContext";
 import { fetchWithAuth } from "../../utils/fetchWithAuth";
-import { useUnsavedChanges } from "../../utils/useUnsavedChanges"
+import { useUnsavedChanges } from "../../utils/useUnsavedChanges";
 import styles from "./UserProfileEdit.module.css";
 import { FormGroup } from "../../components/FormGroup";
 import { ButtonGroup } from "../components/ButtonGroup";
@@ -17,6 +17,8 @@ const UserPasswordEdit: React.FC = () => {
 	const [newPassword, setNewPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
 
+	const [error, setError] = useState("");
+
 	const isChanged = () => {
 		return currentPassword !== "" || newPassword !== "" || confirmPassword !== "";
 	};
@@ -30,13 +32,15 @@ const UserPasswordEdit: React.FC = () => {
 	const handleSubmit = async () => {
 		if (!auth) return;
 
+		setError("");
+
 		if (!currentPassword || !newPassword || !confirmPassword) {
-			alert("すべて入力してください");
+			setError("すべて入力してください");
 			return;
 		}
 
 		if (newPassword !== confirmPassword) {
-			alert("新しいパスワードが一致しません");
+			setError("新しいパスワードが一致しません");
 			return;
 		}
 
@@ -57,26 +61,25 @@ const UserPasswordEdit: React.FC = () => {
 				auth.setAccessToken
 			);
 
-			if (!res.ok) {
-				if (res.status === 400 || res.status === 401) {
-					alert("現在のパスワードが違います");
-					return;
-				}
-				throw new Error();
-			}
+			const data = await res.json().catch(() => null);
 
-			alert("パスワードを変更しました");
-			navigate("/user/me/profile");
+			if (!res.ok) {
+				setError(data?.msg || "変更に失敗しました");
+				return;
+			}
 		} catch (err) {
 			console.error(err);
-			alert("変更に失敗しました");
+			setError("不明なエラーです");
 		}
 	};
 
 	return (
 		<div className={styles.layout}>
 			<div className={styles.content}>
-				<h2>パスワード変更 {isChanged() && <span className={styles.edited}>*</span>}</h2>
+				<h2>
+					パスワード変更 {isChanged() && <span className={styles.edited}>*</span>}
+				</h2>
+
 				<FormGroup label="現在のパスワード">
 					<input
 						type="password"
@@ -100,6 +103,8 @@ const UserPasswordEdit: React.FC = () => {
 						onChange={e => setConfirmPassword(e.target.value)}
 					/>
 				</FormGroup>
+
+				{error && <div className="error">{error}</div>}
 
 				<ButtonGroup
 					onSubmit={handleSubmit}

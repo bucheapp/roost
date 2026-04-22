@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -60,7 +62,7 @@ public class UserController {
 	
 	@PatchMapping("/me")
 	public ResponseEntity<UserResponse> updateUser(
-			@RequestBody UpdateUserRequest req) {
+			@Valid @RequestBody UpdateUserRequest req) {
 		User user = userService.updateCurrentUser(req);
 		
 		UserPrivateResponse userResponse = new UserPrivateResponse(user);
@@ -70,7 +72,7 @@ public class UserController {
 	
 	@PatchMapping("/me/password")
 	public ResponseEntity<UserResponse> updatePassword(
-			@RequestBody UpdatePasswordRequest req) {
+			@Valid @RequestBody UpdatePasswordRequest req) {
 		User user = userService.updatePassword(req);
 		
 		UserPrivateResponse userResponse = new UserPrivateResponse(user);
@@ -87,7 +89,7 @@ public class UserController {
 	@PreAuthorize("hasAuthority('CREATE_USER')")
 	@PostMapping
 	public ResponseEntity<UserResponse> createUser(
-			@RequestBody CreateUserRequest req) {
+			@Valid @RequestBody CreateUserRequest req) {
 		User user = userService.createUser(req);
 		
 		UserPrivateResponse userResponse = new UserPrivateResponse(user);
@@ -97,7 +99,8 @@ public class UserController {
 	
 	@PreAuthorize("hasAuthority('CREATE_ADMINUSER')")
 	@PostMapping("/admin")
-	public ResponseEntity<UserResponse> createAdminUser(@RequestBody CreateAdminUserRequest req) {
+	public ResponseEntity<UserResponse> createAdminUser(
+			@Valid @RequestBody CreateAdminUserRequest req) {
 		User user = userService.createAdminUser(req);
 		
 		UserPrivateResponse userResponse = new UserPrivateResponse(user);

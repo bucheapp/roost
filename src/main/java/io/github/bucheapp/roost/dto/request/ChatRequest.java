@@ -11,8 +11,8 @@ public class ChatRequest {
 	private ChatType type;
 	
 	// Text用
-	@NotBlank(message="chat.content.notBlank")
-	@Size(min = 1,max = 500,message="chat.content.size")
+	@NotBlank(message="{chat.content.notBlank}")
+	@Size(min = 1,max = 500,message="{chat.content.size}")
 	private String content;
 	private MultipartFile file;
 	

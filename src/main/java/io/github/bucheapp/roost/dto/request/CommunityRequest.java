@@ -7,9 +7,9 @@ import jakarta.validation.constraints.Size;
 import io.github.bucheapp.roost.models.CommunityType;
 
 public class CommunityRequest {
-	@NotBlank(message="community.name.notBlank")
-	@Size(min = 3,max = 30,message="community.name.size")
-	@Pattern(regexp = "^[\\p{L}\\(\\)!?・]+$",message="community.name.pattern")
+	@NotBlank(message="{community.name.notBlank}")
+	@Size(min = 3,max = 30,message="{community.name.size}")
+	@Pattern(regexp = "^[\\p{L}\\(\\)!?・]+$",message="{community.name.pattern}")
 	private String name;
 	private CommunityType type;
 	

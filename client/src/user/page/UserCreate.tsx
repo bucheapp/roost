@@ -29,6 +29,8 @@ const UserCreate: React.FC = () => {
 
 	const [loading, setLoading] = useState(true);
 
+	const [error, setError] = useState("");
+
 	useEffect(() => {
 		if (!auth) {
 			navigate("/login");
@@ -61,27 +63,20 @@ const UserCreate: React.FC = () => {
 
 	const togglePermission = (perm: string) => {
 		const newSet = new Set(selectedPermissions);
-		if (newSet.has(perm)) {
-			newSet.delete(perm);
-		} else {
-			newSet.add(perm);
-		}
+		newSet.has(perm) ? newSet.delete(perm) : newSet.add(perm);
 		setSelectedPermissions(newSet);
 	};
 
 	const handleAdminToggle = () => {
 		const next = !isAdmin;
 		setIsAdmin(next);
-
-		if (next) {
-			setSelectedPermissions(new Set(permissions));
-		} else {
-			setSelectedPermissions(new Set());
-		}
+		setSelectedPermissions(next ? new Set(permissions) : new Set());
 	};
 
 	const handleSubmit = async () => {
 		if (!auth) return;
+
+		setError("");
 
 		const fetcher = (url: string, options: RequestInit) =>
 			fetchWithAuth(url, options, auth.accessToken, auth.setAccessToken);
@@ -112,19 +107,18 @@ const UserCreate: React.FC = () => {
 				});
 			}
 
+			const data = await res.json().catch(() => null);
+
 			if (!res.ok) {
-				const errText = await res.text();
-				throw new Error(errText);
+				setError(data?.msg || "作成に失敗しました");
+				return;
 			}
 
-			const data = await res.json();
 			const publicId = BigInt(data.publicId);
-
-			alert("作成成功");
 			navigate(`/user/${publicId.toString()}/management`);
 		} catch (err) {
 			console.error(err);
-			alert("作成失敗");
+			setError("不明なエラーです");
 		}
 	};
 
@@ -139,18 +133,12 @@ const UserCreate: React.FC = () => {
 			/>
 
 			{isOpen && isMobile && (
-				<div
-					className="overlay"
-					onClick={() => setIsOpen(false)}
-				/>
+				<div className="overlay" onClick={() => setIsOpen(false)} />
 			)}
 
 			<div className="main">
 				{isMobile && !isOpen && (
-					<button
-						className="open-sidebar-btn"
-						onClick={() => setIsOpen(true)}
-					>
+					<button className="open-sidebar-btn" onClick={() => setIsOpen(true)}>
 						☰
 					</button>
 				)}
@@ -162,7 +150,7 @@ const UserCreate: React.FC = () => {
 						<input
 							type="text"
 							value={name}
-							required={true}
+							required
 							placeholder="ユーザ名を入力"
 							onChange={e => setName(e.target.value)}
 						/>
@@ -181,7 +169,7 @@ const UserCreate: React.FC = () => {
 						<input
 							type="password"
 							value={password}
-							required={true}
+							required
 							placeholder="パスワードを入力"
 							onChange={e => setPassword(e.target.value)}
 						/>
@@ -212,10 +200,9 @@ const UserCreate: React.FC = () => {
 						))}
 					</div>
 
-					<button
-						className="submit-btn"
-						onClick={handleSubmit}
-					>
+					{error && <div className="error">{error}</div>}
+
+					<button className="submit-btn" onClick={handleSubmit}>
 						作成
 					</button>
 				</div>
