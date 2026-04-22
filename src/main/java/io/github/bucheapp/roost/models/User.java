@@ -35,18 +35,22 @@ public class User {
 	@Column(length = 20)
 	@NotBlank
 	@Size(min = 3, max = 20)
-	@Pattern(regexp = "^[\\p{L}\\p{N}?!]+$")
+	@Pattern(regexp = "^[\\p{L}\\p{N}?!_・\\(\\)]+$")
 	private String name;
 	
 	@Column(unique = true)
 	private long publicId;
 	
-	@Column
+	@Column(length = 255)
 	@Email
+	@Size(max = 255)
+	@Pattern(regexp = ".*\\S.*")
 	private String email;
 	
-	@Column
+	@Column(length = 18)
 	@NotBlank
+	@Size(min = 8, max = 18)
+	@Pattern(regexp = "^[\\da-zA-Z_]+$")
 	private String password;
 	
 	@Column

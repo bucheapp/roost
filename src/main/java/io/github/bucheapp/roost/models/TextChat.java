@@ -17,7 +17,7 @@ public class TextChat extends Chat {
 	@Size(min = 1,max = 500)
 	private String content;
 	
-	@Column
+	@Column(length=36)
 	private String mediaContentUrl;
 	
 	public TextChat() {}

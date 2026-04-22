@@ -2,16 +2,23 @@ package io.github.bucheapp.roost.dto.request;
 
 import java.time.LocalDate;
 
+import jakarta.validation.constraints.Size;
+
+import org.hibernate.validator.constraints.URL;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.github.bucheapp.roost.models.Gender;
 
 public class UpdateProfileRequest {
+	@Size(max = 300,message="profile.bio.size")
 	private String bio;
 	private MultipartFile iconFile;
 	private Gender gender;
 	private LocalDate dateOfBirth;
+	@Size(max = 255,message="profile.address.size")
 	private String address;
+	@URL(protocol = "https", host = "github.com",message="profile.githubUrl.invalid")
+	@Size(max = 255,message="profile.githubUrl.size")
 	private String githubUrl;
 	
 	public String getBio() {

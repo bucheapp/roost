@@ -32,7 +32,7 @@ public class Profile {
 	@Size(max = 300)
 	private String bio;
 	
-	@Column(length = 500)
+	@Column(length = 36)
 	private String iconUrl;
 	
 	@Column
@@ -46,7 +46,9 @@ public class Profile {
 	@Size(max = 255)
 	private String address;
 	
+	@Column(length = 255)
 	@URL(protocol = "https", host = "github.com")
+	@Size(max = 255)
 	private String githubUrl;
 	
 	@Column(updatable = false)
