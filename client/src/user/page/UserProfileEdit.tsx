@@ -124,7 +124,7 @@ const UserProfileEdit: React.FC = () => {
 	return (
 		<div className={styles.layout}>
 			<div className={styles.content}>
-				<h2>
+				<h2 className={styles.title}>
 					プロフィール編集 {isChanged() && <span className={styles.edited}>*</span>}
 				</h2>
 
