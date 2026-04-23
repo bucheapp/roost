@@ -64,14 +64,14 @@ public class RoomServiceImpl implements RoomService {
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("community.notfound")));
 		
 		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
-		LocalDateTime now = LocalDateTime.now();
 		
-		Room room = new Room();
-		room.setName(name);
-		room.setCreatedAt(now);
-		room.setPublicId(snowflake.nextId());
-		room.setCreator(user);
-		room.setCommunity(community);
+		Room room = new Room(
+				snowflake.nextId(),
+				name,
+				LocalDateTime.now(),
+				user,
+				community
+				);
 		
 		return roomRepository.save(room);
 	}

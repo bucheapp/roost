@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -27,11 +29,29 @@ public class Member {
 	Community community;
 	
 	@Column
+	@NotNull
 	LocalDateTime time;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
 	User user;
+	
+	@Column
+	@Enumerated(EnumType.STRING)
+	@NotNull
+	MemberState state;
+	
+	public Member(
+			MemberState state,
+			LocalDateTime time,
+			User user,
+			Community community
+			) {
+		this.state = state;
+		this.time = time;
+		this.user = user;
+		this.community = community;
+	}
 	
 	public long getId() {
 		return id;
@@ -71,6 +91,14 @@ public class Member {
 		if (!(o instanceof Member)) return false;
 		Member other = (Member) o;
 		return id != 0 && id == other.id;
+	}
+
+	public MemberState getState() {
+		return state;
+	}
+
+	public void setState(MemberState state) {
+		this.state = state;
 	}
 
 	@Override

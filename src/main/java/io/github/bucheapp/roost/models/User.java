@@ -72,15 +72,22 @@ public class User {
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Profile profile;
 	
-	public User() {
+	public User(
+			long publicId,
+			String name,
+			String email,
+			String password,
+			UserState state,
+			Profile profile,
+			Role role
+			) {
 		this.permissions = new HashSet<>();
-	}
-	
-	public User(String name,String email,String password) {
-		this();
+		this.publicId = publicId;
 		this.name = name;
-		this.email = email;
 		this.password = password;
+		this.state = state;
+		this.profile = profile;
+		this.role = role;
 	}
 
 	public long getId() {

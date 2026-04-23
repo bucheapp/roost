@@ -77,7 +77,13 @@ public class ChatServiceImpl implements ChatService {
 				checkByte(req.getFile());
 				//TODO: ファイルを作成するロジックを作成
 			}
-			chat = new TextChat(req);
+			chat = new TextChat(
+					snowflake.nextId(),
+					LocalDateTime.now(),
+					user,
+					room,
+					req
+					);
 		} else {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, messageUtil.get("unknown.chattype"));
 		}

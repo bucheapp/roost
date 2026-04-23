@@ -21,6 +21,7 @@ import io.github.bucheapp.roost.models.Community;
 import io.github.bucheapp.roost.models.CommunityState;
 import io.github.bucheapp.roost.models.CommunityType;
 import io.github.bucheapp.roost.models.Member;
+import io.github.bucheapp.roost.models.MemberState;
 import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.repositories.CommunityRepository;
 import io.github.bucheapp.roost.repositories.MemberRepository;
@@ -121,21 +122,25 @@ public class CommunityServiceImpl implements CommunityService {
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 
-		LocalDateTime now = LocalDateTime.now();
-
-		Community newCommunity = new Community();
-		newCommunity.setName(name);
-		newCommunity.setType(type);
-		newCommunity.setState(CommunityState.ACTIVE);
-		newCommunity.setPublicId(snowflake.nextId());
-		newCommunity.setCreatedAt(now);
+		Community newCommunity = new Community(
+				snowflake.nextId(),
+				name,
+				type,
+				CommunityState.ACTIVE,
+				LocalDateTime.now()
+				);
+		
 		newCommunity.addHostHistory(user);
 		newCommunity.setArchiveAt(
 				LocalDateTime.now().plusDays(7));
 
-		Member member = new Member();
-		member.setUser(user);
-		member.setTime(LocalDateTime.now());
+		Member member = new Member(
+				MemberState.ACTIVE,
+				LocalDateTime.now(),
+				user,
+				newCommunity
+				);
+		
 		newCommunity.addMember(member);
 
 		return communityRepository.save(newCommunity);

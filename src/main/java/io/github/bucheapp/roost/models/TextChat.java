@@ -1,5 +1,7 @@
 package io.github.bucheapp.roost.models;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -20,9 +22,18 @@ public class TextChat extends Chat {
 	@Column(length=36)
 	private String mediaContentUrl;
 	
-	public TextChat() {}
-	
-	public TextChat(ChatRequest req) {
+	public TextChat(
+			long publicId,
+			LocalDateTime createdAt,
+			User creator,
+			Room room,
+			ChatRequest req) {
+		super(
+			publicId,
+			createdAt,
+			creator,
+			room
+			);
 		this.content = req.getContent();
 	}
 	

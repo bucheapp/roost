@@ -11,4 +11,5 @@ public interface MemberService {
 	void leaveMember(long publicId);
 	void kickMember(long publicId,long userPublicId);
 	void banMember(long publicId,long userPublicId);
+	void unbanMember(long publicId,long userPublicId);
 }

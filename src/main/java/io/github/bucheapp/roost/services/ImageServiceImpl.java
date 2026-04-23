@@ -51,7 +51,7 @@ public class ImageServiceImpl implements ImageService {
 	@Override
 	public void deleteIconImage(String iconPath) {
 		File dataDir = new File(dataDirPath,"image/icon");
-		File imageFile = new File(dataDir,iconPath);
+		File imageFile = new File(dataDir,iconPath + ".jpg");
 		
 		imageFile.delete();
 	}

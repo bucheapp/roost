@@ -77,10 +77,21 @@ public class Community {
 	@OneToMany(mappedBy = "community", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Set<Member> members;
 	
-	public Community() {
+	public Community(
+			long publicId,
+			String name,
+			CommunityType type,
+			CommunityState state,
+			LocalDateTime createdAt
+			) {
 		this.properties = new HashSet<>();
 		this.hostHistory = new ArrayList<>();
 		this.members = new HashSet<>();
+		this.publicId = publicId;
+		this.name = name;
+		this.type = type;
+		this.state = state;
+		this.createdAt = createdAt;
 	}
 
 	public long getId() {
@@ -165,8 +176,9 @@ public class Community {
 	
 	public void addHostHistory(User user) {
 		hostHistory.add(new HostHistory(
+				LocalDateTime.now(),
 				user,
-				LocalDateTime.now()
+				this
 				));
 	}
 

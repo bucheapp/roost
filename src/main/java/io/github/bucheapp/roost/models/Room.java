@@ -53,6 +53,20 @@ public class Room {
 	@JoinColumn(name = "creator_id")
 	@NotNull
 	private User creator;
+	
+	public Room(
+			long publicId,
+			String name,
+			LocalDateTime createdAt,
+			User creator,
+			Community community
+			) {
+		this.publicId = publicId;
+		this.name = name;
+		this.createdAt = createdAt;
+		this.creator = creator;
+		this.community = community;
+	}
 
 	public long getId() {
 		return id;

@@ -180,17 +180,23 @@ public class UserServiceImpl implements UserService {
 		String hashedPassword = encoder.encode(rawPassword);
 		
 		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
-
-		User user = new User(name, email, hashedPassword);
-		user.setState(UserState.ACTIVE);
-		Profile profile = new Profile();
-		profile.setUser(user);
-		profile.setCreatedAt(LocalDateTime.now());
 		
-		user.setPublicId(snowflake.nextId());
-		user.setProfile(profile);
-		user.setRole(roleRepository.findByName("USER")
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("role.notfound"))));
+		Profile profile = new Profile(
+				LocalDateTime.now()
+				);
+
+		User user = new User(
+				snowflake.nextId(),
+				name,
+				email,
+				hashedPassword,
+				UserState.ACTIVE,
+				profile,
+				roleRepository.findByName("USER")
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("role.notfound")))
+				);
+		
+		profile.setUser(user);
 		
 		Set<Permission> permissions = requestedPermissions.stream()
 				.map(permissionName -> permissionRepository.findByName(permissionName)
@@ -198,6 +204,7 @@ public class UserServiceImpl implements UserService {
 				.collect(Collectors.toSet());
 		
 		user.setPermissions(permissions);
+		
 		return userRepository.save(user);
 	}
 	
@@ -220,15 +227,23 @@ public class UserServiceImpl implements UserService {
 		String hashedPassword = encoder.encode(rawPassword);
 		
 		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
+		
+		Profile profile = new Profile(
+				LocalDateTime.now()
+				);
 
-		User user = new User(name, email, hashedPassword);
-		user.setRole(roleRepository.findByName("ADMIN")
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("role.notfound"))));
-		user.setState(UserState.ACTIVE);
-		Profile profile = new Profile();
+		User user = new User(
+				snowflake.nextId(),
+				name,
+				email,
+				hashedPassword,
+				UserState.ACTIVE,
+				profile,
+				roleRepository.findByName("ADMIN")
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("role.notfound")))
+				);
+		
 		profile.setUser(user);
-		profile.setCreatedAt(LocalDateTime.now());
-		user.setProfile(profile);
 		
 		user.setPublicId(snowflake.nextId());
 		return userRepository.save(user);

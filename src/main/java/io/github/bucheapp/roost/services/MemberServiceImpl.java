@@ -14,6 +14,7 @@ import io.github.bucheapp.roost.dto.request.MemberRequest;
 import io.github.bucheapp.roost.models.Community;
 import io.github.bucheapp.roost.models.CommunityProperty;
 import io.github.bucheapp.roost.models.Member;
+import io.github.bucheapp.roost.models.MemberState;
 import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.repositories.CommunityRepository;
 import io.github.bucheapp.roost.repositories.MemberRepository;
@@ -49,15 +50,40 @@ public class MemberServiceImpl implements MemberService {
 		User user = userRepository.findByPublicId(req.getPublicId())
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 		
-		if(community.getProperties().contains(CommunityProperty.OPEN)) {
-			Member member = new Member();
-			member.setUser(user);
-			member.setTime(LocalDateTime.now());
-			member.setCommunity(community);
-			
-			members.add(member);
+		Member member = memberRepository.findByCommunityAndUser(community, user).orElse(null);
+		
+		if(member == null) {
+			if(community.getProperties().contains(CommunityProperty.OPEN)) {
+				Member newMember = new Member(
+						MemberState.ACTIVE,
+						LocalDateTime.now(),
+						user,
+						community
+						);
+				
+				members.add(newMember);
+			} else {
+				Member newMember = new Member(
+						MemberState.APPROVING,
+						LocalDateTime.now(),
+						user,
+						community
+						);
+				
+				members.add(newMember);
+				
+				//TODO: チャットを作成する
+			}
 		} else {
-			//TODO: 参加するためにメンバーからの認証を求めるシステムを作成
+			if(member.getState() == MemberState.BANNED) {
+				throw new ResponseStatusException(HttpStatus.FORBIDDEN,messageUtil.get("member.banned"));
+			}
+			
+			if(member.getState() == MemberState.APPROVING) {
+				throw new ResponseStatusException(HttpStatus.FORBIDDEN,messageUtil.get("member.approving"));
+			}
+			
+			throw new ResponseStatusException(HttpStatus.CONFLICT,messageUtil.get("member.conflict"));
 		}
 		
 		communityRepository.save(community);
@@ -92,6 +118,14 @@ public class MemberServiceImpl implements MemberService {
 		if (community.getHost().getId() == userId) {
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.get("host.cannot.leave"));
 		}
+		
+		if(member.getState() == MemberState.BANNED) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN,messageUtil.get("member.banned"));
+		}
+		
+		if(member.getState() == MemberState.APPROVING) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN,messageUtil.get("member.approving"));
+		}
 
 		memberRepository.delete(member);
 	}
@@ -108,14 +142,77 @@ public class MemberServiceImpl implements MemberService {
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("member.notfound")));
 		
 		if (community.getHost().getPublicId() == userPublicId) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.get("couldnt.kick"));
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.get("host.cannot.kick"));
+		}
+		
+		if(member.getState() == MemberState.BANNED) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN,messageUtil.get("member.banned"));
+		}
+		
+		if(member.getState() == MemberState.APPROVING) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN,messageUtil.get("member.approving"));
 		}
 		
 		memberRepository.delete(member);
 	}
 
 	@Override
-	public void banMember(long publicId, long userPubliId) {
-		//TODO: BANのロジック作成
+	public void banMember(long publicId, long userPublicId) {
+		Community community = communityRepository.findByPublicId(publicId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("community.notfound")));
+		
+		User user = userRepository.findByPublicId(userPublicId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
+		
+		Member member = memberRepository.findByCommunityAndUser(community, user)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("member.notfound")));
+		
+		if (community.getHost().getPublicId() == userPublicId) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.get("host.cannot.ban"));
+		}
+		
+		if(member.getState() == MemberState.BANNED) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN,messageUtil.get("member.banned"));
+		}
+		
+		if(member.getState() == MemberState.APPROVING) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN,messageUtil.get("member.approving"));
+		}
+		
+		member.setState(MemberState.BANNED);
+		
+		memberRepository.save(member);
+	}
+
+	@Override
+	public void unbanMember(long publicId, long userPublicId) {
+		Community community = communityRepository.findByPublicId(publicId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("community.notfound")));
+		
+		User user = userRepository.findByPublicId(userPublicId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
+		
+		Member member = memberRepository.findByCommunityAndUser(community, user)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("member.notfound")));
+		
+		if (community.getHost().getPublicId() == userPublicId) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.get("host.cannot.unban"));
+		}
+		
+		if(member.getState() == MemberState.BANNED) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN,messageUtil.get("member.banned"));
+		}
+		
+		if(member.getState() == MemberState.APPROVING) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN,messageUtil.get("member.approving"));
+		}
+		
+		if(member.getState() != MemberState.BANNED) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN,messageUtil.get("member.not.banned"));
+		}
+		
+		member.setState(MemberState.ACTIVE);
+		
+		memberRepository.save(member);
 	}
 }

@@ -37,10 +37,10 @@ public class RefreshToken {
 	
 	public RefreshToken() {};
 	
-	public RefreshToken(String token,User user, long millis) {
+	public RefreshToken(String token, long millis,User user) {
 		this.token = token;
-		this.user = user;
 		this.expiryDate = Instant.now().plusMillis(millis);
+		this.user = user;
 	}
 
 	public long getId() {

@@ -60,6 +60,10 @@ public class Profile {
 	@NotNull
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	private User user;
+	
+	public Profile(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
 
 	public long getId() {
 		return id;
