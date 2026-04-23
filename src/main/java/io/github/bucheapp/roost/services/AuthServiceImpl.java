@@ -105,6 +105,10 @@ public class AuthServiceImpl implements AuthService {
 		if (!encoder.matches(req.getPassword(), user.getPassword())) {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, messageUtil.get("incorrect.password"));
 		}
+		
+		if(user.getState() == UserState.FROZEN) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.get("user.forbidden"));
+		}
 
 		String accessTokenText = jwtService.generateAccessToken(user);
 		String refreshTokenText = jwtService.generateRefreshToken(user);
@@ -127,6 +131,12 @@ public class AuthServiceImpl implements AuthService {
 	public String refresh(String refreshTokenText) {
 		RefreshToken refreshToken = refreshTokenRepository.findByToken(refreshTokenText)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("token.notfound")));
+		
+		User user = refreshToken.getUser();
+		
+		if(user.getState() == UserState.FROZEN) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.get("user.forbidden"));
+		}
 		
 		if(!checkRefreshToken(refreshTokenText)) {
 			throw new ResponseStatusException(

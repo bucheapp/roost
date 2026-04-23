@@ -34,6 +34,8 @@ const UserProfileEdit: React.FC = () => {
 	const [address, setAddress] = useState("");
 	const [githubUrl, setGithubUrl] = useState("");
 
+	const [error, setError] = useState("");
+
 	useEffect(() => {
 		if (!auth) return;
 
@@ -81,6 +83,8 @@ const UserProfileEdit: React.FC = () => {
 	const handleSubmit = async () => {
 		if (!auth || !initial) return;
 
+		setError("");
+
 		const formData = new FormData();
 
 		if (bio !== (initial.bio || "")) formData.append("bio", bio);
@@ -104,12 +108,17 @@ const UserProfileEdit: React.FC = () => {
 				auth.setAccessToken
 			);
 
-			if (!res.ok) throw new Error();
+			const data = await res.json().catch(() => null);
+
+			if (!res.ok) {
+				setError(data?.msg || "保存に失敗しました");
+				return;
+			}
 
 			navigate("/user/me/profile");
 		} catch (err) {
 			console.error(err);
-			alert("保存に失敗しました");
+			setError("不明なエラーです");
 		}
 	};
 
@@ -192,6 +201,8 @@ const UserProfileEdit: React.FC = () => {
 						onChange={e => setGithubUrl(e.target.value)}
 					/>
 				</FormGroup>
+
+				{error && <div className="error">{error}</div>}
 
 				<ButtonGroup onSubmit={handleSubmit} onClose={handleClose} />
 			</div>

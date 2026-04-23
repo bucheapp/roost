@@ -41,7 +41,7 @@ public class Community {
 	@Column(length = 30)
 	@NotBlank
 	@Size(min = 3,max = 30)
-	@Pattern(regexp = "^[\\p{L}]+$")
+	@Pattern(regexp = "^[\\p{L}\\(\\)!?・]+$")
 	private String name;
 	
 	@Column

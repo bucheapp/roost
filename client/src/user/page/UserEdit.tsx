@@ -2,125 +2,139 @@ import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../AuthContext";
 import { fetchWithAuth } from "../../utils/fetchWithAuth";
-import { useUnsavedChanges } from "../../utils/useUnsavedChanges"
-import "./UserProfile.css"
-import styles from "./UserProfileEdit.module.css"
+import { useUnsavedChanges } from "../../utils/useUnsavedChanges";
+import "./UserProfile.css";
+import styles from "./UserProfileEdit.module.css";
 import { FormGroup } from "../../components/FormGroup";
 import { ButtonGroup } from "../components/ButtonGroup";
 
 type User = {
-    name: string;
-    email: string;
+	name: string;
+	email: string;
 };
 
 const baseURL = import.meta.env.VITE_API_URL;
 
 const UserEdit: React.FC = () => {
-    const navigate = useNavigate();
-    const auth = useContext(AuthContext);
+	const navigate = useNavigate();
+	const auth = useContext(AuthContext);
 
-    const [user, setUser] = useState<User | null>(null);
-    const [initial, setInitial] = useState<User | null>(null);
+	const [user, setUser] = useState<User | null>(null);
+	const [initial, setInitial] = useState<User | null>(null);
 
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
+	const [name, setName] = useState("");
+	const [email, setEmail] = useState("");
 
-    useEffect(() => {
-        if (!auth) return;
+	const [error, setError] = useState("");
 
-        fetchWithAuth(baseURL + "/api/users/me", {}, auth.accessToken, auth.setAccessToken)
-            .then(res => res.json())
-            .then(data => {
-                setUser(data);
-                setInitial(data);
-                setName(data.name || "");
-                setEmail(data.email || "");
-            })
-            .catch(err => {
-                console.error(err);
-                navigate("/login");
-            });
-    }, [auth, navigate]);
+	useEffect(() => {
+		if (!auth) return;
 
-    const isChanged = () => {
-        if (!initial) return false;
-        return (
-            name !== (initial.name || "") ||
-            email !== (initial.email || "")
-        );
-    };
+		fetchWithAuth(baseURL + "/api/users/me", {}, auth.accessToken, auth.setAccessToken)
+			.then(res => res.json())
+			.then(data => {
+				setUser(data);
+				setInitial(data);
+				setName(data.name || "");
+				setEmail(data.email || "");
+			})
+			.catch(err => {
+				console.error(err);
+				navigate("/login");
+			});
+	}, [auth, navigate]);
 
-    const handleClose = () => {
-        const { confirmClose } = useUnsavedChanges(isChanged);
-        if (!confirmClose()) return;
-        navigate(-1);
-    };
+	const isChanged = () => {
+		if (!initial) return false;
+		return (
+			name !== (initial.name || "") ||
+			email !== (initial.email || "")
+		);
+	};
 
-    const handleSubmit = async () => {
-        if (!auth || !initial) return;
+	const handleClose = () => {
+		const { confirmClose } = useUnsavedChanges(isChanged);
+		if (!confirmClose()) return;
+		navigate(-1);
+	};
 
-        try {
-            const res = await fetchWithAuth(
-                baseURL + "/api/users/me",
-                {
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        name: name !== initial.name ? name : null,
-                        email: email !== initial.email ? email : null,
-                    }),
-                },
-                auth.accessToken,
-                auth.setAccessToken
-            );
+	const handleSubmit = async () => {
+		if (!auth || !initial) return;
 
-            if (!res.ok) throw new Error();
+		setError("");
 
-            navigate("/user/me/profile");
-        } catch (err) {
-            console.error(err);
-            alert("変更に失敗しました");
-        }
-    };
+		try {
+			const res = await fetchWithAuth(
+				baseURL + "/api/users/me",
+				{
+					method: "PATCH",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({
+						name: name !== initial.name ? name : null,
+						email: email !== initial.email ? email : null,
+					}),
+				},
+				auth.accessToken,
+				auth.setAccessToken
+			);
 
-    if (!user) return <div>Loading...</div>;
+			const data = await res.json();
 
-    return (
-        <div className={styles.layout}>
-            <div className={styles.content}>
-                <h2>ユーザー編集 {isChanged() && <span className={styles.edited}>*</span>}</h2>
-                <FormGroup
-                    label="ユーザ名"
-                    edited={name !== (initial?.name || "")}
-                >
-                    <input
-                        type="text"
-                        value={name}
-                        onChange={e => setName(e.target.value)}
-                    />
-                </FormGroup>
+			if (!res.ok) {
+				setError(data?.msg || "変更に失敗しました");
+				return;
+			}
 
-                <FormGroup
-                    label="Email"
-                    edited={email !== (initial?.email || "")}
-                >
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={e => setEmail(e.target.value)}
-                    />
-                </FormGroup>
+			navigate("/user/me/profile");
+		} catch (err) {
+			console.error(err);
+			setError("不明なエラーです");
+		}
+	};
 
-                <ButtonGroup
-                    onSubmit={handleSubmit}
-                    onClose={handleClose}
-                    isDisabled={!isChanged()}
-                />
-            </div>
-        </div>
-    );
+	if (!user) return <div>Loading...</div>;
+
+	return (
+		<div className={styles.layout}>
+			<div className={styles.content}>
+				<h2>
+					ユーザー編集 {isChanged() && <span className={styles.edited}>*</span>}
+				</h2>
+
+				<FormGroup
+					label="ユーザ名"
+					edited={name !== (initial?.name || "")}
+				>
+					<input
+						type="text"
+						value={name}
+						onChange={e => setName(e.target.value)}
+					/>
+				</FormGroup>
+
+				<FormGroup
+					label="Email"
+					edited={email !== (initial?.email || "")}
+				>
+					<input
+						type="email"
+						value={email}
+						onChange={e => setEmail(e.target.value)}
+					/>
+				</FormGroup>
+
+				{error && <div className="error">{error}</div>}
+
+				<ButtonGroup
+					onSubmit={handleSubmit}
+					onClose={handleClose}
+					isDisabled={!isChanged()}
+				/>
+			</div>
+		</div>
+	);
 };
 
 export default UserEdit;

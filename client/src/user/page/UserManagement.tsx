@@ -45,7 +45,6 @@ const UserManagement: React.FC = () => {
 		])
 			.then(([myPerms, userData, userPerms]) => {
 				setMyPermissions(myPerms.permissions);
-
 				setUser({
 					name: userData.name,
 					publicId: userData.publicId,
@@ -132,7 +131,7 @@ const UserManagement: React.FC = () => {
 
 		try {
 			await fetcher(baseURL + `/api/users/${publicId}/state`, {
-				method: "PUT",
+				method: "PATCH",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ state }),
 			});

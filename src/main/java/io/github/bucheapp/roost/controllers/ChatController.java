@@ -2,6 +2,8 @@ package io.github.bucheapp.roost.controllers;
 
 import java.util.Map;
 
+import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -47,7 +49,7 @@ public class ChatController {
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<ChatResponse> createChat(
 			@PathVariable long publicId,
-			@ModelAttribute ChatRequest req
+			@Valid @ModelAttribute ChatRequest req
 			) {
 		Chat chat = chatService.createChat(publicId,req);
 		
@@ -62,7 +64,7 @@ public class ChatController {
 	@PatchMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<ChatResponse> updateChat(
 			@PathVariable long publicId,
-			@ModelAttribute ChatRequest req
+			@Valid @ModelAttribute ChatRequest req
 			) {
 		Chat chat = chatService.updateChat(publicId, req);
 		

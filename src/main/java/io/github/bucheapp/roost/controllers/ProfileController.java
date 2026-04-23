@@ -2,6 +2,8 @@ package io.github.bucheapp.roost.controllers;
 
 import java.io.IOException;
 
+import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,7 +46,7 @@ public class ProfileController {
 	
 	@PatchMapping("/me/profile")
 	public ResponseEntity<Void> updateProfile(
-			@ModelAttribute UpdateProfileRequest req) throws IOException {
+			@Valid @ModelAttribute UpdateProfileRequest req) throws IOException {
 
 		profileService.updateCurrentUserProfile(req);
 

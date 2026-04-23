@@ -2,6 +2,8 @@ package io.github.bucheapp.roost.controllers;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -59,7 +61,7 @@ public class CommunityController {
 	@PreAuthorize("hasAuthority('CREATE_COMMUNITY')")
 	@PostMapping
 	public ResponseEntity<CommunityResponse> createCommunity(
-			@RequestBody CommunityRequest req
+			@Valid @RequestBody CommunityRequest req
 			) {
 		
 		Community community = communityService.createCommunity(req);
@@ -76,7 +78,7 @@ public class CommunityController {
 	@PatchMapping("/{publicId}")
 	public ResponseEntity<CommunityResponse> updateCommunity(
 			@PathVariable long publicId,
-			@RequestBody UpdateCommunityRequest req
+			@Valid @RequestBody UpdateCommunityRequest req
 			) {
 		Community community = communityService.updateCommunity(publicId, req);
 		

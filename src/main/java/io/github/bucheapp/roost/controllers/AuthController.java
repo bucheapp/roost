@@ -3,6 +3,7 @@ package io.github.bucheapp.roost.controllers;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -37,7 +38,7 @@ public class AuthController {
 	
 	@PostMapping("/signup")
 	public ResponseEntity<AccessTokenResponse> signup(
-			@RequestBody SignupRequest req,
+			@Valid @RequestBody SignupRequest req,
 			HttpServletRequest servletReq,
 			HttpServletResponse servletRes) {
 		
@@ -67,7 +68,7 @@ public class AuthController {
 	
 	@PostMapping("/login")
 	public ResponseEntity<LoginResponse> login(
-			@RequestBody LoginRequest req,
+			@Valid @RequestBody LoginRequest req,
 			HttpServletRequest servletReq,
 			HttpServletResponse servletRes) {
 
