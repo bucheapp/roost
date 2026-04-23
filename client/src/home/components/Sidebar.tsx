@@ -1,12 +1,12 @@
 import React from "react";
 import "./Sidebar.css";
 
-import Header from "./Header";
+import Header from "./SidebarHeader";
 import SearchGroup from "./SearchGroup";
-import FixedGroup from "./components/groups/FixedGroup";
-import NewGroup from "./components/groups/NewGroup";
-import PopularGroup from "./components/groups/PopularGroup";
-import AffiliationGroup from "./components/groups/AffiliationGroup";
+import FixedGroup from "./groups/FixedGroup";
+import NewGroup from "./groups/NewGroup";
+import PopularGroup from "./groups/PopularGroup";
+import AffiliationGroup from "./groups/AffiliationGroup";
 
 type Props = {
 	isOpen: boolean;
@@ -19,7 +19,7 @@ const Sidebar: React.FC<Props> = ({ isOpen, isMobile, onClose }) => {
 		<div className={`sidebar ${isOpen ? "open" : ""}`}>
 			<button 
 			style={{ display: (isMobile && isOpen) ? "block" : "none" }}
-			className="close-btn" onClick={onClose}>
+			className="close-sidebar-btn" onClick={onClose}>
 				×
 			</button>
 

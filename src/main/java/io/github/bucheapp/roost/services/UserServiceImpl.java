@@ -2,6 +2,7 @@ package io.github.bucheapp.roost.services;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -10,6 +11,10 @@ import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,11 +23,16 @@ import org.springframework.web.server.ResponseStatusException;
 import io.github.bucheapp.roost.dto.request.CreateAdminUserRequest;
 import io.github.bucheapp.roost.dto.request.CreateUserRequest;
 import io.github.bucheapp.roost.dto.request.PermissionRequest;
+import io.github.bucheapp.roost.dto.request.UpdatePasswordRequest;
 import io.github.bucheapp.roost.dto.request.UpdateUserRequest;
 import io.github.bucheapp.roost.dto.request.UpdateUserStateRequest;
+import io.github.bucheapp.roost.models.Community;
 import io.github.bucheapp.roost.models.Permission;
 import io.github.bucheapp.roost.models.Profile;
+import io.github.bucheapp.roost.models.Role;
 import io.github.bucheapp.roost.models.User;
+import io.github.bucheapp.roost.models.UserState;
+import io.github.bucheapp.roost.repositories.CommunityRepository;
 import io.github.bucheapp.roost.repositories.PermissionRepository;
 import io.github.bucheapp.roost.repositories.RoleRepository;
 import io.github.bucheapp.roost.repositories.UserRepository;
@@ -37,6 +47,9 @@ public class UserServiceImpl implements UserService {
 	
 	@Autowired
 	private RoleRepository roleRepository;
+	
+	@Autowired
+	private CommunityRepository communityRepository;
 	
 	@Autowired
 	private PermissionRepository permissionRepository;
@@ -76,11 +89,32 @@ public class UserServiceImpl implements UserService {
 			user.setEmail(req.getEmail());
 		}
 		
-		if(req.getPassword() != null) {
-			BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-			String hashedPassword = encoder.encode(req.getPassword());
-			user.setPassword(hashedPassword);
+		if(req.getName() != null) {
+			if(userRepository.existsByName(req.getName())) {
+				throw new ResponseStatusException(HttpStatus.CONFLICT, messageUtil.get("name.conflict"));
+			}
+			
+			user.setName(req.getName());
 		}
+		
+		return userRepository.save(user);
+	}
+	
+	@Override
+	@Transactional
+	public User updatePassword(UpdatePasswordRequest req) {
+		long userId = authContext.getCurrentUserId();
+		
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
+		
+		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+		
+		if (!encoder.matches(req.getCurrentPassword(), user.getPassword())) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, messageUtil.get("incorrect.password"));
+		}
+		
+		user.setPassword(encoder.encode(req.getNewPassword()));
 		
 		return userRepository.save(user);
 	}
@@ -104,7 +138,7 @@ public class UserServiceImpl implements UserService {
 	
 	@Override
 	@Transactional
-	public void createUser(CreateUserRequest req) {
+	public User createUser(CreateUserRequest req) {
 		long userId = authContext.getCurrentUserId();
 		
 		String name = req.getName();
@@ -112,7 +146,7 @@ public class UserServiceImpl implements UserService {
 		String rawPassword = req.getPassword();
 		Set<String> requestedPermissions = req.getPermissions();
 		
-		if (userRepository.existsByEmail(email)) {
+		if (email != null && !email.isBlank() && userRepository.existsByEmail(email)) {
 			throw new ResponseStatusException(HttpStatus.CONFLICT, messageUtil.get("email.conflict"));
 		}
 
@@ -148,10 +182,15 @@ public class UserServiceImpl implements UserService {
 		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
 
 		User user = new User(name, email, hashedPassword);
+		user.setState(UserState.ACTIVE);
 		Profile profile = new Profile();
+		profile.setUser(user);
 		profile.setCreatedAt(LocalDateTime.now());
 		
 		user.setPublicId(snowflake.nextId());
+		user.setProfile(profile);
+		user.setRole(roleRepository.findByName("USER")
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("role.notfound"))));
 		
 		Set<Permission> permissions = requestedPermissions.stream()
 				.map(permissionName -> permissionRepository.findByName(permissionName)
@@ -159,12 +198,12 @@ public class UserServiceImpl implements UserService {
 				.collect(Collectors.toSet());
 		
 		user.setPermissions(permissions);
-		userRepository.save(user);
+		return userRepository.save(user);
 	}
 	
 	@Override
 	@Transactional
-	public void createAdminUser(CreateAdminUserRequest req) {
+	public User createAdminUser(CreateAdminUserRequest req) {
 		String name = req.getName();
 		String email = req.getEmail();
 		String rawPassword = req.getPassword();
@@ -185,12 +224,14 @@ public class UserServiceImpl implements UserService {
 		User user = new User(name, email, hashedPassword);
 		user.setRole(roleRepository.findByName("ADMIN")
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("role.notfound"))));
-		
+		user.setState(UserState.ACTIVE);
 		Profile profile = new Profile();
+		profile.setUser(user);
 		profile.setCreatedAt(LocalDateTime.now());
+		user.setProfile(profile);
 		
 		user.setPublicId(snowflake.nextId());
-		userRepository.save(user);
+		return userRepository.save(user);
 	}
 	
 	@Override
@@ -223,12 +264,67 @@ public class UserServiceImpl implements UserService {
 		
 		return userRepository.save(user);
 	}
+
+	@Override
+	public String hideEmail(String email) {
+		String[] parts = email.split("@");
+		if (parts.length != 2) {
+			return email;
+		}
+		String localPart = parts[0];
+		String domain = parts[1];
+		
+		int showLength = (int) Math.ceil(localPart.length() / 2.0);
+		String visible = localPart.substring(0, showLength);
+		
+		StringBuilder hidden = new StringBuilder(visible);
+		for (int i = showLength; i < localPart.length(); i++) {
+			hidden.append("*");
+		}
+		
+		return hidden + "@" + domain;
+	}
+	
+	@Override
+	public Set<Permission> getCurrentPermissions() {
+		long userId = authContext.getCurrentUserId();
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
+		
+		Role role = user.getRole();
+		Set<Permission> rolePermissions = role.getPermissions();
+		Set<Permission> userPermissions = user.getPermissions();
+		Set<Permission> allPermissions = new HashSet<>();
+		
+		if(rolePermissions != null) {
+			allPermissions.addAll(rolePermissions);
+		}
+		
+		if(userPermissions != null) {
+			allPermissions.addAll(userPermissions);
+		}
+		
+		return allPermissions;
+	}
 	
 	@Override
 	public Set<Permission> getPermissions(long publicId) {
 		User user = userRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
-		return user.getPermissions();
+		Role role = user.getRole();
+		Set<Permission> rolePermissions = role.getPermissions();
+		Set<Permission> userPermissions = user.getPermissions();
+		Set<Permission> allPermissions = new HashSet<>();
+		
+		if(rolePermissions != null) {
+			allPermissions.addAll(rolePermissions);
+		}
+		
+		if(userPermissions != null) {
+			allPermissions.addAll(userPermissions);
+		}
+		
+		return allPermissions;
 	}
 	
 	@Override
@@ -330,5 +426,37 @@ public class UserServiceImpl implements UserService {
 		);
 
 		userRepository.save(user);
+	}
+	
+	@Override
+	public Page<Community> getCurrentCommunities(
+			Pageable pageable
+			) {
+		long userId = authContext.getCurrentUserId();
+		
+		return communityRepository
+				.findDistinctByMembers_User_Id(userId, pageable);
+	}
+	
+	@Override
+	public Page<Community> getCommunities(
+			long publicId,
+			Pageable pageable
+			) {
+		User user = userRepository.findByPublicId(publicId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
+		long userId = user.getId();
+		
+		int size = pageable.getPageSize();
+		int page = pageable.getPageNumber();
+		
+		Pageable newPageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+		
+		if(page != 0 && size >= 5) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,messageUtil.get("invalid.query.parameters"));
+		}
+		
+		return communityRepository
+				.findDistinctByMembers_User_Id(userId, newPageable);
 	}
 }

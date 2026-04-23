@@ -1,8 +1,9 @@
-package io.github.bucheapp.roost.dto.response;
+package io.github.bucheapp.roost.dto.response.sw;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import io.github.bucheapp.roost.dto.response.MemberResponse;
 import io.github.bucheapp.roost.models.Member;
 import io.github.bucheapp.roost.models.SWType;
 

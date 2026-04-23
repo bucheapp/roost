@@ -38,3 +38,7 @@ out/
 
 ## 環境変数 ##
 .env
+
+## データ ##
+data
+src/main/resources/static

@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.github.bucheapp.roost.dto.request.RoomRequest;
 import io.github.bucheapp.roost.dto.request.UpdateRoomRequest;
 import io.github.bucheapp.roost.dto.response.RoomResponse;
-import io.github.bucheapp.roost.dto.response.RoomSWResponse;
+import io.github.bucheapp.roost.dto.response.sw.RoomSWResponse;
 import io.github.bucheapp.roost.models.Room;
 import io.github.bucheapp.roost.models.SWType;
 import io.github.bucheapp.roost.services.RoomService;

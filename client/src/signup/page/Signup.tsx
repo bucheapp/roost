@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Signup.css";
-import styles from "./Signup.module.css";
+import "./Auth.css";
 import axios from "axios";
+import { useAuthCheck } from "../../utils/useAuthCheck";
+import { FormGroup } from "../../components/FormGroup";
+import styles from "./Auth.module.css"
 
 const baseURL = import.meta.env.VITE_API_URL;
 
@@ -16,25 +18,7 @@ const Signup: React.FC = () => {
 
 	const [error, setError] = useState("");
 
-	useEffect(() => {
-		const checkAuth = async () => {
-			try {
-				const res = await axios.get(baseURL + "/api/auth/me", {
-					withCredentials: true
-				});
-
-				if (res.data?.refreshToken) {
-					navigate("/");
-				}
-			} catch {
-
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		checkAuth();
-	}, []);
+	useAuthCheck(baseURL, setLoading);
 
 	if (loading) return <div>Loading...</div>;
 
@@ -54,7 +38,7 @@ const Signup: React.FC = () => {
 				}
 			);
 
-			navigate("/user/me");
+			navigate("/user/me/profile");
 		} catch (err) {
 			if (axios.isAxiosError(err)) {
 				const msg = err.response?.data?.msg || "登録に失敗しました";
@@ -68,43 +52,39 @@ const Signup: React.FC = () => {
 	return (
 		<div className="layout">
 			<div className={styles.main}>
-				<div className="signup-card">
+				<div className="auth-card">
 					<h2 className="title">ユーザ登録</h2>
 
 					<form className="form" onSubmit={handleSubmit}>
-						<div className="form-group">
-							<label>ユーザ名 *</label>
+						<FormGroup label="ユーザ名 *">
 							<input
 								type="text"
-								placeholder="ユーザ名を入力"
-								required
 								value={name}
-								onChange={(e) => setName(e.target.value)}
+								required={true}
+								placeholder="ユーザ名を入力"
+								onChange={e => setName(e.target.value)}
 							/>
-						</div>
-
-						<div className="form-group">
-							<label>Email</label>
+						</FormGroup>
+						<FormGroup label="Email">
 							<input
 								type="email"
-								placeholder="example@email.com"
 								value={email}
-								onChange={(e) => setEmail(e.target.value)}
+								placeholder="example@example.com"
+								onChange={e => setEmail(e.target.value)}
 							/>
-						</div>
-
-						<div className="form-group">
-							<label>パスワード *</label>
+						</FormGroup>
+						<FormGroup label="パスワード *">
 							<input
 								type="password"
-								placeholder="パスワードを入力"
-								required
 								value={password}
-								onChange={(e) => setPassword(e.target.value)}
+								required={true}
+								placeholder="パスワードを入力"
+								onChange={e => setPassword(e.target.value)}
 							/>
-						</div>
+						</FormGroup>
+
 						{error && <div className="error">{error}</div>}
-						<button className="signup-btn">登録する</button>
+						<button className="submit-btn">登録する</button>
 					</form>
 				</div>
 			</div>

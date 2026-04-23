@@ -1,5 +1,6 @@
-package io.github.bucheapp.roost.dto.response;
+package io.github.bucheapp.roost.dto.response.sw;
 
+import io.github.bucheapp.roost.dto.response.ChatResponse;
 import io.github.bucheapp.roost.models.Chat;
 import io.github.bucheapp.roost.models.SWType;
 

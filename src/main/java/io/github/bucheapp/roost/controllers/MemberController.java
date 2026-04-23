@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.github.bucheapp.roost.dto.request.MemberRequest;
 import io.github.bucheapp.roost.dto.response.MemberResponse;
-import io.github.bucheapp.roost.dto.response.MemberSWResponse;
+import io.github.bucheapp.roost.dto.response.sw.MemberSWResponse;
 import io.github.bucheapp.roost.models.Member;
 import io.github.bucheapp.roost.models.SWType;
 import io.github.bucheapp.roost.services.MemberService;

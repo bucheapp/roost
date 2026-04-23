@@ -6,10 +6,20 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class AuthContext {
-	public long getCurrentUserId() {
+	public Long getCurrentUserId() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-		return userDetails.getId();
+		
+		if (authentication == null || !authentication.isAuthenticated()) {
+			return null;
+		}
+		
+		Object principal = authentication.getPrincipal();
+		
+		if (principal instanceof CustomUserDetails userDetails) {
+			return userDetails.getId();
+		}
+		
+		return null;
 	}
 	
 	public boolean hasAuthority(String permission) {

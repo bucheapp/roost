@@ -19,8 +19,9 @@ import io.github.bucheapp.roost.dto.request.CommunitySearchRequest;
 import io.github.bucheapp.roost.dto.request.UpdateCommunityPropertyRequest;
 import io.github.bucheapp.roost.dto.request.UpdateCommunityRequest;
 import io.github.bucheapp.roost.dto.request.UpdateCommunityStateRequest;
+import io.github.bucheapp.roost.dto.response.CommunitiesResponse;
 import io.github.bucheapp.roost.dto.response.CommunityResponse;
-import io.github.bucheapp.roost.dto.response.CommunitySWResponse;
+import io.github.bucheapp.roost.dto.response.sw.CommunitySWResponse;
 import io.github.bucheapp.roost.models.Community;
 import io.github.bucheapp.roost.models.SWType;
 import io.github.bucheapp.roost.services.CommunityService;
@@ -46,15 +47,13 @@ public class CommunityController {
 	}
 	
 	@GetMapping("/api/communities")
-	public ResponseEntity<List<CommunityResponse>> getCommunities(
+	public ResponseEntity<CommunitiesResponse> getCommunities(
 		CommunitySearchRequest req
 	) {
 		List<Community> communities = communityService.search(req);
-		List<CommunityResponse> communityResponses = communities.stream()
-				.map(CommunityResponse::new)
-				.toList();
+		CommunitiesResponse communitiesResponse = new CommunitiesResponse(communities);
 
-		return ResponseEntity.ok(communityResponses);
+		return ResponseEntity.ok(communitiesResponse);
 	}
 	
 	@PreAuthorize("hasAuthority('CREATE_COMMUNITY')")

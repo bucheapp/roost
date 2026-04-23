@@ -1,0 +1,10 @@
+.form-group {
+	display: flex;
+	flex-direction: column;
+	margin-bottom: 16px;
+}
+
+.form-group label {
+	margin-bottom: 6px;
+	font-weight: bold;
+}

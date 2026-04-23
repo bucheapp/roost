@@ -1,0 +1,60 @@
+.profile-header {
+	display: flex;
+	gap: 20px;
+	align-items: center;
+}
+
+.profile-avatar {
+	width: 80px;
+	height: 80px;
+	border-radius: 50%;
+}
+
+.profile-account p {
+	margin: 6px 0;
+	display: flex;
+	gap: 8px;
+}
+
+.profile-account span:first-child {
+	width: 100px;
+	color: #666;
+}
+
+.profile-section {
+	margin-top: 20px;
+}
+
+.profile-details {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px 40px;
+}
+
+.edit-btn {
+	margin-top: 20px;
+	background: #6b63ff;
+	color: white;
+	padding: 10px;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+}
+
+.link-btn {
+	background: none;
+	border: none;
+	color: #6b63ff;
+	cursor: pointer;
+}
+
+@media (max-width: 768px) {
+	.profile-details {
+		grid-template-columns: 1fr;
+	}
+
+	.profile-header {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+}

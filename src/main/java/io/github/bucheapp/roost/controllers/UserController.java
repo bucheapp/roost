@@ -1,9 +1,12 @@
 package io.github.bucheapp.roost.controllers;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,12 +21,15 @@ import org.springframework.web.bind.annotation.RestController;
 import io.github.bucheapp.roost.dto.request.CreateAdminUserRequest;
 import io.github.bucheapp.roost.dto.request.CreateUserRequest;
 import io.github.bucheapp.roost.dto.request.PermissionRequest;
+import io.github.bucheapp.roost.dto.request.UpdatePasswordRequest;
 import io.github.bucheapp.roost.dto.request.UpdateUserRequest;
 import io.github.bucheapp.roost.dto.request.UpdateUserStateRequest;
+import io.github.bucheapp.roost.dto.response.CommunitiesResponse;
 import io.github.bucheapp.roost.dto.response.PermissionResponse;
 import io.github.bucheapp.roost.dto.response.UserPrivateResponse;
 import io.github.bucheapp.roost.dto.response.UserPublicResponse;
 import io.github.bucheapp.roost.dto.response.UserResponse;
+import io.github.bucheapp.roost.models.Community;
 import io.github.bucheapp.roost.models.Permission;
 import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.services.UserService;
@@ -62,6 +68,16 @@ public class UserController {
 		return ResponseEntity.ok(userResponse);
 	}
 	
+	@PatchMapping("/me/password")
+	public ResponseEntity<UserResponse> updatePassword(
+			@RequestBody UpdatePasswordRequest req) {
+		User user = userService.updatePassword(req);
+		
+		UserPrivateResponse userResponse = new UserPrivateResponse(user);
+
+		return ResponseEntity.ok(userResponse);
+	}
+	
 	@DeleteMapping("/me")
 	public ResponseEntity<Void> deleteUser() {
 		userService.deleteCurrentUser();
@@ -70,17 +86,35 @@ public class UserController {
 	
 	@PreAuthorize("hasAuthority('CREATE_USER')")
 	@PostMapping
-	public ResponseEntity<Void> createUser(
+	public ResponseEntity<UserResponse> createUser(
 			@RequestBody CreateUserRequest req) {
-		userService.createUser(req);
-		return ResponseEntity.noContent().build();
+		User user = userService.createUser(req);
+		
+		UserPrivateResponse userResponse = new UserPrivateResponse(user);
+		
+		return ResponseEntity.ok(userResponse);
 	}
 	
 	@PreAuthorize("hasAuthority('CREATE_ADMINUSER')")
 	@PostMapping("/admin")
-	public ResponseEntity<Void> createAdminUser(@RequestBody CreateAdminUserRequest req) {
-		userService.createAdminUser(req);
-		return ResponseEntity.ok().build();
+	public ResponseEntity<UserResponse> createAdminUser(@RequestBody CreateAdminUserRequest req) {
+		User user = userService.createAdminUser(req);
+		
+		UserPrivateResponse userResponse = new UserPrivateResponse(user);
+		
+		return ResponseEntity.ok(userResponse);
+	}
+	
+	@GetMapping("/me/permissions")
+	public ResponseEntity<PermissionResponse> getPermissions() {
+		Set<String> permissions = userService.getCurrentPermissions()
+				.stream()
+				.map(Permission::getName)
+				.collect(Collectors.toSet());
+		
+		PermissionResponse permissionResponse = new PermissionResponse(permissions);
+		
+		return ResponseEntity.ok(permissionResponse);
 	}
 	
 	@PreAuthorize("hasAuthority('GET_PERMISSION')")
@@ -127,5 +161,28 @@ public class UserController {
 		UserPublicResponse userResponse = new UserPublicResponse(user);
 		
 		return ResponseEntity.ok(userResponse);
+	}
+	
+	@GetMapping("/me/communities")
+	public ResponseEntity<CommunitiesResponse> getCurrentCommunities(
+			Pageable pageable
+			) {
+		Page<Community> communityPage = userService.getCurrentCommunities(pageable);
+		List<Community> communities = communityPage.getContent();
+		CommunitiesResponse communitiesResponse = new CommunitiesResponse(communities);
+		
+		return ResponseEntity.ok(communitiesResponse);
+	}
+	
+	@GetMapping("/{publicId}/communities")
+	public ResponseEntity<CommunitiesResponse> getCommunities(
+			@PathVariable long publicId,
+			Pageable pageable
+			) {
+		Page<Community> communityPage = userService.getCommunities(publicId,pageable);
+		List<Community> communities = communityPage.getContent();
+		CommunitiesResponse communitiesResponse = new CommunitiesResponse(communities);
+		
+		return ResponseEntity.ok(communitiesResponse);
 	}
 }

@@ -1,7 +1,8 @@
 package io.github.bucheapp.roost.dto.response;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import io.github.bucheapp.roost.models.Community;
@@ -17,7 +18,7 @@ public class CommunityResponse {
 	private long publicId;
 	private LocalDateTime createdAt;
 	private String name;
-	private Set<HostHistoryResponse> hostHistoryResponses;
+	private List<HostHistoryResponse> hostHistoryResponses;
 	
 	public CommunityResponse(Community community) {
 		this.type = community.getType();
@@ -27,7 +28,7 @@ public class CommunityResponse {
 		this.createdAt = community.getCreatedAt();
 		this.name = community.getName();
 		
-		this.hostHistoryResponses = new HashSet<>();
+		this.hostHistoryResponses = new ArrayList<>();
 		
 		for(HostHistory operatoryHistory : community.getOperatorHistory()) {
 			this.hostHistoryResponses.add(

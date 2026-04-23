@@ -1,5 +1,6 @@
 package io.github.bucheapp.roost.dto.request;
 
+import java.util.List;
 import java.util.Set;
 
 import io.github.bucheapp.roost.models.CommunityProperty;
@@ -7,7 +8,7 @@ import io.github.bucheapp.roost.models.CommunityProperty;
 public class CommunitySearchRequest {
 	private Set<CommunityProperty> properties;
 
-	private String sort;
+	private List<String> sort;
 
 	private Integer size;
 
@@ -21,11 +22,11 @@ public class CommunitySearchRequest {
 		this.properties = properties;
 	}
 
-	public String getSort() {
+	public List<String> getSort() {
 		return sort;
 	}
 
-	public void setSort(String sort) {
+	public void setSort(List<String> sort) {
 		this.sort = sort;
 	}
 

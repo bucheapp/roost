@@ -1,30 +1,30 @@
 package io.github.bucheapp.roost.dto.request;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+
+import org.springframework.web.multipart.MultipartFile;
 
 import io.github.bucheapp.roost.models.Gender;
 
 public class UpdateProfileRequest {
 	private String bio;
-	private String iconUrl;
+	private MultipartFile iconFile;
 	private Gender gender;
 	private LocalDate dateOfBirth;
-	private String phoneNumber;
 	private String address;
 	private String githubUrl;
-	private LocalDateTime createdAt;
+	
 	public String getBio() {
 		return bio;
 	}
 	public void setBio(String bio) {
 		this.bio = bio;
 	}
-	public String getIconUrl() {
-		return iconUrl;
+	public MultipartFile getIconFile() {
+		return iconFile;
 	}
-	public void setIconUrl(String iconUrl) {
-		this.iconUrl = iconUrl;
+	public void setIconFile(MultipartFile iconFile) {
+		this.iconFile = iconFile;
 	}
 	public Gender getGender() {
 		return gender;
@@ -38,12 +38,6 @@ public class UpdateProfileRequest {
 	public void setDateOfBirth(LocalDate dateOfBirth) {
 		this.dateOfBirth = dateOfBirth;
 	}
-	public String getPhoneNumber() {
-		return phoneNumber;
-	}
-	public void setPhoneNumber(String phoneNumber) {
-		this.phoneNumber = phoneNumber;
-	}
 	public String getAddress() {
 		return address;
 	}
@@ -55,11 +49,5 @@ public class UpdateProfileRequest {
 	}
 	public void setGithubUrl(String githubUrl) {
 		this.githubUrl = githubUrl;
-	}
-	public LocalDateTime getCreatedAt() {
-		return createdAt;
-	}
-	public void setCreatedAt(LocalDateTime createdAt) {
-		this.createdAt = createdAt;
 	}
 }

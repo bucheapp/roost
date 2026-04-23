@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import styles from "../signup/Signup.module.css";
 import axios from "axios";
+import { useAuthCheck } from "../../utils/useAuthCheck";
+import { FormGroup } from "../../components/FormGroup";
+import styles from "../../signup/page/Auth.module.css"
 
 const baseURL = import.meta.env.VITE_API_URL;
 
@@ -13,24 +15,7 @@ const Login: React.FC = () => {
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
 
-	useEffect(() => {
-		const checkAuth = async () => {
-			try {
-				const res = await axios.get(baseURL + "/api/auth/me", {
-					withCredentials: true
-				});
-
-				if (res.data?.refreshToken) {
-					navigate("/");
-				}
-			} catch {
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		checkAuth();
-	}, []);
+	useAuthCheck(baseURL, setLoading);
 
 	if (loading) return <div>Loading...</div>;
 
@@ -49,7 +34,7 @@ const Login: React.FC = () => {
 				}
 			);
 
-			navigate("/user/me");
+			navigate("/user/me/profile");
 		} catch (err) {
 			if (axios.isAxiosError(err)) {
 				const msg = err.response?.data?.msg || "ログインに失敗しました";
@@ -63,35 +48,32 @@ const Login: React.FC = () => {
 	return (
 		<div className="layout">
 			<div className={styles.main}>
-				<div className="signup-card">
+				<div className="auth-card">
 					<h2 className="title">ログイン</h2>
 
 					<form className="form" onSubmit={handleSubmit}>
-						<div className="form-group">
-							<label>ユーザ名 *</label>
+						<FormGroup label="ユーザ名 *">
 							<input
 								type="text"
-								placeholder="ユーザ名を入力"
-								required
 								value={name}
-								onChange={(e) => setName(e.target.value)}
+								required={true}
+								placeholder="ユーザ名を入力"
+								onChange={e => setName(e.target.value)}
 							/>
-						</div>
-
-						<div className="form-group">
-							<label>パスワード *</label>
+						</FormGroup>
+						<FormGroup label="パスワード *">
 							<input
 								type="password"
-								placeholder="パスワードを入力"
-								required
 								value={password}
-								onChange={(e) => setPassword(e.target.value)}
+								required={true}
+								placeholder="パスワードを入力"
+								onChange={e => setPassword(e.target.value)}
 							/>
-						</div>
+						</FormGroup>
 
 						{error && <div className="error">{error}</div>}
 
-						<button className="signup-btn">ログイン</button>
+						<button className="submit-btn">ログイン</button>
 					</form>
 
 					<div className="footer-link">

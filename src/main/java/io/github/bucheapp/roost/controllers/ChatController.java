@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.github.bucheapp.roost.dto.request.ChatRequest;
 import io.github.bucheapp.roost.dto.response.ChatResponse;
-import io.github.bucheapp.roost.dto.response.ChatSWResponse;
+import io.github.bucheapp.roost.dto.response.sw.ChatSWResponse;
 import io.github.bucheapp.roost.models.Chat;
 import io.github.bucheapp.roost.models.SWType;
 import io.github.bucheapp.roost.services.ChatService;
