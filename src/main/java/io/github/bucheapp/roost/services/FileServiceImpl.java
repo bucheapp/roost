@@ -9,18 +9,26 @@ import java.util.UUID;
 
 import javax.imageio.ImageIO;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+
+import io.github.bucheapp.roost.util.MessageUtil;
 
 @Service
-public class ImageServiceImpl implements ImageService {
+public class FileServiceImpl implements FileService {
 	@Value("${app.data-dir}")
 	private String dataDirPath;
+	
+	@Autowired
+	private MessageUtil messageUtil;
 
 	@Override
-	public UUID createIconImage(MultipartFile iconFile) throws IOException {
-		BufferedImage originalImage = ImageIO.read(iconFile.getInputStream());
+	public UUID createImage(String path,MultipartFile imageFile) throws IOException {
+		BufferedImage originalImage = ImageIO.read(imageFile.getInputStream());
 		BufferedImage resizedImage = new BufferedImage(160, 160, BufferedImage.TYPE_INT_RGB);
 		
 		Graphics2D g = resizedImage.createGraphics();
@@ -32,7 +40,7 @@ public class ImageServiceImpl implements ImageService {
 		g.drawImage(originalImage, 0, 0, 160, 160, null);
 		g.dispose();
 		
-		File dataDir = new File(dataDirPath,"image/icon");
+		File dataDir = new File(dataDirPath,path);
 		dataDir.mkdirs();
 		
 		UUID uuid = UUID.randomUUID();
@@ -42,17 +50,32 @@ public class ImageServiceImpl implements ImageService {
 		boolean success = ImageIO.write(resizedImage, "jpg", outputFile);
 
 		if (!success) {
-			throw new RuntimeException("画像書き込み失敗");
+			throw new RuntimeException(messageUtil.get("image.writing.failure"));
 		}
 		
 		return uuid;
 	}
 	
 	@Override
-	public void deleteIconImage(String iconPath) {
-		File dataDir = new File(dataDirPath,"image/icon");
-		File imageFile = new File(dataDir,iconPath + ".jpg");
+	public void deleteImage(String imagePath) {
+		File imageFile = new File(dataDirPath,imagePath);
 		
-		imageFile.delete();
+		boolean success = imageFile.delete();
+		
+		if (!success) {
+			throw new RuntimeException(messageUtil.get("image.deletion.failed"));
+		}
+	}
+
+	@Override
+	public void checkByte(MultipartFile file, long max) {
+		if(file.isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, messageUtil.get("file.isempty"));
+		}
+		
+		if (file.getSize() > max) {
+			long size = max / (1024 * 1024);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, messageUtil.get("file.size.exceeds",size));
+		}
 	}
 }

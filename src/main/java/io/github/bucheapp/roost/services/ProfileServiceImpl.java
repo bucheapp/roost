@@ -22,7 +22,7 @@ import io.github.bucheapp.roost.util.MessageUtil;
 @Service
 public class ProfileServiceImpl implements ProfileService {
 	@Autowired
-	private ImageService imageService;
+	private FileService imageService;
 	
 	@Autowired
 	private ProfileRepository profileRepository;
@@ -69,12 +69,12 @@ public class ProfileServiceImpl implements ProfileService {
 		
 		MultipartFile iconFile = req.getIconFile();
 		if(iconFile != null) {
-			if(profile.getIconUrl() != null) {
-				imageService.deleteIconImage(profile.getIconUrl());
+			if(profile.getIconUUID() != null) {
+				imageService.deleteImage("image/icon" + profile.getIconUUID() + ".jpg");
 			}
 			
-			UUID uuid = imageService.createIconImage(iconFile);
-			profile.setIconUrl(uuid.toString());
+			UUID uuid = imageService.createImage("image/icon",iconFile);
+			profile.setIconUUID(uuid);
 		}
 
 		return profileRepository.save(profile);

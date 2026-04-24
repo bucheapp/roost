@@ -26,7 +26,6 @@ public class ApprovalChat extends Chat {
 			long publicId,
 			LocalDateTime createdAt,
 			User creator,
-			User approver,
 			Room room
 			) {
 		super(
@@ -35,7 +34,6 @@ public class ApprovalChat extends Chat {
 			creator,
 			room
 			);
-		this.approver = approver;
 	}
 	
 	public User getTargetUser() {

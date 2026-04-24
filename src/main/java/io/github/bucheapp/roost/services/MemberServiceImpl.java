@@ -1,6 +1,9 @@
 package io.github.bucheapp.roost.services;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import jakarta.transaction.Transactional;
@@ -10,11 +13,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import io.github.bucheapp.roost.dto.request.ChatRequest;
 import io.github.bucheapp.roost.dto.request.MemberRequest;
+import io.github.bucheapp.roost.dto.request.MemberSearchRequest;
+import io.github.bucheapp.roost.models.ChatType;
 import io.github.bucheapp.roost.models.Community;
 import io.github.bucheapp.roost.models.CommunityProperty;
+import io.github.bucheapp.roost.models.CommunityState;
 import io.github.bucheapp.roost.models.Member;
 import io.github.bucheapp.roost.models.MemberState;
+import io.github.bucheapp.roost.models.Room;
 import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.repositories.CommunityRepository;
 import io.github.bucheapp.roost.repositories.MemberRepository;
@@ -34,6 +42,12 @@ public class MemberServiceImpl implements MemberService {
 	private MemberRepository memberRepository;
 	
 	@Autowired
+	private CommunityService communityService;
+	
+	@Autowired
+	private ChatService chatService;
+	
+	@Autowired
 	private MessageUtil messageUtil;
 	
 	@Autowired
@@ -41,9 +55,13 @@ public class MemberServiceImpl implements MemberService {
 	
 	@Override
 	@Transactional
-	public Set<Member> joinMember(long publicId,MemberRequest req) {
+	public Set<Member> joinMember(long publicId,MemberRequest req) throws IOException {
 		Community community = communityRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("community.notfound")));
+		
+		if(community.getState() != CommunityState.ACTIVE) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN,messageUtil.get("community.notactive"));
+		}
 		
 		Set<Member> members = community.getMembers();
 		
@@ -72,7 +90,14 @@ public class MemberServiceImpl implements MemberService {
 				
 				members.add(newMember);
 				
-				//TODO: チャットを作成する
+				List<Room> rooms = communityService.getRooms(publicId);
+				Room room = rooms.get(0);
+				ChatRequest req2 = new ChatRequest();
+				req2.setType(ChatType.APPROVAL);
+				chatService.createChat(
+						room.getPublicId(),
+						req2
+						);
 			}
 		} else {
 			if(member.getState() == MemberState.BANNED) {
@@ -92,13 +117,24 @@ public class MemberServiceImpl implements MemberService {
 	}
 
 	@Override
-	public Set<Member> getMember(long publicId) {
+	public Set<Member> getMember(long publicId,MemberSearchRequest req) {
 		Community community = communityRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("community.notfound")));
 		
 		Set<Member> members = community.getMembers();
+		Set<Member> newMembers = new HashSet<>();
 		
-		return members;
+		for(Member member : members) {
+			if(req.getState() == null) {
+				newMembers.add(member);
+			} else {
+				if(req.getState() == member.getState()) {
+					newMembers.add(member);
+				}
+			}
+		}
+		
+		return newMembers;
 	}
 
 	@Override
@@ -106,6 +142,10 @@ public class MemberServiceImpl implements MemberService {
 		Community community = communityRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("community.notfound")));
 
+		if(community.getState() != CommunityState.ACTIVE) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN,messageUtil.get("community.notactive"));
+		}
+		
 		long userId = authContext.getCurrentUserId();
 
 		User user = userRepository.findById(userId)
@@ -135,6 +175,10 @@ public class MemberServiceImpl implements MemberService {
 		Community community = communityRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("community.notfound")));
 		
+		if(community.getState() != CommunityState.ACTIVE) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN,messageUtil.get("community.notactive"));
+		}
+		
 		User user = userRepository.findByPublicId(userPublicId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 		
@@ -160,6 +204,10 @@ public class MemberServiceImpl implements MemberService {
 	public void banMember(long publicId, long userPublicId) {
 		Community community = communityRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("community.notfound")));
+		
+		if(community.getState() != CommunityState.ACTIVE) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN,messageUtil.get("community.notactive"));
+		}
 		
 		User user = userRepository.findByPublicId(userPublicId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
@@ -188,6 +236,10 @@ public class MemberServiceImpl implements MemberService {
 	public void unbanMember(long publicId, long userPublicId) {
 		Community community = communityRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("community.notfound")));
+		
+		if(community.getState() != CommunityState.ACTIVE) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN,messageUtil.get("community.notactive"));
+		}
 		
 		User user = userRepository.findByPublicId(userPublicId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));

@@ -1,5 +1,6 @@
 package io.github.bucheapp.roost.controllers;
 
+import java.io.IOException;
 import java.util.Map;
 
 import jakarta.validation.Valid;
@@ -50,7 +51,7 @@ public class ChatController {
 	public ResponseEntity<ChatResponse> createChat(
 			@PathVariable long publicId,
 			@Valid @ModelAttribute ChatRequest req
-			) {
+			) throws IOException {
 		Chat chat = chatService.createChat(publicId,req);
 		
 		ChatResponse chatResponse = chat.toResponse();
@@ -65,7 +66,7 @@ public class ChatController {
 	public ResponseEntity<ChatResponse> updateChat(
 			@PathVariable long publicId,
 			@Valid @ModelAttribute ChatRequest req
-			) {
+			) throws IOException {
 		Chat chat = chatService.updateChat(publicId, req);
 		
 		ChatResponse chatResponse = chat.toResponse();

@@ -1,17 +1,19 @@
 package io.github.bucheapp.roost.dto.response;
 
+import java.util.UUID;
+
 import io.github.bucheapp.roost.models.ChatType;
 import io.github.bucheapp.roost.models.TextChat;
 
 public class TextChatResponse extends ChatResponse {
 	private String content;
-	private String mediaContentUrl;
+	private UUID mediaContentUUID;
 	
 	public TextChatResponse(TextChat textChat) {
 		super(textChat);
 		setType(ChatType.TEXT);
 		this.content = textChat.getContent();
-		this.mediaContentUrl = textChat.getMediaContentUrl();
+		this.mediaContentUUID = textChat.getMediaContentUUID();
 	}
 
 	public String getContent() {
@@ -22,11 +24,11 @@ public class TextChatResponse extends ChatResponse {
 		this.content = content;
 	}
 
-	public String getMediaContentUrl() {
-		return mediaContentUrl;
+	public UUID getMediaContentUUID() {
+		return mediaContentUUID;
 	}
 
-	public void setMediaContentUrl(String mediaContentUrl) {
-		this.mediaContentUrl = mediaContentUrl;
+	public void setMediaContentUUID(UUID mediaContentUUID) {
+		this.mediaContentUUID = mediaContentUUID;
 	}
 }

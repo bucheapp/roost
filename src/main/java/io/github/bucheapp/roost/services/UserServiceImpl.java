@@ -449,27 +449,21 @@ public class UserServiceImpl implements UserService {
 			) {
 		long userId = authContext.getCurrentUserId();
 		
+		Pageable newPageable = PageRequest.of(Math.max(pageable.getPageNumber(),0),Math.min(pageable.getPageSize(),10),pageable.getSort());
+		
 		return communityRepository
-				.findDistinctByMembers_User_Id(userId, pageable);
+				.findDistinctByMembers_User_Id(userId, newPageable);
 	}
 	
 	@Override
 	public Page<Community> getCommunities(
-			long publicId,
-			Pageable pageable
+			long publicId
 			) {
 		User user = userRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 		long userId = user.getId();
 		
-		int size = pageable.getPageSize();
-		int page = pageable.getPageNumber();
-		
-		Pageable newPageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-		
-		if(page != 0 && size >= 5) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,messageUtil.get("invalid.query.parameters"));
-		}
+		Pageable newPageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
 		
 		return communityRepository
 				.findDistinctByMembers_User_Id(userId, newPageable);

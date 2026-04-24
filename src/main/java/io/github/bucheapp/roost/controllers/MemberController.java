@@ -1,5 +1,6 @@
 package io.github.bucheapp.roost.controllers;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -13,12 +14,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.github.bucheapp.roost.dto.request.MemberRequest;
+import io.github.bucheapp.roost.dto.request.MemberSearchRequest;
 import io.github.bucheapp.roost.dto.response.MemberResponse;
 import io.github.bucheapp.roost.dto.response.sw.MemberSWResponse;
 import io.github.bucheapp.roost.models.Member;
+import io.github.bucheapp.roost.models.MemberState;
 import io.github.bucheapp.roost.models.SWType;
 import io.github.bucheapp.roost.services.MemberService;
 
@@ -34,7 +38,7 @@ public class MemberController {
 	public ResponseEntity<Set<MemberResponse>> joinMember(
 			@PathVariable long publicId,
 			@RequestBody MemberRequest req
-			) {
+			) throws IOException {
 		Set<Member> members = memberService.joinMember(publicId,req);
 		
 		Set<MemberResponse> memberResponses = members.stream()
@@ -49,9 +53,13 @@ public class MemberController {
 	
 	@GetMapping("api/communities/{publicId}/members")
 	public ResponseEntity<Set<MemberResponse>> getMembers(
-			@PathVariable long publicId
+			@PathVariable long publicId,
+			@RequestParam(required = false) MemberState state
 			) {
-		Set<Member> members = memberService.getMember(publicId);
+		
+		MemberSearchRequest req = new MemberSearchRequest(state);
+		
+		Set<Member> members = memberService.getMember(publicId,req);
 		
 		Set<MemberResponse> memberResponses = members.stream()
 				.map(MemberResponse::new)

@@ -1,6 +1,7 @@
 package io.github.bucheapp.roost.models;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
@@ -19,8 +20,8 @@ public class TextChat extends Chat {
 	@Size(min = 1,max = 500)
 	private String content;
 	
-	@Column(length=36)
-	private String mediaContentUrl;
+	@Column
+	private UUID mediaContentUUID;
 	
 	public TextChat(
 			long publicId,
@@ -44,15 +45,15 @@ public class TextChat extends Chat {
 	public void setContent(String content) {
 		this.content = content;
 	}
-	
-	public String getMediaContentUrl() {
-		return mediaContentUrl;
+
+	public UUID getMediaContentUUID() {
+		return mediaContentUUID;
 	}
 
-	public void setMediaContentUrl(String mediaContentUrl) {
-		this.mediaContentUrl = mediaContentUrl;
+	public void setMediaContentUUID(UUID mediaContentUUID) {
+		this.mediaContentUUID = mediaContentUUID;
 	}
-	
+
 	@Override
 	public TextChatResponse toResponse() {
 		TextChatResponse res = new TextChatResponse(this);

@@ -1,10 +1,12 @@
 package io.github.bucheapp.roost.controllers;
 
 import java.util.List;
+import java.util.Set;
 
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,10 +16,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.github.bucheapp.roost.dto.request.CommunityRequest;
 import io.github.bucheapp.roost.dto.request.CommunitySearchRequest;
+import io.github.bucheapp.roost.dto.request.RoomsResponse;
 import io.github.bucheapp.roost.dto.request.UpdateCommunityPropertyRequest;
 import io.github.bucheapp.roost.dto.request.UpdateCommunityRequest;
 import io.github.bucheapp.roost.dto.request.UpdateCommunityStateRequest;
@@ -25,6 +29,10 @@ import io.github.bucheapp.roost.dto.response.CommunitiesResponse;
 import io.github.bucheapp.roost.dto.response.CommunityResponse;
 import io.github.bucheapp.roost.dto.response.sw.CommunitySWResponse;
 import io.github.bucheapp.roost.models.Community;
+import io.github.bucheapp.roost.models.CommunityProperty;
+import io.github.bucheapp.roost.models.CommunityState;
+import io.github.bucheapp.roost.models.CommunityType;
+import io.github.bucheapp.roost.models.Room;
 import io.github.bucheapp.roost.models.SWType;
 import io.github.bucheapp.roost.services.CommunityService;
 
@@ -48,14 +56,34 @@ public class CommunityController {
 		return ResponseEntity.ok(communityResponse);
 	}
 	
-	@GetMapping("/api/communities")
+	@GetMapping
 	public ResponseEntity<CommunitiesResponse> getCommunities(
-		CommunitySearchRequest req
+		@RequestParam(required = false) CommunityState state,
+		@RequestParam(required = false) CommunityType type,
+		@RequestParam(required = false) Set<CommunityProperty> properties,
+		@RequestParam(required = false) String name,
+		Pageable pageable
 	) {
-		List<Community> communities = communityService.search(req);
+		CommunitySearchRequest req = new CommunitySearchRequest(
+				state,
+				type,
+				properties,
+				name
+				);
+		List<Community> communities = communityService.search(req,pageable);
 		CommunitiesResponse communitiesResponse = new CommunitiesResponse(communities);
 
 		return ResponseEntity.ok(communitiesResponse);
+	}
+	
+	@GetMapping("/{publicId}/rooms")
+	public ResponseEntity<RoomsResponse> getRooms(
+			@PathVariable long publicId
+	) {
+		List<Room> rooms = communityService.getRooms(publicId);
+		RoomsResponse roomsResponse = new RoomsResponse(rooms);
+		
+		return ResponseEntity.ok(roomsResponse);
 	}
 	
 	@PreAuthorize("hasAuthority('CREATE_COMMUNITY')")

@@ -179,10 +179,9 @@ public class UserController {
 	
 	@GetMapping("/{publicId}/communities")
 	public ResponseEntity<CommunitiesResponse> getCommunities(
-			@PathVariable long publicId,
-			Pageable pageable
+			@PathVariable long publicId
 			) {
-		Page<Community> communityPage = userService.getCommunities(publicId,pageable);
+		Page<Community> communityPage = userService.getCommunities(publicId);
 		List<Community> communities = communityPage.getContent();
 		CommunitiesResponse communitiesResponse = new CommunitiesResponse(communities);
 		

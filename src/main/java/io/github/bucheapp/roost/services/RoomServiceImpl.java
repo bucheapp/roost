@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 import io.github.bucheapp.roost.dto.request.RoomRequest;
 import io.github.bucheapp.roost.dto.request.UpdateRoomRequest;
 import io.github.bucheapp.roost.models.Community;
+import io.github.bucheapp.roost.models.CommunityState;
 import io.github.bucheapp.roost.models.Room;
 import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.repositories.CommunityRepository;
@@ -63,6 +64,10 @@ public class RoomServiceImpl implements RoomService {
 		Community community = communityRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("community.notfound")));
 		
+		if(community.getState() != CommunityState.ACTIVE) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.get("community.notactive"));
+		}
+		
 		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
 		
 		Room room = new Room(
@@ -89,7 +94,10 @@ public class RoomServiceImpl implements RoomService {
 		room.setUpdatedAt(now);
 		
 		Community community = room.getCommunity();
-		community.checkStateActive();
+		
+		if(community.getState() != CommunityState.ACTIVE) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.get("community.notactive"));
+		}
 		
 		return roomRepository.save(room);
 	}
@@ -101,7 +109,10 @@ public class RoomServiceImpl implements RoomService {
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("room.notfound")));
 		
 		Community community = room.getCommunity();
-		community.checkStateActive();
+		
+		if(community.getState() != CommunityState.ACTIVE) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.get("community.notactive"));
+		}
 		
 		roomRepository.delete(room);
 	}
