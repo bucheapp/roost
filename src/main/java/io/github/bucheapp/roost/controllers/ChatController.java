@@ -27,7 +27,7 @@ import io.github.bucheapp.roost.models.SWType;
 import io.github.bucheapp.roost.services.ChatService;
 
 @RestController
-@RequestMapping("api/rooms/{publicId}/chats")
+@RequestMapping("api/chats/{publicId}")
 public class ChatController {
 	@Autowired
 	private ChatService chatService;
@@ -47,7 +47,8 @@ public class ChatController {
 	}
 	
 	@PreAuthorize("hasAuthority('CREATE_CHAT')")
-	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@PostMapping(
+			consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<ChatResponse> createChat(
 			@PathVariable long publicId,
 			@Valid @ModelAttribute ChatRequest req

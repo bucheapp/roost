@@ -1,10 +1,12 @@
 package io.github.bucheapp.roost.controllers;
 
+import java.util.List;
 import java.util.Map;
 
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,8 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.github.bucheapp.roost.dto.request.RoomRequest;
 import io.github.bucheapp.roost.dto.request.UpdateRoomRequest;
+import io.github.bucheapp.roost.dto.response.ChatsResponse;
 import io.github.bucheapp.roost.dto.response.RoomResponse;
 import io.github.bucheapp.roost.dto.response.sw.RoomSWResponse;
+import io.github.bucheapp.roost.models.Chat;
 import io.github.bucheapp.roost.models.Room;
 import io.github.bucheapp.roost.models.SWType;
 import io.github.bucheapp.roost.services.RoomService;
@@ -31,6 +35,17 @@ public class RoomController {
 	
 	@Autowired
 	private SimpMessagingTemplate template;
+	
+	@GetMapping("api/rooms/{publicId}/chats")
+	public ResponseEntity<ChatsResponse> getChats(
+			@PathVariable long publicId,
+			Pageable pageable
+			) {
+		List<Chat> chats = roomService.getChats(publicId,pageable);
+		ChatsResponse chatsResponse = new ChatsResponse(chats);
+		
+		return ResponseEntity.ok(chatsResponse);
+	}
 	
 	@GetMapping("api/rooms/{publicId}")
 	public ResponseEntity<RoomResponse> getRoom(

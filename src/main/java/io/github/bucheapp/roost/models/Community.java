@@ -74,6 +74,12 @@ public class Community {
 	@OneToMany(mappedBy = "community", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Set<Member> members;
 	
+	public Community() {
+		this.properties = new HashSet<>();
+		this.hostHistory = new ArrayList<>();
+		this.members = new HashSet<>();
+	}
+	
 	public Community(
 			long publicId,
 			String name,
@@ -81,9 +87,7 @@ public class Community {
 			CommunityState state,
 			LocalDateTime createdAt
 			) {
-		this.properties = new HashSet<>();
-		this.hostHistory = new ArrayList<>();
-		this.members = new HashSet<>();
+		this();
 		this.publicId = publicId;
 		this.name = name;
 		this.type = type;

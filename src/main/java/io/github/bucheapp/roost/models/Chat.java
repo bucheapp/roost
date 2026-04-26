@@ -46,12 +46,15 @@ public abstract class Chat {
 	@JoinColumn(name = "creator_id")
 	private User creator;
 	
+	public Chat() {}
+	
 	public Chat(
 			long publicId,
 			LocalDateTime createdAt,
 			User creator,
 			Room room
 			) {
+		this();
 		this.publicId = publicId;
 		this.createdAt = createdAt;
 		this.creator = creator;

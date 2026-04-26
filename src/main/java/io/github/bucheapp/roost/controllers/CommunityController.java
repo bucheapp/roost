@@ -21,12 +21,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.github.bucheapp.roost.dto.request.CommunityRequest;
 import io.github.bucheapp.roost.dto.request.CommunitySearchRequest;
-import io.github.bucheapp.roost.dto.request.RoomsResponse;
 import io.github.bucheapp.roost.dto.request.UpdateCommunityPropertyRequest;
 import io.github.bucheapp.roost.dto.request.UpdateCommunityRequest;
 import io.github.bucheapp.roost.dto.request.UpdateCommunityStateRequest;
 import io.github.bucheapp.roost.dto.response.CommunitiesResponse;
 import io.github.bucheapp.roost.dto.response.CommunityResponse;
+import io.github.bucheapp.roost.dto.response.RoomsResponse;
 import io.github.bucheapp.roost.dto.response.sw.CommunitySWResponse;
 import io.github.bucheapp.roost.models.Community;
 import io.github.bucheapp.roost.models.CommunityProperty;
@@ -144,7 +144,7 @@ public class CommunityController {
 		return ResponseEntity.ok(communityResponse);
 	}
 	
-	@PostMapping("api/communities/{publicId}/host/{userPublicId}")
+	@PostMapping("/{publicId}/host/{userPublicId}")
 	public ResponseEntity<Void> assignmentHost(
 			@PathVariable long publicId,
 			@PathVariable long userPublicId

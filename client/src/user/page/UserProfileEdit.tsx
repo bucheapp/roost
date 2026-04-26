@@ -9,7 +9,7 @@ import { ButtonGroup } from "../components/ButtonGroup";
 
 type Profile = {
 	bio: string;
-	iconUrl: string;
+	iconUUID: string;
 	gender: string;
 	dateOfBirth: string;
 	address: string;
@@ -126,8 +126,8 @@ const UserProfileEdit: React.FC = () => {
 
 	const iconSrc = previewUrl
 		? previewUrl
-		: profile.iconUrl
-			? baseURL + "/icons/" + profile.iconUrl + ".jpg"
+		: profile.iconUUID
+			? baseURL + "/icons/" + profile.iconUUID + ".jpg"
 			: baseURL + "/icons/default_icon.jpg";
 
 	return (

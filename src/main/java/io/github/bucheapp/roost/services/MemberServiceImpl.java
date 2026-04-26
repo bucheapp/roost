@@ -24,6 +24,7 @@ import io.github.bucheapp.roost.models.Member;
 import io.github.bucheapp.roost.models.MemberState;
 import io.github.bucheapp.roost.models.Room;
 import io.github.bucheapp.roost.models.User;
+import io.github.bucheapp.roost.models.UserState;
 import io.github.bucheapp.roost.repositories.CommunityRepository;
 import io.github.bucheapp.roost.repositories.MemberRepository;
 import io.github.bucheapp.roost.repositories.UserRepository;
@@ -126,10 +127,12 @@ public class MemberServiceImpl implements MemberService {
 		
 		for(Member member : members) {
 			if(req.getState() == null) {
-				newMembers.add(member);
+				if(member.getUser().getState() == UserState.ACTIVE)
+					newMembers.add(member);
 			} else {
 				if(req.getState() == member.getState()) {
-					newMembers.add(member);
+					if(member.getUser().getState() == UserState.ACTIVE)
+						newMembers.add(member);
 				}
 			}
 		}

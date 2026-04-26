@@ -2,6 +2,7 @@ package io.github.bucheapp.roost.config;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,16 +100,19 @@ public class DataInitializer implements CommandLineRunner {
 		user.setPermissions(Set.of(createCommunity,createChat));
 		roleRepository.save(user);
 		
-		if (userRepository.findByName(adminUsername).isEmpty()) {
+		User adminUser = null;
+		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
+		
+		Optional<User> userOptional = userRepository.findByName(adminUsername);
+		
+		if (userOptional.isEmpty()) {
 			BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-			
-			Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
 			
 			Profile profile = new Profile(
 					LocalDateTime.now()
 					);
 			
-			User adminUser = new User(
+			adminUser = new User(
 					snowflake.nextId(),
 					adminUsername,
 					adminEmail,
@@ -118,67 +122,70 @@ public class DataInitializer implements CommandLineRunner {
 					superAdmin
 					);
 			
+			profile.setUser(adminUser);			
 			userRepository.save(adminUser);
+		} else {
+			adminUser = userOptional.get();
+		}
+		
+		//OpenCommunity作成
+		if(communityRepository.findByName("OpenCommunity").isEmpty()) {
+			Set<CommunityProperty> properties = new HashSet<>();
+			properties.add(CommunityProperty.OPEN);
+			properties.add(CommunityProperty.FIXED);
+			properties.add(CommunityProperty.PERMANENT);
 			
-			//OpenCommunity作成
-			if(communityRepository.findByName("OpenCommunity").isEmpty()) {
-				Set<CommunityProperty> properties = new HashSet<>();
-				properties.add(CommunityProperty.OPEN);
-				properties.add(CommunityProperty.FIXED);
-				properties.add(CommunityProperty.PERMANENT);
-				
-				Community community = new Community(
-						snowflake.nextId(),
-						"OpenCommunity",
-						CommunityType.NONE,
-						CommunityState.ACTIVE,
-						LocalDateTime.now()
-						);
-				
-				community.setProperties(properties);
-				community.addHostHistory(adminUser);
-				
-				Member member = new Member(
-						MemberState.ACTIVE,
-						LocalDateTime.now(),
-						adminUser,
-						community
-						);
-				
-				community.addMember(member);
-				
-				roomRepository.save(
-						new Room(
-								snowflake.nextId(),
-								"ようこそ",
-								LocalDateTime.now(),
-								adminUser,
-								community
-								)
-						);
-				
-				roomRepository.save(
-						new Room(
-								snowflake.nextId(),
-								"質問",
-								LocalDateTime.now(),
-								adminUser,
-								community
-								)
-						);
-				
-				roomRepository.save(
-						new Room(
-								snowflake.nextId(),
-								"雑談",
-								LocalDateTime.now(),
-								adminUser,
-								community
-								)
-						);
-				
-				communityRepository.save(community);
-			}
+			Community community = new Community(
+					snowflake.nextId(),
+					"OpenCommunity",
+					CommunityType.NONE,
+					CommunityState.ACTIVE,
+					LocalDateTime.now()
+					);
+			
+			community.setProperties(properties);
+			community.addHostHistory(adminUser);
+			
+			Member member = new Member(
+					MemberState.ACTIVE,
+					LocalDateTime.now(),
+					adminUser,
+					community
+					);
+			
+			community.addMember(member);
+			
+			communityRepository.save(community);
+			
+			roomRepository.save(
+					new Room(
+							snowflake.nextId(),
+							"ようこそ",
+							LocalDateTime.now(),
+							adminUser,
+							community
+							)
+					);
+			
+			roomRepository.save(
+					new Room(
+							snowflake.nextId(),
+							"質問",
+							LocalDateTime.now(),
+							adminUser,
+							community
+							)
+					);
+			
+			roomRepository.save(
+					new Room(
+							snowflake.nextId(),
+							"雑談",
+							LocalDateTime.now(),
+							adminUser,
+							community
+							)
+					);
 		}
 	}
 	

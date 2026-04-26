@@ -11,7 +11,7 @@ type Profile = {
 	name: string;
 	email: string;
 	bio: string;
-	iconUrl: string;
+	iconUUID: string;
 	gender: string;
 	dateOfBirth: string;
 	address: string;
@@ -133,7 +133,7 @@ const UserProfile: React.FC = () => {
 				<div className={styles.content}>
 					<div className="profile-header">
 						<img
-							src={profile.iconUrl ? baseURL + "/icons/" + profile.iconUrl + ".jpg" : baseURL + "/icons/default_icon.jpg"}
+							src={profile.iconUUID ? baseURL + "/icons/" + profile.iconUUID + ".jpg" : baseURL + "/icons/default_icon.jpg"}
 							className="profile-avatar"
 						/>
 						<div>

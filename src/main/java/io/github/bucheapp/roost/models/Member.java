@@ -41,6 +41,8 @@ public class Member {
 	@NotNull
 	MemberState state;
 	
+	public Member() {}
+	
 	public Member(
 			MemberState state,
 			LocalDateTime time,

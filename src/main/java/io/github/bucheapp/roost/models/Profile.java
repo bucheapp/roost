@@ -62,7 +62,10 @@ public class Profile {
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	private User user;
 	
+	public Profile() {}
+	
 	public Profile(LocalDateTime createdAt) {
+		this();
 		this.createdAt = createdAt;
 	}
 

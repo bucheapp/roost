@@ -23,6 +23,8 @@ public class TextChat extends Chat {
 	@Column
 	private UUID mediaContentUUID;
 	
+	public TextChat() {}
+	
 	public TextChat(
 			long publicId,
 			LocalDateTime createdAt,

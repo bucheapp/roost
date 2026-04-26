@@ -35,11 +35,14 @@ public class HostHistory {
 	@NotNull
 	private LocalDateTime time;
 	
+	public HostHistory() {}
+	
 	public HostHistory(
 			LocalDateTime time,
 			User user,
 			Community community
 			) {
+		this();
 		this.time = time;
 		this.user = user;
 		this.community = community;

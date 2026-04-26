@@ -17,7 +17,10 @@ public class Permission {
 	@NotBlank
 	private String name;
 	
+	public Permission() {}
+	
 	public Permission(String name) {
+		this();
 		this.name = name;
 	}
 

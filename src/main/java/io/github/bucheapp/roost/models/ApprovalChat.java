@@ -22,6 +22,8 @@ public class ApprovalChat extends Chat {
 	@JoinColumn(name = "approver_id")
 	User approver;
 	
+	public ApprovalChat() {}
+	
 	public ApprovalChat(
 			long publicId,
 			LocalDateTime createdAt,

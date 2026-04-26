@@ -1,8 +1,7 @@
-package io.github.bucheapp.roost.dto.request;
+package io.github.bucheapp.roost.dto.response;
 
 import java.util.List;
 
-import io.github.bucheapp.roost.dto.response.RoomResponse;
 import io.github.bucheapp.roost.models.Room;
 
 public class RoomsResponse {
@@ -12,5 +11,13 @@ public class RoomsResponse {
 		this.rooms = rooms.stream()
 					.map(RoomResponse::new)
 					.toList();
+	}
+
+	public List<RoomResponse> getRooms() {
+		return rooms;
+	}
+
+	public void setRooms(List<RoomResponse> rooms) {
+		this.rooms = rooms;
 	}
 }

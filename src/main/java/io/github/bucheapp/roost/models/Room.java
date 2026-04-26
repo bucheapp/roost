@@ -54,6 +54,8 @@ public class Room {
 	@NotNull
 	private User creator;
 	
+	public Room() {}
+	
 	public Room(
 			long publicId,
 			String name,
@@ -61,6 +63,7 @@ public class Room {
 			User creator,
 			Community community
 			) {
+		this();
 		this.publicId = publicId;
 		this.name = name;
 		this.createdAt = createdAt;

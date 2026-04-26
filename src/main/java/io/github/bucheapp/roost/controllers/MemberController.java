@@ -3,7 +3,6 @@ package io.github.bucheapp.roost.controllers;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.github.bucheapp.roost.dto.request.MemberRequest;
 import io.github.bucheapp.roost.dto.request.MemberSearchRequest;
-import io.github.bucheapp.roost.dto.response.MemberResponse;
+import io.github.bucheapp.roost.dto.response.MembersResponse;
 import io.github.bucheapp.roost.dto.response.sw.MemberSWResponse;
 import io.github.bucheapp.roost.models.Member;
 import io.github.bucheapp.roost.models.MemberState;
@@ -35,24 +34,22 @@ public class MemberController {
 	private SimpMessagingTemplate template;
 	
 	@PostMapping("api/communities/{publicId}/members")
-	public ResponseEntity<Set<MemberResponse>> joinMember(
+	public ResponseEntity<MembersResponse> joinMember(
 			@PathVariable long publicId,
 			@RequestBody MemberRequest req
 			) throws IOException {
 		Set<Member> members = memberService.joinMember(publicId,req);
 		
-		Set<MemberResponse> memberResponses = members.stream()
-				.map(MemberResponse::new)
-				.collect(Collectors.toSet());
+		MembersResponse membersResponse = new MembersResponse(members);
 		
 		MemberSWResponse memberSWResponse = new MemberSWResponse(members,SWType.NEW);
 		template.convertAndSend("/topic/community/" + publicId + "/member", memberSWResponse);
 		
-		return ResponseEntity.ok(memberResponses);
+		return ResponseEntity.ok(membersResponse);
 	}
 	
 	@GetMapping("api/communities/{publicId}/members")
-	public ResponseEntity<Set<MemberResponse>> getMembers(
+	public ResponseEntity<MembersResponse> getMembers(
 			@PathVariable long publicId,
 			@RequestParam(required = false) MemberState state
 			) {
@@ -60,12 +57,9 @@ public class MemberController {
 		MemberSearchRequest req = new MemberSearchRequest(state);
 		
 		Set<Member> members = memberService.getMember(publicId,req);
+		MembersResponse membersResponse = new MembersResponse(members);
 		
-		Set<MemberResponse> memberResponses = members.stream()
-				.map(MemberResponse::new)
-				.collect(Collectors.toSet());
-		
-		return ResponseEntity.ok(memberResponses);
+		return ResponseEntity.ok(membersResponse);
 	}
 	
 	@DeleteMapping("api/communities/{publicId}/members")

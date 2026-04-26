@@ -70,7 +70,7 @@ public class ProfileServiceImpl implements ProfileService {
 		MultipartFile iconFile = req.getIconFile();
 		if(iconFile != null) {
 			if(profile.getIconUUID() != null) {
-				imageService.deleteImage("image/icon" + profile.getIconUUID() + ".jpg");
+				imageService.deleteImage("image/icon/" + profile.getIconUUID() + ".jpg");
 			}
 			
 			UUID uuid = imageService.createImage("image/icon",iconFile);
