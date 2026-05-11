@@ -81,6 +81,7 @@ public class DataInitializer implements CommandLineRunner {
 		Permission deleteChat = getOrCreatePermission("DELETE_CHAT");
 		Permission kickMember = getOrCreatePermission("KICK_MEMBER");
 		Permission banMember = getOrCreatePermission("BAN_MEMBER");
+		Permission unbanMember = getOrCreatePermission("UNBAN_MEMBER");
 		getOrCreatePermission("CREATE_ADMINUSER");
 		
 		Role superAdmin = getOrCreateRole("SUPER_ADMIN");
@@ -92,7 +93,7 @@ public class DataInitializer implements CommandLineRunner {
 				grantPermission,revokePermission,createCommunity,
 				updateCommunity,updateCommunityState,updateCommunityProperty,
 				createRoom,updateRoom,deleteRoom,createChat,deleteChat,
-				kickMember,banMember
+				kickMember,banMember,unbanMember
 				));
 		roleRepository.save(admin);
 		

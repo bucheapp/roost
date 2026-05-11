@@ -16,6 +16,8 @@ import org.springframework.web.server.ResponseStatusException;
 import io.github.bucheapp.roost.dto.request.ChatRequest;
 import io.github.bucheapp.roost.dto.request.MemberRequest;
 import io.github.bucheapp.roost.dto.request.MemberSearchRequest;
+import io.github.bucheapp.roost.models.ApprovalChat;
+import io.github.bucheapp.roost.models.Chat;
 import io.github.bucheapp.roost.models.ChatType;
 import io.github.bucheapp.roost.models.Community;
 import io.github.bucheapp.roost.models.CommunityProperty;
@@ -25,6 +27,7 @@ import io.github.bucheapp.roost.models.MemberState;
 import io.github.bucheapp.roost.models.Room;
 import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.models.UserState;
+import io.github.bucheapp.roost.repositories.ChatRepository;
 import io.github.bucheapp.roost.repositories.CommunityRepository;
 import io.github.bucheapp.roost.repositories.MemberRepository;
 import io.github.bucheapp.roost.repositories.UserRepository;
@@ -41,6 +44,9 @@ public class MemberServiceImpl implements MemberService {
 	
 	@Autowired
 	private MemberRepository memberRepository;
+	
+	@Autowired
+	private ChatRepository chatRepository;
 	
 	@Autowired
 	private CommunityService communityService;
@@ -72,7 +78,9 @@ public class MemberServiceImpl implements MemberService {
 		Member member = memberRepository.findByCommunityAndUser(community, user).orElse(null);
 		
 		if(member == null) {
-			if(community.getProperties().contains(CommunityProperty.OPEN)) {
+			if(community.getProperties().contains(CommunityProperty.FREE)) {
+				throw new ResponseStatusException(HttpStatus.FORBIDDEN,messageUtil.get("access.denied"));
+			} else if(community.getProperties().contains(CommunityProperty.OPEN)) {
 				Member newMember = new Member(
 						MemberState.ACTIVE,
 						LocalDateTime.now(),
@@ -269,5 +277,48 @@ public class MemberServiceImpl implements MemberService {
 		member.setState(MemberState.ACTIVE);
 		
 		memberRepository.save(member);
+	}
+	
+	public void approveMember(long publicId,long userPublicId) {
+		long userId = authContext.getCurrentUserId();
+		
+		Chat chat = chatRepository.findByPublicId(publicId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("chat.notfound")));
+		
+		Room room = chat.getRoom();
+		
+		Community community = room.getCommunity();
+		
+		Member approverMember = null;
+		Member targetMember = null;
+		
+		for(Member m : community.getMembers()) {
+			if(m.getUser().getId() == userId)
+				approverMember = m;
+			
+			if(m.getUser().getPublicId() == userPublicId)
+				targetMember = m;
+		}
+		
+		if(approverMember == null) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN,messageUtil.get("member.notjoined"));
+		}
+		
+		if(targetMember == null) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN,messageUtil.get("member.notjoined"));
+		}
+		
+		if(targetMember.getState() == MemberState.APPROVING) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN,messageUtil.get("member.notapproving"));
+		}
+		
+		targetMember.setState(MemberState.ACTIVE);
+		if(chat instanceof ApprovalChat approvalChat) {
+			approvalChat.setApprover(approverMember.getUser());
+		} else {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN,messageUtil.get("not.approvalchat"));
+		}
+		
+		memberRepository.save(targetMember);
 	}
 }

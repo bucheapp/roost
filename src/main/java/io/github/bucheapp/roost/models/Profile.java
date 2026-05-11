@@ -2,7 +2,6 @@ package io.github.bucheapp.roost.models;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -34,7 +33,7 @@ public class Profile {
 	private String bio;
 	
 	@Column
-	private UUID iconUUID;
+	private String iconUrl;
 	
 	@Column
 	@Enumerated(EnumType.STRING)
@@ -85,12 +84,12 @@ public class Profile {
 		this.bio = bio;
 	}
 
-	public UUID getIconUUID() {
-		return iconUUID;
+	public String getIconUrl() {
+		return iconUrl;
 	}
 
-	public void setIconUUID(UUID iconUUID) {
-		this.iconUUID = iconUUID;
+	public void setIconUrl(String iconUrl) {
+		this.iconUrl = iconUrl;
 	}
 
 	public Gender getGender() {

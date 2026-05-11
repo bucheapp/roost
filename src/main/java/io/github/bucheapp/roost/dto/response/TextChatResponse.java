@@ -1,19 +1,20 @@
 package io.github.bucheapp.roost.dto.response;
 
-import java.util.UUID;
-
 import io.github.bucheapp.roost.models.ChatType;
+import io.github.bucheapp.roost.models.MediaContent;
 import io.github.bucheapp.roost.models.TextChat;
 
 public class TextChatResponse extends ChatResponse {
 	private String content;
-	private UUID mediaContentUUID;
+	private MediaContent mediaContent;
+	private boolean edited;
 	
 	public TextChatResponse(TextChat textChat) {
 		super(textChat);
 		setType(ChatType.TEXT);
 		this.content = textChat.getContent();
-		this.mediaContentUUID = textChat.getMediaContentUUID();
+		this.mediaContent = textChat.getMediaContent();
+		this.edited = textChat.isEdited();
 	}
 
 	public String getContent() {
@@ -24,11 +25,19 @@ public class TextChatResponse extends ChatResponse {
 		this.content = content;
 	}
 
-	public UUID getMediaContentUUID() {
-		return mediaContentUUID;
+	public MediaContent getMediaContent() {
+		return mediaContent;
 	}
 
-	public void setMediaContentUUID(UUID mediaContentUUID) {
-		this.mediaContentUUID = mediaContentUUID;
+	public void setMediaContent(MediaContent mediaContent) {
+		this.mediaContent = mediaContent;
+	}
+
+	public boolean isEdited() {
+		return edited;
+	}
+
+	public void setEdited(boolean edited) {
+		this.edited = edited;
 	}
 }

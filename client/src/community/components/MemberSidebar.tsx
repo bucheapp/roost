@@ -54,7 +54,7 @@ const MemberSidebar: React.FC<Props> = ({ members, onClose }) => {
 							publicId: m.publicId,
 							name: userData.name,
 							iconUrl: profileData.iconUUID
-								? `${baseURL}/icons/${profileData.iconUUID}.jpg`
+								? `${baseURL}/icons/${profileData.iconUrl}`
 								: `${baseURL}/icons/default_icon.jpg`,
 						};
 					} catch (err) {

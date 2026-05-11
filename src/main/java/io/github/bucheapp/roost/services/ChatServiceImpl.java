@@ -2,7 +2,6 @@ package io.github.bucheapp.roost.services;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import jakarta.transaction.Transactional;
 
@@ -19,6 +18,8 @@ import io.github.bucheapp.roost.models.Chat;
 import io.github.bucheapp.roost.models.ChatType;
 import io.github.bucheapp.roost.models.Community;
 import io.github.bucheapp.roost.models.CommunityState;
+import io.github.bucheapp.roost.models.MediaContent;
+import io.github.bucheapp.roost.models.MediaType;
 import io.github.bucheapp.roost.models.Room;
 import io.github.bucheapp.roost.models.TextChat;
 import io.github.bucheapp.roost.models.User;
@@ -79,10 +80,17 @@ public class ChatServiceImpl implements ChatService {
 		
 		if(type == ChatType.TEXT) {
 			MultipartFile file = req.getFile();
-			UUID uuid = null;
+			String url = null;
 			if(file != null) {
 				fileService.checkByte(file, 10 * 1024 * 1024);
-				uuid = fileService.createImage("image",file);
+				
+				if(req.getMediaType() == MediaType.IMAGE) {
+					url = fileService.createImage("image",file);
+				} else if(req.getMediaType() == MediaType.VIDEO) {
+					url = fileService.createVideo("video",file);
+				} else if(req.getMediaType() == MediaType.AUDIO) {
+					url = fileService.createAudio("audio",file);
+				}
 			}
 			
 			chat = new TextChat(
@@ -93,7 +101,14 @@ public class ChatServiceImpl implements ChatService {
 					req
 					);
 			
-			((TextChat) chat).setMediaContentUUID(uuid);
+			if(chat instanceof TextChat textChat) {
+				textChat.setMediaContent(
+						new MediaContent(
+								url,
+								req.getMediaType()
+								)
+						);
+			}
 		} else if(type == ChatType.APPROVAL) {
 			chat = new ApprovalChat(
 					snowflake.nextId(),
@@ -129,12 +144,27 @@ public class ChatServiceImpl implements ChatService {
 			MultipartFile file = req.getFile();
 			TextChat textChat = (TextChat) chat;
 			textChat.setContent(req.getContent());
+			String url = null;
 			if(file != null) {
 				fileService.checkByte(file, 10 * 1024 * 1024);
-				fileService.deleteImage("image/" + textChat.getMediaContentUUID() + ".jpg");
-				UUID uuid = fileService.createImage("image",file);
-				textChat.setMediaContentUUID(uuid);
+				
+				if(req.getMediaType() == MediaType.IMAGE) {
+					if(textChat.getMediaContent() != null)
+							fileService.deleteFile("image");
+					url = fileService.createImage("image",file);
+				} else if(req.getMediaType() == MediaType.VIDEO) {
+					url = fileService.createVideo("video",file);
+				} else if(req.getMediaType() == MediaType.AUDIO) {
+					url = fileService.createAudio("audio",file);
+				}
 			}
+			
+			textChat.setMediaContent(
+					new MediaContent(
+							url,
+							req.getMediaType()
+							)
+					);
 		} else {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, messageUtil.get("unknown.chattype"));
 		}
@@ -160,7 +190,7 @@ public class ChatServiceImpl implements ChatService {
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("chat.notfound")));
 		
 		if(chat instanceof TextChat textChat) {
-			fileService.deleteImage("image/" + textChat.getMediaContentUUID() + ".jpg");
+			fileService.deleteFile("image/" + textChat.getMediaContent().getMediaContentUrl());
 		}
 		
 		Room room = chat.getRoom();

@@ -10,6 +10,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -110,6 +111,28 @@ public class MemberController {
 	) {
 		memberService.banMember(publicId, userPublicId);
 		
+		return ResponseEntity.noContent().build();
+	}
+	
+	@PatchMapping("api/communities/{publicId}/members/{userPublicId}/unban")
+	@PreAuthorize(
+		"hasAuthority('UNBAN_MEMBER') or @communitySecurity.isHost(#publicId)"
+	)
+	public ResponseEntity<Void> unbanMember(
+		@PathVariable long publicId,
+		@PathVariable long userPublicId
+	) {
+		memberService.unbanMember(publicId, userPublicId);
+		
+		return ResponseEntity.noContent().build();
+	}
+	
+	@PostMapping("api/chats/{publicId}/members/{userPublicId}/approve")
+	public ResponseEntity<Void> approveMember(
+		@PathVariable long publicId,
+		@PathVariable long userPublicId
+	) {
+		memberService.approveMember(publicId, userPublicId);
 		return ResponseEntity.noContent().build();
 	}
 }

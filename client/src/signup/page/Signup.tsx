@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Auth.css";
+import "../../auth/components/Auth.css";
 import axios from "axios";
 import { useAuthCheck } from "../../utils/useAuthCheck";
 import { FormGroup } from "../../components/FormGroup";
-import styles from "./Auth.module.css"
+import styles from "../../auth/components/Auth.module.css"
+import AuthHeader from "../../auth/components/AuthHeader";
 
 const baseURL = import.meta.env.VITE_API_URL;
 
@@ -51,6 +52,7 @@ const Signup: React.FC = () => {
 
 	return (
 		<div className="layout">
+			<AuthHeader />
 			<div className={styles.main}>
 				<div className="auth-card">
 					<h2 className="title">ユーザ登録</h2>

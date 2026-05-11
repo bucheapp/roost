@@ -14,4 +14,5 @@ public interface MemberService {
 	void kickMember(long publicId,long userPublicId);
 	void banMember(long publicId,long userPublicId);
 	void unbanMember(long publicId,long userPublicId);
+	void approveMember(long publicId,long userPublicId);
 }

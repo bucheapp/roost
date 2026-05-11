@@ -1,10 +1,10 @@
 package io.github.bucheapp.roost.models;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -21,7 +21,11 @@ public class TextChat extends Chat {
 	private String content;
 	
 	@Column
-	private UUID mediaContentUUID;
+	@Embedded
+	private MediaContent mediaContent;
+	
+	@Column
+	private boolean edited;
 	
 	public TextChat() {}
 	
@@ -48,12 +52,20 @@ public class TextChat extends Chat {
 		this.content = content;
 	}
 
-	public UUID getMediaContentUUID() {
-		return mediaContentUUID;
+	public MediaContent getMediaContent() {
+		return mediaContent;
 	}
 
-	public void setMediaContentUUID(UUID mediaContentUUID) {
-		this.mediaContentUUID = mediaContentUUID;
+	public void setMediaContent(MediaContent mediaContent) {
+		this.mediaContent = mediaContent;
+	}
+
+	public boolean isEdited() {
+		return edited;
+	}
+
+	public void setEdited(boolean edited) {
+		this.edited = edited;
 	}
 
 	@Override

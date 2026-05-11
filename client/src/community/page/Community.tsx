@@ -75,8 +75,8 @@ const Community: React.FC = () => {
             })
             .then(data => {
                 if (!data) return;
-                if (data.iconUUID) {
-                    setIconUrl(baseURL + "/icons/" + data.iconUUID + ".jpg");
+                if (data.iconUrl) {
+                    setIconUrl(baseURL + "/icons/" + data.iconUrl);
                 }
             })
             .catch(err => console.error(err));
@@ -170,7 +170,10 @@ const Community: React.FC = () => {
                                     }
                                 />
 
-                                <ChatArea roomPublicId={roomPublicId} />
+                                <ChatArea
+                                roomPublicId={roomPublicId}
+                                setAccessToken={setAccessToken}
+                                />
                             </div>
                         </>
                     )}

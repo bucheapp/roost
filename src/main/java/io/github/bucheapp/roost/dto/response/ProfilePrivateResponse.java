@@ -2,14 +2,13 @@ package io.github.bucheapp.roost.dto.response;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import io.github.bucheapp.roost.models.Gender;
 import io.github.bucheapp.roost.models.Profile;
 
 public class ProfilePrivateResponse implements ProfileResponse {
 	private String bio;
-	private UUID iconUUID;
+	private String iconUrl;
 	private Gender gender;
 	private LocalDate dateOfBirth;
 	private String address;
@@ -18,7 +17,7 @@ public class ProfilePrivateResponse implements ProfileResponse {
 	
 	public ProfilePrivateResponse(Profile profile) {
 		this.bio = profile.getBio();
-		this.iconUUID = profile.getIconUUID();
+		this.iconUrl = profile.getIconUrl();
 		this.gender = profile.getGender();
 		this.dateOfBirth = profile.getDateOfBirth();
 		this.address = profile.getAddress();
@@ -34,12 +33,12 @@ public class ProfilePrivateResponse implements ProfileResponse {
 		this.bio = bio;
 	}
 
-	public UUID getIconUUID() {
-		return iconUUID;
+	public String getIconUrl() {
+		return iconUrl;
 	}
 
-	public void setIconUUID(UUID iconUUID) {
-		this.iconUUID = iconUUID;
+	public void setIconUrl(String iconUrl) {
+		this.iconUrl = iconUrl;
 	}
 
 	public Gender getGender() {

@@ -124,7 +124,7 @@ const Home: React.FC = () => {
 							<div className={styles.item} onClick={() => navigate("/user/me/community")}>
 								コミュニティ
 							</div>
-							<div className={styles.item} onClick={() => navigate("/user/me/securiy")}>
+							<div className={styles.item} onClick={() => navigate("/user/me/security")}>
 								セキュリティ
 							</div>
 						</div>

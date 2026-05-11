@@ -3,7 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { useAuthCheck } from "../../utils/useAuthCheck";
 import { FormGroup } from "../../components/FormGroup";
-import styles from "../../signup/page/Auth.module.css"
+import styles from "../../auth/components/Auth.module.css"
+import AuthHeader from "../../auth/components/AuthHeader";
 
 const baseURL = import.meta.env.VITE_API_URL;
 
@@ -47,6 +48,7 @@ const Login: React.FC = () => {
 
 	return (
 		<div className="layout">
+			<AuthHeader />
 			<div className={styles.main}>
 				<div className="auth-card">
 					<h2 className="title">ログイン</h2>
