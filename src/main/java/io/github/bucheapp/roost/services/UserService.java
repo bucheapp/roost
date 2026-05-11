@@ -24,7 +24,7 @@ public interface UserService {
 	User createAdminUser(CreateAdminUserRequest req);
 	User updateUserState(long targetPublicId,UpdateUserStateRequest req);
 	Page<Community> getCurrentCommunities(Pageable pageable);
-	Page<Community> getCommunities(long publicId,Pageable pageable);
+	Page<Community> getCommunities(long publicId);
 	
 	String hideEmail(String email);
 

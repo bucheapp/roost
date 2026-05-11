@@ -1,17 +1,20 @@
 package io.github.bucheapp.roost.dto.response;
 
 import io.github.bucheapp.roost.models.ChatType;
+import io.github.bucheapp.roost.models.MediaContent;
 import io.github.bucheapp.roost.models.TextChat;
 
 public class TextChatResponse extends ChatResponse {
 	private String content;
-	private String mediaContentUrl;
+	private MediaContent mediaContent;
+	private boolean edited;
 	
 	public TextChatResponse(TextChat textChat) {
 		super(textChat);
 		setType(ChatType.TEXT);
 		this.content = textChat.getContent();
-		this.mediaContentUrl = textChat.getMediaContentUrl();
+		this.mediaContent = textChat.getMediaContent();
+		this.edited = textChat.isEdited();
 	}
 
 	public String getContent() {
@@ -22,11 +25,19 @@ public class TextChatResponse extends ChatResponse {
 		this.content = content;
 	}
 
-	public String getMediaContentUrl() {
-		return mediaContentUrl;
+	public MediaContent getMediaContent() {
+		return mediaContent;
 	}
 
-	public void setMediaContentUrl(String mediaContentUrl) {
-		this.mediaContentUrl = mediaContentUrl;
+	public void setMediaContent(MediaContent mediaContent) {
+		this.mediaContent = mediaContent;
+	}
+
+	public boolean isEdited() {
+		return edited;
+	}
+
+	public void setEdited(boolean edited) {
+		this.edited = edited;
 	}
 }

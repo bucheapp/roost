@@ -1,13 +1,15 @@
 package io.github.bucheapp.roost.services;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 
 import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -21,9 +23,13 @@ import io.github.bucheapp.roost.models.Community;
 import io.github.bucheapp.roost.models.CommunityState;
 import io.github.bucheapp.roost.models.CommunityType;
 import io.github.bucheapp.roost.models.Member;
+import io.github.bucheapp.roost.models.MemberState;
+import io.github.bucheapp.roost.models.Room;
 import io.github.bucheapp.roost.models.User;
 import io.github.bucheapp.roost.repositories.CommunityRepository;
+import io.github.bucheapp.roost.repositories.CommunitySpecifications;
 import io.github.bucheapp.roost.repositories.MemberRepository;
+import io.github.bucheapp.roost.repositories.RoomRepository;
 import io.github.bucheapp.roost.repositories.UserRepository;
 import io.github.bucheapp.roost.security.AuthContext;
 import io.github.bucheapp.roost.util.MessageUtil;
@@ -36,6 +42,9 @@ public class CommunityServiceImpl implements CommunityService {
 
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private RoomRepository roomRepository;
 
 	@Autowired
 	private MemberRepository memberRepository;
@@ -59,33 +68,41 @@ public class CommunityServiceImpl implements CommunityService {
 
 		return communityRepository.save(community);
 	}
-
-	//TODO: Pageableで検索する
+	
 	@Override
-	public List<Community> search(CommunitySearchRequest req) {
-		List<Community> communities;
-
-		if (req.getProperties() != null && !req.getProperties().isEmpty()) {
-			communities = communityRepository.findByPropertiesIn(req.getProperties());
-		} else {
-			communities = communityRepository.findAll();
-		}
-
-		if ("NEW".equals(req.getSort())) {
-			communities.sort(Comparator.comparing(Community::getCreatedAt).reversed());
-		} else if ("OLD".equals(req.getSort())) {
-			communities.sort(Comparator.comparing(Community::getCreatedAt));
-		}
-
-		int from = req.getPage() * req.getSize();
-		int to = Math.min(from + req.getSize(), communities.size());
-
-		return communities.subList(from, to);
+	public List<Room> getRooms(long publicId) {
+		Community community = communityRepository.findByPublicId(publicId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("community.notfound")));
+		
+		List<Room> rooms = roomRepository.findByCommunityId(community.getId());
+		
+		return rooms;
+	}
+	
+	@Override
+	public List<Community> search(
+			CommunitySearchRequest req,
+			Pageable pageable
+			) {
+		
+		Specification<Community> spec = Specification
+				.where(CommunitySpecifications.hasState(req.getState()))
+				.and(CommunitySpecifications.hasType(req.getType()))
+				.and(CommunitySpecifications.hasProperties(req.getProperties())
+				.and(CommunitySpecifications.hasName(req.getName())));
+		
+		Pageable newPageable = PageRequest.of(Math.max(pageable.getPageNumber(),0),Math.min(pageable.getPageSize(),10),pageable.getSort());
+		
+		return communityRepository.findAll(spec,newPageable).getContent();
 	}
 
 	public void assignmentHost(long publicId, long userPublicId) {
 		Community community = communityRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("community.notfound")));
+		
+		if(community.getState() != CommunityState.ACTIVE) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, messageUtil.get("community.notactive"));
+		}
 
 		User user = userRepository.findByPublicId(userPublicId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
@@ -94,7 +111,6 @@ public class CommunityServiceImpl implements CommunityService {
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("member.notfound")));
 
 		community.addHostHistory(member.getUser());
-		community.checkStateActive();
 		
 		communityRepository.save(community);
 	}
@@ -110,7 +126,7 @@ public class CommunityServiceImpl implements CommunityService {
 		List<Community> communityList = communityRepository.findByName(name);
 
 		for (Community community : communityList) {
-			if (community.getState() != CommunityState.ARCHIVED) {
+			if (community.getState() == CommunityState.ACTIVE) {
 				new ResponseStatusException(HttpStatus.CONFLICT, messageUtil.get("community.name.conflict"));
 				break;
 			}
@@ -121,21 +137,25 @@ public class CommunityServiceImpl implements CommunityService {
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 
-		LocalDateTime now = LocalDateTime.now();
-
-		Community newCommunity = new Community();
-		newCommunity.setName(name);
-		newCommunity.setType(type);
-		newCommunity.setState(CommunityState.ACTIVE);
-		newCommunity.setPublicId(snowflake.nextId());
-		newCommunity.setCreatedAt(now);
+		Community newCommunity = new Community(
+				snowflake.nextId(),
+				name,
+				type,
+				CommunityState.ACTIVE,
+				LocalDateTime.now()
+				);
+		
 		newCommunity.addHostHistory(user);
 		newCommunity.setArchiveAt(
 				LocalDateTime.now().plusDays(7));
 
-		Member member = new Member();
-		member.setUser(user);
-		member.setTime(LocalDateTime.now());
+		Member member = new Member(
+				MemberState.ACTIVE,
+				LocalDateTime.now(),
+				user,
+				newCommunity
+				);
+		
 		newCommunity.addMember(member);
 
 		return communityRepository.save(newCommunity);
@@ -161,7 +181,6 @@ public class CommunityServiceImpl implements CommunityService {
 		community.setName(name);
 		community.setType(type);
 		community.setUpdatedAt(now);
-		community.checkStateActive();
 
 		return communityRepository.save(community);
 	}

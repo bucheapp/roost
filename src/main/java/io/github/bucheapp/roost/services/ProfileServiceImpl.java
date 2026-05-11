@@ -1,7 +1,6 @@
 package io.github.bucheapp.roost.services;
 
 import java.io.IOException;
-import java.util.UUID;
 
 import jakarta.transaction.Transactional;
 
@@ -22,7 +21,7 @@ import io.github.bucheapp.roost.util.MessageUtil;
 @Service
 public class ProfileServiceImpl implements ProfileService {
 	@Autowired
-	private ImageService imageService;
+	private FileService fileService;
 	
 	@Autowired
 	private ProfileRepository profileRepository;
@@ -70,11 +69,11 @@ public class ProfileServiceImpl implements ProfileService {
 		MultipartFile iconFile = req.getIconFile();
 		if(iconFile != null) {
 			if(profile.getIconUrl() != null) {
-				imageService.deleteIconImage(profile.getIconUrl());
+				fileService.deleteFile("icons/" + profile.getIconUrl());
 			}
 			
-			UUID uuid = imageService.createIconImage(iconFile);
-			profile.setIconUrl(uuid.toString());
+			String path = fileService.createIconImage("icons",iconFile);
+			profile.setIconUrl(path);
 		}
 
 		return profileRepository.save(profile);

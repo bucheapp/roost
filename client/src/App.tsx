@@ -12,12 +12,20 @@ import UserManagement from "./user/page/UserManagement";
 import UserCreate from "./user/page/UserCreate";
 import UserCommunity from "./user/page/UserCommunity";
 import UserSecurity from "./user/page/UserSecurity"
+import Community from "./community/page/Community"
 
 const App: React.FC = () => {
 	return (
 		<BrowserRouter>
 			<Routes>
 				<Route path="/" element={<Home />} />
+				<Route path="/community">
+					<Route path=":communityPublicId">
+						<Route path="room">
+							<Route path=":roomPublicId" element={<Community />} />
+						</Route>
+					</Route>
+				</Route>
 				<Route path="/signup" element={<Signup />} />
 				<Route path="/login" element={<Login />} />
 				<Route path="/user">

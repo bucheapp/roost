@@ -67,28 +67,37 @@ public class AuthServiceImpl implements AuthService {
 
 		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 		String hashedPassword = encoder.encode(rawPassword);
-
-		User user = new User(name, email, hashedPassword);
-		user.setState(UserState.ACTIVE);
-		Profile profile = new Profile();
-		profile.setCreatedAt(LocalDateTime.now());
 		
-		profile.setUser(user);
-		user.setProfile(profile);
-
 		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
 		
-		user.setPublicId(snowflake.nextId());
-		user.setRole(roleRepository.findByName("USER")
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("role.notfound"))));
+		Profile profile = new Profile(
+				LocalDateTime.now()
+				);
 
-		User saved = userRepository.saveAndFlush(user);
+		User user = new User(
+				snowflake.nextId(),
+				name,
+				email,
+				hashedPassword,
+				UserState.ACTIVE,
+				profile,
+				roleRepository.findByName("USER")
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("role.notfound")))
+				);
+		
+		profile.setUser(user);
 
-		String accessTokenText = jwtService.generateAccessToken(saved);
-		String refreshTokenText = jwtService.generateRefreshToken(saved);
+		User savedUser = userRepository.saveAndFlush(user);
+
+		String accessTokenText = jwtService.generateAccessToken(savedUser);
+		String refreshTokenText = jwtService.generateRefreshToken(savedUser);
 
 		RefreshToken refreshToken =
-				new RefreshToken(refreshTokenText, saved, JwtServiceImpl.REFRESHTOKEN_VALIDITY);
+				new RefreshToken(
+						refreshTokenText,
+						JwtServiceImpl.REFRESHTOKEN_VALIDITY,
+						savedUser
+						);
 
 		refreshTokenRepository.save(refreshToken);
 
@@ -114,7 +123,10 @@ public class AuthServiceImpl implements AuthService {
 		String refreshTokenText = jwtService.generateRefreshToken(user);
 
 		RefreshToken refreshToken =
-				new RefreshToken(refreshTokenText, user, JwtServiceImpl.REFRESHTOKEN_VALIDITY);
+				new RefreshToken(refreshTokenText,
+						JwtServiceImpl.REFRESHTOKEN_VALIDITY,
+						user
+						);
 
 		refreshTokenRepository.save(refreshToken);
 

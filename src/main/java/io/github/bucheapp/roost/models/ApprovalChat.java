@@ -1,5 +1,7 @@
 package io.github.bucheapp.roost.models;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -19,6 +21,22 @@ public class ApprovalChat extends Chat {
 	@ManyToOne
 	@JoinColumn(name = "approver_id")
 	User approver;
+	
+	public ApprovalChat() {}
+	
+	public ApprovalChat(
+			long publicId,
+			LocalDateTime createdAt,
+			User creator,
+			Room room
+			) {
+		super(
+			publicId,
+			createdAt,
+			creator,
+			room
+			);
+	}
 	
 	public User getTargetUser() {
 		return targetUser;

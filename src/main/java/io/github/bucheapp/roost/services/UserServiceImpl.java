@@ -180,17 +180,23 @@ public class UserServiceImpl implements UserService {
 		String hashedPassword = encoder.encode(rawPassword);
 		
 		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
-
-		User user = new User(name, email, hashedPassword);
-		user.setState(UserState.ACTIVE);
-		Profile profile = new Profile();
-		profile.setUser(user);
-		profile.setCreatedAt(LocalDateTime.now());
 		
-		user.setPublicId(snowflake.nextId());
-		user.setProfile(profile);
-		user.setRole(roleRepository.findByName("USER")
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("role.notfound"))));
+		Profile profile = new Profile(
+				LocalDateTime.now()
+				);
+
+		User user = new User(
+				snowflake.nextId(),
+				name,
+				email,
+				hashedPassword,
+				UserState.ACTIVE,
+				profile,
+				roleRepository.findByName("USER")
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("role.notfound")))
+				);
+		
+		profile.setUser(user);
 		
 		Set<Permission> permissions = requestedPermissions.stream()
 				.map(permissionName -> permissionRepository.findByName(permissionName)
@@ -198,6 +204,7 @@ public class UserServiceImpl implements UserService {
 				.collect(Collectors.toSet());
 		
 		user.setPermissions(permissions);
+		
 		return userRepository.save(user);
 	}
 	
@@ -220,15 +227,23 @@ public class UserServiceImpl implements UserService {
 		String hashedPassword = encoder.encode(rawPassword);
 		
 		Snowflake snowflake = new Snowflake(workerIdProvider.getWorkerId(), datacenterId);
+		
+		Profile profile = new Profile(
+				LocalDateTime.now()
+				);
 
-		User user = new User(name, email, hashedPassword);
-		user.setRole(roleRepository.findByName("ADMIN")
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("role.notfound"))));
-		user.setState(UserState.ACTIVE);
-		Profile profile = new Profile();
+		User user = new User(
+				snowflake.nextId(),
+				name,
+				email,
+				hashedPassword,
+				UserState.ACTIVE,
+				profile,
+				roleRepository.findByName("ADMIN")
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("role.notfound")))
+				);
+		
 		profile.setUser(user);
-		profile.setCreatedAt(LocalDateTime.now());
-		user.setProfile(profile);
 		
 		user.setPublicId(snowflake.nextId());
 		return userRepository.save(user);
@@ -434,27 +449,21 @@ public class UserServiceImpl implements UserService {
 			) {
 		long userId = authContext.getCurrentUserId();
 		
+		Pageable newPageable = PageRequest.of(Math.max(pageable.getPageNumber(),0),Math.min(pageable.getPageSize(),10),pageable.getSort());
+		
 		return communityRepository
-				.findDistinctByMembers_User_Id(userId, pageable);
+				.findDistinctByMembers_User_Id(userId, newPageable);
 	}
 	
 	@Override
 	public Page<Community> getCommunities(
-			long publicId,
-			Pageable pageable
+			long publicId
 			) {
 		User user = userRepository.findByPublicId(publicId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, messageUtil.get("user.notfound")));
 		long userId = user.getId();
 		
-		int size = pageable.getPageSize();
-		int page = pageable.getPageNumber();
-		
-		Pageable newPageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-		
-		if(page != 0 && size >= 5) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,messageUtil.get("invalid.query.parameters"));
-		}
+		Pageable newPageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
 		
 		return communityRepository
 				.findDistinctByMembers_User_Id(userId, newPageable);

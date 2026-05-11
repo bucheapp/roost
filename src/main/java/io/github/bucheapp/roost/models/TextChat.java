@@ -1,7 +1,10 @@
 package io.github.bucheapp.roost.models;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -17,12 +20,27 @@ public class TextChat extends Chat {
 	@Size(min = 1,max = 500)
 	private String content;
 	
-	@Column(length=36)
-	private String mediaContentUrl;
+	@Column
+	@Embedded
+	private MediaContent mediaContent;
+	
+	@Column
+	private boolean edited;
 	
 	public TextChat() {}
 	
-	public TextChat(ChatRequest req) {
+	public TextChat(
+			long publicId,
+			LocalDateTime createdAt,
+			User creator,
+			Room room,
+			ChatRequest req) {
+		super(
+			publicId,
+			createdAt,
+			creator,
+			room
+			);
 		this.content = req.getContent();
 	}
 	
@@ -33,15 +51,23 @@ public class TextChat extends Chat {
 	public void setContent(String content) {
 		this.content = content;
 	}
-	
-	public String getMediaContentUrl() {
-		return mediaContentUrl;
+
+	public MediaContent getMediaContent() {
+		return mediaContent;
 	}
 
-	public void setMediaContentUrl(String mediaContentUrl) {
-		this.mediaContentUrl = mediaContentUrl;
+	public void setMediaContent(MediaContent mediaContent) {
+		this.mediaContent = mediaContent;
 	}
-	
+
+	public boolean isEdited() {
+		return edited;
+	}
+
+	public void setEdited(boolean edited) {
+		this.edited = edited;
+	}
+
 	@Override
 	public TextChatResponse toResponse() {
 		TextChatResponse res = new TextChatResponse(this);

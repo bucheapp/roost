@@ -23,6 +23,7 @@ public class HostHistory {
 	
 	@ManyToOne
 	@JoinColumn(name = "community_id")
+	@NotNull
 	private Community community;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -34,9 +35,17 @@ public class HostHistory {
 	@NotNull
 	private LocalDateTime time;
 	
-	public HostHistory(User user,LocalDateTime time) {
-		this.user = user;
+	public HostHistory() {}
+	
+	public HostHistory(
+			LocalDateTime time,
+			User user,
+			Community community
+			) {
+		this();
 		this.time = time;
+		this.user = user;
+		this.community = community;
 	}
 
 	public long getId() {

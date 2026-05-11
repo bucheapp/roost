@@ -32,7 +32,7 @@ public class Profile {
 	@Size(max = 300)
 	private String bio;
 	
-	@Column(length = 36)
+	@Column
 	private String iconUrl;
 	
 	@Column
@@ -60,6 +60,13 @@ public class Profile {
 	@NotNull
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	private User user;
+	
+	public Profile() {}
+	
+	public Profile(LocalDateTime createdAt) {
+		this();
+		this.createdAt = createdAt;
+	}
 
 	public long getId() {
 		return id;

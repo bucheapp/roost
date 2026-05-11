@@ -127,7 +127,7 @@ const UserProfileEdit: React.FC = () => {
 	const iconSrc = previewUrl
 		? previewUrl
 		: profile.iconUrl
-			? baseURL + "/icons/" + profile.iconUrl + ".jpg"
+			? baseURL + "/icons/" + profile.iconUrl
 			: baseURL + "/icons/default_icon.jpg";
 
 	return (

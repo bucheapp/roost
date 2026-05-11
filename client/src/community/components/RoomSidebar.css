@@ -1,0 +1,20 @@
+.room-sidebar {
+	width: 200px;
+	border-right: 1px solid #ddd;
+	background: #fafafa;
+}
+
+.room-item {
+	padding: 10px 14px;
+	cursor: pointer;
+	transition: background 0.15s;
+}
+
+.room-item:hover {
+	background: #f0f0f0;
+}
+
+.room-item.active {
+	background: #e0e0ff;
+	font-weight: bold;
+}

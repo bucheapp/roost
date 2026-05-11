@@ -30,6 +30,8 @@ const UserCommunity: React.FC = () => {
 	const [communities, setCommunities] = useState<Community[]>([]);
 	const [isOpen, setIsOpen] = useState(false);
 	const [loading, setLoading] = useState(true);
+	const [isFrozen, setIsFrozen] = useState(false);
+
 	const isMobile = useIsMobile();
 
 	useEffect(() => {
@@ -45,23 +47,44 @@ const UserCommunity: React.FC = () => {
 
 		const size = isMe ? 10 : 5;
 
-		const url = isMe
+		const userUrl = isMe
+			? `${baseURL}/api/users/me`
+			: `${baseURL}/api/users/${publicId}`;
+
+		const communityUrl = isMe
 			? `${baseURL}/api/users/me/communities?page=0&size=${size}&sort=createdAt,desc`
 			: `${baseURL}/api/users/${publicId}/communities?page=0&size=${size}&sort=createdAt,desc`;
 
-		fetcher(url)
-			.then((res) => {
-				if (!res.ok) throw new Error("failed");
+		fetcher(userUrl)
+			.then(res => {
+				if (!res.ok) throw new Error("user fetch failed");
 				return res.json();
 			})
-			.then((data: CommunitiesResponse) => {
-				setCommunities(data.communities ?? []);
+			.then(userData => {
+				if (!isMe && userData.state === "FROZEN") {
+					setIsFrozen(true);
+					setLoading(false);
+					return;
+				}
+
+				return fetcher(communityUrl)
+					.then(res => {
+						if (!res.ok) throw new Error("community fetch failed");
+						return res.json();
+					})
+					.then((data: CommunitiesResponse) => {
+						setCommunities(data.communities ?? []);
+					});
 			})
-			.catch((err) => console.error(err))
+			.catch(err => console.error(err))
 			.finally(() => setLoading(false));
 	}, [auth, isMe, navigate, publicId]);
 
 	if (loading) return <div>Loading...</div>;
+
+	if (isFrozen) {
+		return <div>このユーザーの情報は現在閲覧できません</div>;
+	}
 
 	return (
 		<div className="layout">
@@ -98,7 +121,9 @@ const UserCommunity: React.FC = () => {
 									className="community-card"
 									onClick={() => navigate(`/test/${community.publicId}`)}
 								>
-									<div className="community-name">{community.name}</div>
+									<div className="community-name">
+										{community.name}
+									</div>
 									<div className="community-meta">
 										<span>{community.type}</span>
 										<span>{community.state}</span>

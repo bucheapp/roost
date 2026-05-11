@@ -65,8 +65,8 @@ const Home: React.FC = () => {
 			})
 			.then(data => {
 				if (!data) return;
-				if(data.iconUrl) {
-					setIconUrl(baseURL + "/icons/" + data.iconUrl + ".jpg");
+				if(data.iconUUID) {
+					setIconUrl(baseURL + "/icons/" + data.iconUUID + ".jpg");
 				}
 			})
 			.catch(err => console.error(err));
@@ -123,6 +123,9 @@ const Home: React.FC = () => {
 							</div>
 							<div className={styles.item} onClick={() => navigate("/user/me/community")}>
 								コミュニティ
+							</div>
+							<div className={styles.item} onClick={() => navigate("/user/me/security")}>
+								セキュリティ
 							</div>
 						</div>
 					)}

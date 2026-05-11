@@ -30,6 +30,8 @@ const UserProfile: React.FC = () => {
 	const [profile, setProfile] = useState<Profile | null>(null);
 	const [isOpen, setIsOpen] = useState(false);
 	const [notFound, setNotFound] = useState(false);
+	const [isFrozen, setIsFrozen] = useState(false);
+
 	const isMobile = useIsMobile();
 
 	useEffect(() => {
@@ -51,7 +53,7 @@ const UserProfile: React.FC = () => {
 				fetchWithAuth(url, {}, auth.accessToken, auth.setAccessToken)
 			: (url: string) => fetch(url);
 
-		fetcher(baseURL + urlProfile)
+		fetcher(baseURL + urlUser)
 			.then(res => {
 				if (res.status === 404) {
 					setNotFound(true);
@@ -59,10 +61,15 @@ const UserProfile: React.FC = () => {
 				}
 				return res.json();
 			})
-			.then(profileData => {
-				if (!profileData) return;
+			.then(userData => {
+				if (!userData) return;
 
-				fetcher(baseURL + urlUser)
+				if (!isMe && userData.state === "FROZEN") {
+					setIsFrozen(true);
+					return;
+				}
+
+				fetcher(baseURL + urlProfile)
 					.then(res => {
 						if (res.status === 404) {
 							setNotFound(true);
@@ -70,8 +77,8 @@ const UserProfile: React.FC = () => {
 						}
 						return res.json();
 					})
-					.then(userData => {
-						if (!userData) return;
+					.then(profileData => {
+						if (!profileData) return;
 
 						setProfile({
 							...profileData,
@@ -92,6 +99,10 @@ const UserProfile: React.FC = () => {
 
 	if (notFound) {
 		return <div>ユーザーが見つかりません</div>;
+	}
+
+	if (isFrozen) {
+		return <div>このユーザーは現在利用できません</div>;
 	}
 
 	if (!profile) return <div>Loading...</div>;
@@ -118,7 +129,9 @@ const UserProfile: React.FC = () => {
 				isMobile={isMobile}
 				onClose={() => setIsOpen(false)}
 			/>
-			{isOpen && isMobile && <div className="overlay" onClick={() => setIsOpen(false)} />}
+			{isOpen && isMobile && (
+				<div className="overlay" onClick={() => setIsOpen(false)} />
+			)}
 
 			<div className={styles.main}>
 				{isMobile && !isOpen && (
@@ -133,11 +146,16 @@ const UserProfile: React.FC = () => {
 				<div className={styles.content}>
 					<div className="profile-header">
 						<img
-							src={profile.iconUrl ? baseURL + "/icons/" + profile.iconUrl + ".jpg" : baseURL + "/icons/default_icon.jpg"}
+							src={
+								profile.iconUrl
+									? baseURL + "/icons/" + profile.iconUrl
+									: baseURL + "/icons/default_icon.jpg"
+							}
 							className="profile-avatar"
 						/>
 						<div>
 							<h2>{profile.name ? profile.name : defaultText}</h2>
+
 							{isMe && (
 								<>
 									<div className="profile-account">
@@ -184,7 +202,11 @@ const UserProfile: React.FC = () => {
 							<span>Github:</span>
 							<span>
 								{profile.githubUrl ? (
-									<a href={profile.githubUrl} target="_blank" rel="noopener noreferrer">
+									<a
+										href={profile.githubUrl}
+										target="_blank"
+										rel="noopener noreferrer"
+									>
 										{profile.githubUrl}
 									</a>
 								) : (
